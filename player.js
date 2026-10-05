@@ -1,11 +1,9 @@
-// ===== LIENS SUPABASE (anciennement config.js) =====
-// Liens directs vers le bucket Supabase "assets" (bucket PUBLIC requis).
-// Chaque fichier est référencé par son URL complète : modifiez une ligne si un fichier change de nom.
+// ===== LIENS SUPABASE =====
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
 const ASSETS = {
   images: {
-	"Verso.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso.png",
+    "Verso.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso.png",
     "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png",
     "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png",
     "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png",
@@ -15,76 +13,32 @@ const ASSETS = {
     "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois.png",
     "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg",
     "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png",
-    "Sorciere.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere.png",
+    "Sorcière.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorci%C3%A8re.png",
     "fond-village.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg",
-  },
-  audio: {
-    // Fichiers présents dans votre liste :
-    "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
-    "1 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/1%20mort.mp3",
-    "2 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/2%20morts.mp3",
-    "3 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/3%20morts.mp3",
-    "Appel Cupidon V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Cupidon%20V2.mp3",
-    "Appel jour V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20jour%20V2.mp3",
-    "Appel Loups-Garous V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Loups-Garous%20V2.mp3",
-    "Appel nuit V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20nuit%20V2.mp3",
-    "Appel Renard non.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20non.mp3",
-    "Appel Renard oui.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20oui.mp3",
-    "Appel renard V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20renard%20V2.mp3",
-    "Appel voleur V3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voleur%20V3.mp3",
-    "Appel voyante V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voyante%20V2.mp3",
-    "Fermer les yeux.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Fermer%20les%20yeux.mp3",
-    "Voter.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Voter.mp3",
-    "Le hurlement du loup 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%201.mp3",
-    "Le hurlement du loup 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%202.mp3",
-    "Le hurlement du loup 3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%203.mp3",
-    "Effet sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Effet%20sorciere.mp3",
-    // Fichiers à vérifier / uploader (absents de votre liste) :
-    "Maire.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Maire.mp3",
-    "Sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere.mp3",
-    "Sorciere 2 potions.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%202%20potions.mp3",
-    "Sorciere potion de vie.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20vie.mp3",
-    "Sorciere potion de mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20mort.mp3",
-    "chasseur.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/chasseur.mp3",
-  },
-  video: {
-    "Chasseur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Chasseur.mp4",
-    "Cupidon.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Cupidon.mp4",
-    "La voyante.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/La%20voyante.mp4",
-    "Loup-Garou.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Loup-Garou.mp4",
-    "Maire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Maire.mp4",
-    "Renard.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Renard.mp4",
-    "Voleur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Voleur.mp4",
-    // À vérifier / uploader :
-    "Sorciere.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Sorciere.mp4",
   }
 };
 
-const ASSET_FOLDERS = { images: "images", audio: "mj/audio", video: "mj/video" };
+const ASSET_FOLDERS = { images: "images" };
 
-// URL générique (secours si un nom n'est pas dans la table ci-dessus)
 function assetUrl(path) {
   return SUPABASE_BASE + "/" + path.split("/").map(encodeURIComponent).join("/");
 }
 
-// mediaUrl("audio", "0 mort.mp3") -> lien direct Supabase
 function mediaUrl(kind, name) {
   return (ASSETS[kind] && ASSETS[kind][name]) || assetUrl(ASSET_FOLDERS[kind] + "/" + name);
 }
-
-// ===== FIN LIENS SUPABASE =====
 
 let peer = null;
 let conn = null;
 let myRole = "";
 let isRevealed = false;
 let joined = false;
-let session = null;      // { room, name, token } mémorisé pour la reconnexion
+let session = null;
 let retryTimer = null;
 
 const STORE_KEY = "lg-player-session";
 
-// Dictionnaire des cartes (images dans le bucket Supabase : assets/images/)
+// Dictionnaire des cartes
 const roleData = {
   "Loup-Garou": {
     image: "Loup-Garou.png",
@@ -99,7 +53,7 @@ const roleData = {
     description: "🔮 <strong>La Voyante :</strong> Chaque nuit, vous pouvez observer la véritable identité d'un joueur de votre choix avant que le village ne se réveille."
   },
   "Sorcière": {
-    image: "Sorciere.png",
+    image: "Sorcière.png",
     description: "🧪 <strong>La Sorcière :</strong> Vous possédez deux potions à usage unique : une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer un joueur."
   },
   "Chasseur": {
@@ -124,21 +78,19 @@ const roleData = {
   }
 };
 
-// --- Session (reconnexion après rechargement ou perte réseau) ---
 function loadSession() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { return null; }
 }
 function saveSession(s) {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) { /* stockage indisponible */ }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) { }
 }
 function clearSession() {
-  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignoré */ }
+  try { localStorage.removeItem(STORE_KEY); } catch (e) { }
 }
 function randomToken() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-// --- Interface ---
 function showError(msg) {
   const el = document.getElementById('join-error');
   el.textContent = msg;
@@ -162,7 +114,6 @@ function showGame(name) {
   document.getElementById('welcome-title').textContent = `Joueur : ${name}`;
 }
 
-// --- Démarrage ---
 document.addEventListener("DOMContentLoaded", () => {
   const urlRoom = (new URLSearchParams(window.location.search).get('room') || "").toUpperCase();
   const saved = loadSession();
@@ -186,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// --- Connexion au salon du MJ ---
 function joinRoom() {
   const name = document.getElementById('player-name').value.trim();
   const room = document.getElementById('room-code').value.trim().toUpperCase();
@@ -267,7 +217,6 @@ function scheduleReconnect() {
   }, 3000);
 }
 
-// --- Carte de rôle ---
 function setupRoleCard(role) {
   document.getElementById('status-text').textContent = "Votre rôle vous a été distribué !";
   document.getElementById('card-area').style.display = 'block';
@@ -288,7 +237,6 @@ function setupRoleCard(role) {
   }
   document.getElementById('role-desc-display').innerHTML = data.description;
 
-  // Toujours repartir carte cachée
   isRevealed = true;
   toggleRoleReveal();
 }
@@ -299,7 +247,6 @@ function escapeText(str) {
   return d.innerHTML;
 }
 
-// Affichage / masquage de la carte secrète
 function toggleRoleReveal() {
   const cardBack = document.getElementById('secret-card');
   const roleDetails = document.getElementById('role-details');
@@ -310,12 +257,12 @@ function toggleRoleReveal() {
   if (isRevealed) {
     cardBack.classList.add('revealed');
     cardBack.querySelector('span').textContent = "🔒 Toucher pour masquer";
-    if (versoImg) versoImg.style.display = 'none'; // Cacher l'image du verso
-    roleDetails.style.display = 'flex';           // Afficher la carte et son rôle
+    if (versoImg) versoImg.style.display = 'none';
+    roleDetails.style.display = 'flex';
   } else {
     cardBack.classList.remove('revealed');
     cardBack.querySelector('span').textContent = "👁️ Toucher pour révéler";
-    if (versoImg) versoImg.style.display = 'block'; // Réafficher l'image du verso
-    roleDetails.style.display = 'none';            // Masquer le rôle
+    if (versoImg) versoImg.style.display = 'block';
+    roleDetails.style.display = 'none';
   }
 }
