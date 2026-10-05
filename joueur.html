@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loup-Garou - Espace Joueur</title>
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=22">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
@@ -29,6 +29,14 @@
       <h2 id="welcome-title" class="nom-joueur">Bienvenue !</h2>
       <p id="status-text">En attente de la distribution par le Maître du Jeu...</p>
 
+      <!-- Tour du Voleur : choisir un joueur dont on vole le rôle -->
+      <div id="thief-panel" class="thief-panel" style="display: none;">
+        <h3>🕵️ Voleur, c'est ton tour !</h3>
+        <p>Choisis un joueur : tu voleras son rôle et il deviendra simple Villageois.</p>
+        <div id="thief-targets" class="thief-targets"></div>
+        <button class="btn btn-effect" id="thief-skip" onclick="thiefSkip()">Garder mon rôle</button>
+      </div>
+
       <div id="card-area" style="display: none;">
         <!-- Dos de carte cliquable avec image Verso.png -->
         <div id="secret-card" class="card-back" role="button" tabindex="0" onclick="toggleRoleReveal()">
@@ -44,7 +52,7 @@
       </div>
     </section>
   </main>
-  <p class="hint" style="text-align:center;">Version 21</p>
+  <p class="hint" style="text-align:center;">Version 22</p>
 
   <script>
     (function () {
@@ -73,6 +81,6 @@
       });
     })();
   </script>
-  <script src="player.js?v=21"></script>
+  <script src="player.js?v=22"></script>
 </body>
 </html>

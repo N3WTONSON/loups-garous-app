@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>Loup-Garou - Régie Maître du Jeu</title>
-  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="style.css?v=22">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -29,6 +29,9 @@
         </button>
         <button class="btn btn-danger" onclick="stopAllMedia()">
           <span class="icon">⏹️</span> Arrêter Tout
+        </button>
+        <button class="btn btn-night" style="grid-column: 1 / -1;" onclick="presentCharacters()">
+          <span class="icon">🎬</span> Présenter les personnages
         </button>
       </div>
     </section>
@@ -191,11 +194,15 @@
           <h2 class="titre-wolf">🎭 Appels des Personnages</h2>
           <p id="calls-hint" class="hint" style="margin: 10px 0 0;"></p>
           <div id="calls-grid" class="button-grid role-grid">
-            <button class="btn-role-card" data-role="Voleur" onclick="playRole('voleur')">
+            <button class="btn-role-card" onclick="playCommand('voter_maire')">
+              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/images/Maire.png" alt="Maire">
+              <span>Le Maire</span>
+            </button>
+            <button class="btn-role-card" data-role="Voleur" data-call="voleur" onclick="playRole('voleur')">
               <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png" alt="Voleur">
               <span>Le Voleur</span>
             </button>
-            <button class="btn-role-card" data-role="Cupidon" onclick="playRole('cupidon')">
+            <button class="btn-role-card" data-role="Cupidon" data-call="cupidon" onclick="playRole('cupidon')">
               <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png" alt="Cupidon">
               <span>Cupidon</span>
             </button>
@@ -219,15 +226,16 @@
               <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png" alt="Chasseur">
               <span>Le Chasseur</span>
             </button>
-            <button class="btn-role-card" onclick="playCommand('voter_maire')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/images/Maire.png" alt="Maire">
-              <span>Le Maire</span>
-            </button>
           </div>
         </section>
 
+      </div>
+
+    </div>
+
+    <!-- Effets Sonores : centrés en bas de page -->
         <!-- Effets Sonores -->
-        <section class="card">
+        <section class="card effects-bottom">
           <h2 class="titre-wolf">⚡ Effets Sonores</h2>
           <div class="button-grid">
             <button class="btn btn-effect" onclick="playEffect('hurlement')">🐺 Hurlement</button>
@@ -235,11 +243,8 @@
           </div>
         </section>
 
-      </div>
-
-    </div>
   </main>
-  <p id="app-version" class="hint" style="text-align:center;">Version 21</p>
+  <p id="app-version" class="hint" style="text-align:center;">Version 22</p>
 
   <script>
     (function () {
@@ -270,6 +275,6 @@
       });
     })();
   </script>
-  <script src="script.js?v=21"></script>
+  <script src="script.js?v=22"></script>
 </body>
 </html>

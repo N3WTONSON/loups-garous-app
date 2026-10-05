@@ -1,4 +1,4 @@
-const VERSION_APP = "21";
+const VERSION_APP = "22";
 console.info("Loup-Garou régie - version " + VERSION_APP);
 
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
@@ -70,12 +70,14 @@ function mediaUrl(kind, name) {
 // --- CONFIGURATION ---
 const YT_ID_NUIT = "FDHc4qUNMTQ";
 const YT_ID_JOUR = "bNyXbxpWiok";
+const YT_ID_PRESENTATION = "VSfS9oM630s"; // présentation des personnages
 
 let peer = null;
 let roomCode = "";
 let players = [];
 let roles = [];
-let voleurCards = [];
+let calledOnce = new Set();       // appels à usage unique déjà faits (voleur, cupidon)
+let thiefWaiting = new Set();     // Voleurs qui doivent encore choisir
 let distributed = false;
 let activeCallRoles = new Set();
 let hostOpened = false;
@@ -121,7 +123,7 @@ function syncLobbyToProjector() {
 // --- ÉCRAN SECONDAIRE ---
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=21', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=22', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -166,7 +168,9 @@ function initHost(attempt = 0) {
 
   peer.on('connection', (conn) => {
     conn.on('data', (data) => {
-      if (data && data.type === 'join') handleJoin(conn, data);
+      if (!data) return;
+      if (data.type === 'join') handleJoin(conn, data);
+      else if (data.type === 'thiefSteal') handleThiefSteal(conn, data);
     });
 
     conn.on('close', () => {
@@ -224,6 +228,7 @@ function handleJoin(conn, data) {
 
   conn.send({ type: 'joined' });
   if (player.role) conn.send({ type: 'assignRole', role: player.role });
+  if (thiefWaiting.has(player.name)) sendThiefTurn(player);
   refreshPlayerViews();
 }
 
@@ -258,13 +263,8 @@ function updateMJRoleList() {
 }
 
 function distributeRolesNetwork() {
-  const hasVoleur = roles.includes('Voleur');
-  const expected = players.length + (hasVoleur ? 2 : 0);
-
-  if (players.length === 0 || roles.length !== expected) {
-    alert(hasVoleur
-      ? `Avec le Voleur, il faut ${players.length + 2} rôles (joueurs + 2 cartes). Actuellement : ${roles.length}.`
-      : "Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
+  if (players.length === 0 || roles.length !== players.length) {
+    alert("Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
     return;
   }
 
@@ -278,9 +278,10 @@ function distributeRolesNetwork() {
     player.role = shuffled[i];
     if (player.conn && player.conn.open) player.conn.send({ type: 'assignRole', role: player.role });
   });
-  voleurCards = shuffled.slice(players.length);
   distributed = true;
   activeCallRoles = new Set(roles);
+  calledOnce = new Set();     // nouvelle distribution = nouvelle partie
+  thiefWaiting = new Set();
   updateCallButtons();
 
   renderMJDashboard();
@@ -296,6 +297,12 @@ function updateCallButtons() {
     const show = distributed && activeCallRoles.has(btn.dataset.role);
     btn.style.display = show ? '' : 'none';
     if (show) visible++;
+
+    // Voleur et Cupidon : un seul appel par partie, le bouton se grise ensuite
+    const once = btn.dataset.call;
+    const used = !!once && calledOnce.has(once);
+    btn.disabled = used;
+    btn.classList.toggle('used', used);
   });
 
   if (!distributed) {
@@ -323,9 +330,6 @@ function renderMJDashboard() {
     </tr>
   `).join('');
 
-  if (voleurCards.length) {
-    html += `<tr><td colspan="3">🃏 Cartes du Voleur : ${voleurCards.map(escapeHtml).join(', ')}</td></tr>`;
-  }
   tbody.innerHTML = html;
   document.getElementById('mj-dashboard').style.display = 'block';
 }
@@ -356,8 +360,8 @@ function isCenteredVideo(fileName) {
   return overlayMode === 'center' && currentOverlayFile === fileName;
 }
 
-function playScene(videoId) {
-  if (!sendToProjector({ action: 'playYTVideo', videoId })) {
+function playScene(videoId, loop = true) {
+  if (!sendToProjector({ action: 'playYTVideo', videoId, loop })) {
     alert("Veuillez d'abord cliquer sur 'Ouvrir l'Écran Secondaire' !");
   } else {
     overlayMode = null;
@@ -373,6 +377,17 @@ function playNightPhase() {
 function playDayPhase() {
   playScene(YT_ID_JOUR);
   playAudioFile("Appel jour V2.mp3");
+}
+
+// Vidéo de présentation des personnages (une seule lecture, sans boucle)
+function presentCharacters() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+  window.speechSynthesis.cancel();
+  playScene(YT_ID_PRESENTATION, false);
+  setProjectorVideoVolume(1.0, 300);
 }
 
 // --- CONSIGNES & INTERVENTIONS ---
@@ -424,7 +439,7 @@ const FALLBACK_TEXTS = {
   "3 morts.mp3": "Carnage au village, trois victimes sont à déplorer ce matin.",
   "Sorciere.mp3": "Sorcière, réveille-toi.",
   "chasseur.mp3": "Chasseur, tu viens de mourir. Désigne ta dernière victime.",
-  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux échanger ta carte avec l'une des cartes restantes.",
+  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux voler le rôle d'un autre joueur.",
   "Appel Cupidon V2.mp3": "Cupidon, réveille-toi et désigne deux amoureux.",
   "Appel voyante V2.mp3": "Voyante, réveille-toi et désigne un joueur dont tu veux connaître le rôle.",
   "Appel renard V2.mp3": "Renard, réveille-toi et désigne un groupe de trois joueurs.",
@@ -444,18 +459,18 @@ function audioCandidates(filename) {
 }
 
 let toastTimer = null;
-function showToast(msg) {
+function showToast(msg, kind = 'error') {
   let el = document.getElementById('mj-toast');
   if (!el) {
     el = document.createElement('div');
     el.id = 'mj-toast';
-    el.className = 'toast';
     document.body.appendChild(el);
   }
+  el.className = 'toast' + (kind === 'info' ? ' info' : '');
   el.textContent = msg;
   el.style.display = 'block';
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 7000);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, kind === 'info' ? 12000 : 7000);
 }
 
 function diagnoseAudio(url, filename) {
@@ -562,10 +577,64 @@ function playRole(role) {
   };
 
   const item = roleFiles[role];
-  if (item) {
-    playAudioFile(item.audio);
-    if (item.video) playRoleVideo(item.video, 'center');
+  if (!item) return;
+  if (calledOnce.has(role)) return; // Voleur / Cupidon : déjà appelés
+
+  playAudioFile(item.audio);
+  if (item.video) playRoleVideo(item.video, 'center');
+
+  if (role === 'voleur' || role === 'cupidon') {
+    calledOnce.add(role);
+    updateCallButtons();
   }
+  if (role === 'voleur') startThiefTurn();
+}
+
+// --- VOL DE RÔLE (le Voleur choisit un joueur sur son téléphone) ---
+function sendThiefTurn(thief) {
+  if (thief.conn && thief.conn.open) {
+    thief.conn.send({ type: 'thiefTurn', targets: players.filter((p) => p !== thief).map((p) => p.name) });
+  }
+}
+
+function startThiefTurn() {
+  const thieves = players.filter((p) => p.role === 'Voleur');
+  if (thieves.length === 0) {
+    showToast("Aucun joueur n'a le rôle de Voleur.", 'info');
+    return;
+  }
+  thieves.forEach((t) => {
+    thiefWaiting.add(t.name);
+    if (t.connected) sendThiefTurn(t);
+    else showToast(`Le Voleur (${t.name}) est déconnecté : le choix lui sera proposé à sa reconnexion.`, 'info');
+  });
+}
+
+function handleThiefSteal(conn, data) {
+  const thief = players.find((p) => p.conn === conn);
+  if (!thief || thief.role !== 'Voleur' || !thiefWaiting.has(thief.name)) return;
+
+  if (data.skip) {
+    thiefWaiting.delete(thief.name);
+    conn.send({ type: 'thiefDone' });
+    showToast(`🕵️ ${thief.name} (Voleur) garde son rôle.`, 'info');
+    return;
+  }
+
+  const target = players.find((p) => p !== thief && p.name === data.targetName);
+  if (!target) { sendThiefTurn(thief); return; }
+
+  thiefWaiting.delete(thief.name);
+  const stolen = target.role;
+  thief.role = stolen;
+  target.role = 'Villageois';
+
+  if (thief.conn && thief.conn.open) thief.conn.send({ type: 'assignRole', role: thief.role });
+  if (target.conn && target.conn.open) target.conn.send({ type: 'assignRole', role: target.role });
+  conn.send({ type: 'thiefDone' });
+
+  renderMJDashboard();
+  showToast(`🕵️ ${thief.name} a volé le rôle « ${stolen} » de ${target.name}, qui devient Villageois.`, 'info');
 }
 
 const HOWL_FILES = ["Le hurlement du loup 1.mp3", "Le hurlement du loup 2.mp3", "Le hurlement du loup 3.mp3"];

@@ -66,7 +66,7 @@ const roleData = {
   },
   "Voleur": {
     image: "Voleur.png",
-    description: "🕵️ <strong>Le Voleur :</strong> La première nuit, si cette option est activée, vous pouvez choisir d'échanger votre carte avec l'une des cartes non distribuées."
+    description: "🕵️ <strong>Le Voleur :</strong> La première nuit, quand le Maître du Jeu t'appelle, tu peux voler le rôle d'un autre joueur : il deviendra simple Villageois. Tu ne verras sa carte qu'après le vol !"
   },
   "Renard": {
     image: "Renard.jpg",
@@ -183,6 +183,10 @@ function connect(room, name, token, isAuto) {
       } else if (data.type === 'assignRole') {
         myRole = data.role;
         setupRoleCard(data.role);
+      } else if (data.type === 'thiefTurn') {
+        showThiefPanel(data.targets || []);
+      } else if (data.type === 'thiefDone') {
+        hideThiefPanel();
       }
     });
 
@@ -265,4 +269,47 @@ function toggleRoleReveal() {
     if (versoImg) versoImg.style.display = 'block';
     roleDetails.style.display = 'none';
   }
+}
+
+// --- Tour du Voleur : choisir un joueur dont on vole le rôle ---
+function showThiefPanel(targets) {
+  const panel = document.getElementById('thief-panel');
+  const list = document.getElementById('thief-targets');
+  if (!panel || !list) return;
+
+  list.innerHTML = '';
+  targets.forEach((name) => {
+    const b = document.createElement('button');
+    b.className = 'btn btn-night nom-joueur';
+    b.textContent = name;
+    b.onclick = () => thiefChoose(name);
+    list.appendChild(b);
+  });
+  document.getElementById('thief-skip').disabled = false;
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+function lockThiefPanel() {
+  document.querySelectorAll('#thief-panel button').forEach((b) => { b.disabled = true; });
+}
+
+function thiefChoose(name) {
+  if (!conn || !conn.open) return;
+  if (!confirm(`Voler le rôle de ${name} ? Il deviendra simple Villageois.`)) return;
+  lockThiefPanel();
+  conn.send({ type: 'thiefSteal', targetName: name });
+}
+
+function thiefSkip() {
+  if (!conn || !conn.open) return;
+  if (!confirm("Garder ton rôle de Voleur ?")) return;
+  lockThiefPanel();
+  conn.send({ type: 'thiefSteal', skip: true });
+}
+
+function hideThiefPanel() {
+  const panel = document.getElementById('thief-panel');
+  if (panel) panel.style.display = 'none';
 }

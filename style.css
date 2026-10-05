@@ -480,3 +480,54 @@ input[type="text"]:focus { outline-color: #dc2626; }
 /* =====================================================================
    THÈME GRIFFURE & SANG — fin
    ===================================================================== */
+
+/* =====================================================================
+   AJOUTS v22 : appels à usage unique, tour du Voleur, effets en bas
+   ===================================================================== */
+
+/* Boutons d'appel grisés (Voleur / Cupidon une fois appelés) */
+.btn-role-card:disabled,
+.btn-role-card.used {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-role-card:disabled:hover,
+.btn-role-card.used:hover {
+  transform: none;
+  background: linear-gradient(180deg, rgba(72, 10, 14, 0.60), rgba(20, 8, 12, 0.80));
+  border-color: rgba(153, 27, 27, 0.80);
+  box-shadow: inset 0 -4px 0 rgba(127, 29, 29, 0.90), inset 0 0 22px rgba(0, 0, 0, 0.50);
+}
+.btn-role-card:disabled::after,
+.btn-role-card.used::after { opacity: 0; }
+
+/* Message d'information de la régie (vol de rôle, etc.) */
+.toast.info {
+  background: rgba(24, 10, 14, 0.97);
+  border-color: #b91c1c;
+}
+
+/* Effets sonores : centrés en bas de page */
+.effects-bottom {
+  align-self: center;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 10px;
+}
+.effects-bottom h2 { text-align: center; }
+
+/* Tour du Voleur (téléphone du joueur) */
+.thief-panel {
+  margin: 16px auto 0;
+  padding: 16px;
+  max-width: 420px;
+  border: 2px solid rgba(185, 28, 28, 0.8);
+  border-radius: 6px;
+  background: rgba(40, 8, 12, 0.85);
+  box-shadow: inset 0 0 30px rgba(120, 0, 0, 0.35);
+}
+.thief-panel h3 { margin: 0 0 8px; font-size: 1.3rem; color: #f4dcdc; }
+.thief-panel p { margin: 0 0 12px; color: #cbd5e1; line-height: 1.4; }
+.thief-targets { display: grid; gap: 10px; margin-bottom: 12px; }
+.thief-targets .btn { width: 100%; font-size: 1.2rem; }
