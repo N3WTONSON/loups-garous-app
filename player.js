@@ -35,7 +35,6 @@ let isRevealed = false;
 let joined = false;
 let session = null;
 let retryTimer = null;
-let cupidonSelection = [];
 
 const STORE_KEY = "lg-player-session";
 
@@ -188,8 +187,6 @@ function connect(room, name, token, isAuto) {
         showThiefPanel(data.options || []);
       } else if (data.type === 'thiefDone') {
         hideThiefPanel();
-      } else if (data.type === 'cupidonTurn') {
-        showCupidonPanel(data.players || []);
       }
     });
 
@@ -274,7 +271,7 @@ function toggleRoleReveal() {
   }
 }
 
-// --- Tour du Voleur ---
+// --- Tour du Voleur : choisir l'un des 2 rôles proposés (cartes, sans nom de joueur) ---
 function showThiefPanel(options) {
   const panel = document.getElementById('thief-panel');
   const list = document.getElementById('thief-cards');
@@ -332,51 +329,4 @@ function thiefSkip() {
 function hideThiefPanel() {
   const panel = document.getElementById('thief-panel');
   if (panel) panel.style.display = 'none';
-}
-
-// --- Tour de Cupidon ---
-function showCupidonPanel(playersList) {
-  const panel = document.getElementById('cupidon-panel');
-  const list = document.getElementById('cupidon-cards');
-  if (!panel || !list) return;
-
-  list.innerHTML = '';
-  cupidonSelection = [];
-
-  playersList.forEach(pName => {
-    const card = document.createElement('button');
-    card.className = 'thief-card';
-    card.style.minHeight = '60px';
-    card.innerHTML = `<h4 style="font-size:1.15rem; margin:0;">${escapeText(pName)}</h4>`;
-
-    card.onclick = () => {
-      if (cupidonSelection.includes(pName)) {
-        cupidonSelection = cupidonSelection.filter(n => n !== pName);
-        card.style.borderColor = 'rgba(153, 27, 27, 0.85)';
-        card.style.background = '';
-      } else if (cupidonSelection.length < 2) {
-        cupidonSelection.push(pName);
-        card.style.borderColor = '#ec4899';
-        card.style.background = 'rgba(236, 72, 153, 0.2)';
-      }
-    };
-    list.appendChild(card);
-  });
-
-  panel.style.display = 'block';
-  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-}
-
-function cupidonConfirm() {
-  if (cupidonSelection.length !== 2) {
-    alert("Vous devez sélectionner exactement 2 joueurs !");
-    return;
-  }
-  if (!conn || !conn.open) return;
-  if (!confirm(`Unir pour l'éternité ${cupidonSelection[0]} et ${cupidonSelection[1]} ?`)) return;
-
-  document.querySelectorAll('#cupidon-panel button').forEach(b => b.disabled = true);
-  conn.send({ type: 'cupidonSelect', choices: cupidonSelection });
-  document.getElementById('cupidon-panel').style.display = 'none';
 }

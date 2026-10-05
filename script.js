@@ -1,10 +1,60 @@
-const VERSION_APP = "24";
+const VERSION_APP = "23";
 console.info("Loup-Garou régie - version " + VERSION_APP);
 
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
 const ASSETS = {
-  // ... (Garder vos assets actuels)
+  images: {
+    "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png",
+    "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png",
+    "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png",
+    "Maire.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire.png",
+    "Voyante.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante.png",
+    "Voleur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png",
+    "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois.png",
+    "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg",
+    "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png",
+    "Sorciere.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere.png",
+    "Titre.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Titre.png",
+    "fond-village.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg",
+  },
+  audio: {
+    "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
+    "1 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/1%20mort.mp3",
+    "2 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/2%20morts.mp3",
+    "3 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/3%20morts.mp3",
+    "Appel Cupidon V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Cupidon%20V2.mp3",
+    "Appel jour V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20jour%20V2.mp3",
+    "Appel Loups-Garous V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Loups-Garous%20V2.mp3",
+    "Appel nuit V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20nuit%20V2.mp3",
+    "Appel Renard non.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20non.mp3",
+    "Appel Renard oui.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20oui.mp3",
+    "Appel renard V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20renard%20V2.mp3",
+    "Appel voleur V3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voleur%20V3.mp3",
+    "Appel voyante V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voyante%20V2.mp3",
+    "Fermer les yeux.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Fermer%20les%20yeux.mp3",
+    "Voter.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Voter.mp3",
+    "Le hurlement du loup 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%201.mp3",
+    "Le hurlement du loup 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%202.mp3",
+    "Le hurlement du loup 3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%203.mp3",
+    "Effet sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Effet%20sorciere.mp3",
+    "Maire.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Maire.mp3",
+    "Sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere.mp3",
+    "Sorciere 2 potions.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%202%20potions.mp3",
+    "Sorciere potion de vie.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20vie.mp3",
+    "Sorciere potion de mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20mort.mp3",
+    "chasseur.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/chasseur.mp3",
+  },
+  video: {
+    "Chasseur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Chasseur.mp4",
+    "Cupidon.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Cupidon.mp4",
+    "La voyante.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/La%20voyante.mp4",
+    "Loup-Garou.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Loup-Garou.mp4",
+    "Maire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Maire.mp4",
+    "Renard.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Renard.mp4",
+    "Voleur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Voleur.mp4",
+    "Sorciere.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Sorciere.mp4",
+  }
 };
 
 const ASSET_FOLDERS = { images: "images", audio: "mj/audio", video: "mj/video" };
@@ -37,9 +87,7 @@ let projectorWindow = null;
 let overlayMode = null;
 let currentOverlayFile = null;
 
-let currentDeathMode = null;
-let selectedDeathPlayers = [];
-
+// --- UTILITAIRES ---
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -73,7 +121,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=24', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=23', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -120,7 +168,6 @@ function initHost(attempt = 0) {
       if (!data) return;
       if (data.type === 'join') handleJoin(conn, data);
       else if (data.type === 'thiefSteal') handleThiefSteal(conn, data);
-      else if (data.type === 'cupidonSelect') handleCupidonSelect(conn, data);
     });
 
     conn.on('close', () => {
@@ -135,6 +182,10 @@ function initHost(attempt = 0) {
   peer.on('error', (err) => {
     if (err.type === 'unavailable-id' && attempt < 3) {
       initHost(attempt + 1);
+    } else if (err.type === 'unavailable-id') {
+      alert("Impossible de réserver un code de salon. Réessayez.");
+    } else if (!hostOpened) {
+      alert("Impossible de créer le salon (" + err.type + "). Vérifiez votre connexion.");
     } else {
       console.warn("Erreur PeerJS :", err);
     }
@@ -144,21 +195,37 @@ function initHost(attempt = 0) {
 function handleJoin(conn, data) {
   const name = String(data.playerName || '').trim().slice(0, 20);
   const token = String(data.token || '');
-  if (!name) { conn.send({ type: 'rejected', message: "Pseudo vide." }); return; }
+
+  if (!name) {
+    conn.send({ type: 'rejected', message: "Pseudo vide." });
+    return;
+  }
 
   let player = players.find((p) => p.name.toLowerCase() === name.toLowerCase());
 
   if (player) {
+    const sameToken = token && player.token === token;
+    if (!sameToken && player.connected) {
+      conn.send({ type: 'rejected', message: "Ce pseudo est déjà pris dans la partie." });
+      return;
+    }
+    if (!sameToken && !player.connected) {
+      player.token = token || player.token;
+    }
     player.conn = conn;
     player.connected = true;
   } else {
-    if (distributed) { conn.send({ type: 'rejected', message: "La partie a déjà commencé." }); return; }
+    if (distributed) {
+      conn.send({ type: 'rejected', message: "La partie a déjà commencé." });
+      return;
+    }
     player = { name, token, role: "", alive: true, inLove: false, conn, connected: true };
     players.push(player);
   }
 
   conn.send({ type: 'joined' });
   if (player.role) conn.send({ type: 'assignRole', role: player.role });
+  if (thiefOffers.has(player.name)) sendThiefTurn(player);
   refreshPlayerViews();
 }
 
@@ -168,8 +235,15 @@ function refreshPlayerViews() {
   if (distributed) renderMJDashboard();
 }
 
-function addRole(roleName) { roles.push(roleName); updateMJRoleList(); }
-function removeRole(index) { roles.splice(index, 1); updateMJRoleList(); }
+function addRole(roleName) {
+  roles.push(roleName);
+  updateMJRoleList();
+}
+
+function removeRole(index) {
+  roles.splice(index, 1);
+  updateMJRoleList();
+}
 
 function updateMJPlayerList() {
   document.getElementById('player-list').innerHTML = players
@@ -190,6 +264,7 @@ function distributeRolesNetwork() {
     alert("Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
     return;
   }
+
   const shuffled = [...roles];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -207,19 +282,36 @@ function distributeRolesNetwork() {
   calledOnce = new Set();
   thiefOffers = new Map();
   updateCallButtons();
+
   renderMJDashboard();
 }
 
 function updateCallButtons() {
   const grid = document.getElementById('calls-grid');
+  const hint = document.getElementById('calls-hint');
+  if (!grid || !hint) return;
+
+  let visible = 0;
   grid.querySelectorAll('[data-role]').forEach((btn) => {
     const show = distributed && activeCallRoles.has(btn.dataset.role);
     btn.style.display = show ? '' : 'none';
+    if (show) visible++;
+
     const once = btn.dataset.call;
     const used = !!once && calledOnce.has(once);
     btn.disabled = used;
     btn.classList.toggle('used', used);
   });
+
+  if (!distributed) {
+    hint.textContent = "Distribuez les rôles : seuls les personnages en jeu apparaîtront ici (le Maire est toujours disponible).";
+    hint.style.display = 'block';
+  } else if (visible === 0) {
+    hint.textContent = "Aucun personnage à appeler dans cette partie.";
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
 }
 
 function renderMJDashboard() {
@@ -231,7 +323,7 @@ function renderMJDashboard() {
       <td>
         <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
           <input type="checkbox" ${item.inLove ? 'checked' : ''} onchange="togglePlayerLove(${index})">
-          💘
+          💘 Amoureux
         </label>
       </td>
       <td>
@@ -241,6 +333,7 @@ function renderMJDashboard() {
       </td>
     </tr>
   `).join('');
+
   tbody.innerHTML = html;
   document.getElementById('mj-dashboard').style.display = 'block';
 }
@@ -254,14 +347,15 @@ function togglePlayerStatus(index) {
   const p = players[index];
   p.alive = !p.alive;
 
-  // Si le joueur meurt et est amoureux, l'autre meurt automatiquement
+  // Si le joueur vient de mourir et fait partie des amoureux de Cupidon, l'autre meurt de chagrin
   if (!p.alive && p.inLove) {
     const partner = players.find((pl, i) => i !== index && pl.inLove && pl.alive);
     if (partner) {
       partner.alive = false;
-      showToast(`💘 ${partner.name} meurt immédiatement de chagrin pour avoir perdu son amour !`, 'info');
+      showToast(`💘 ${partner.name} meurt immédiatement de chagrin pour avoir perdu son amour (${p.name}) !`, 'info');
     }
   }
+
   renderMJDashboard();
 }
 
@@ -282,97 +376,61 @@ function stopRoleVideo() {
   sendToProjector({ action: 'stopOverlayVideo' });
 }
 
+function isCenteredVideo(fileName) {
+  return overlayMode === 'center' && currentOverlayFile === fileName;
+}
+
 function playScene(videoId, loop = true) {
   if (!sendToProjector({ action: 'playYTVideo', videoId, loop })) {
     alert("Veuillez d'abord cliquer sur 'Ouvrir l'Écran Secondaire' !");
+  } else {
+    overlayMode = null;
+    currentOverlayFile = null;
   }
 }
 
-function playNightPhase() { playScene(YT_ID_NUIT); playAudioFile("Appel nuit V2.mp3"); }
-function playDayPhase() { playScene(YT_ID_JOUR); playAudioFile("Appel jour V2.mp3"); }
-function presentCharacters() { playScene(YT_ID_PRESENTATION, false); }
+function playNightPhase() {
+  playScene(YT_ID_NUIT);
+  playAudioFile("Appel nuit V2.mp3");
+}
+
+function playDayPhase() {
+  playScene(YT_ID_JOUR);
+  playAudioFile("Appel jour V2.mp3");
+}
+
+function presentCharacters() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+  window.speechSynthesis.cancel();
+  playScene(YT_ID_PRESENTATION, false);
+  setProjectorVideoVolume(1.0, 300);
+}
 
 // --- CONSIGNES & INTERVENTIONS ---
 function playCommand(cmd) {
-  if (cmd === 'fermer_yeux') playAudioFile("Fermer les yeux.mp3");
-  else if (cmd === 'voter_maire') {
-    // Le Maire s'affiche en PLEIN ÉCRAN pur, sans recadrage
-    playRoleVideo("Maire.mp4", 'fullscreen');
+  if (cmd === 'fermer_yeux') {
+    playAudioFile("Fermer les yeux.mp3");
+  } else if (cmd === 'voter_maire') {
+    // Affiche la vidéo du Maire centrée en grand format sans diffuser l'audio Maire.mp3
+    playRoleVideo("Maire.mp4", 'center');
+  } else if (cmd === 'voter') {
+    playAudioFile("Voter.mp3");
   }
-  else if (cmd === 'voter') playAudioFile("Voter.mp3");
 }
 
 function playRenardResponse(isPositive) {
-  playRoleVideo("Renard.mp4", 'center');
+  if (!isCenteredVideo("Renard.mp4")) playRoleVideo("Renard.mp4");
   playAudioFile(isPositive ? "Appel Renard oui.mp3" : "Appel Renard non.mp3");
 }
 
 function playSorcierePotions(type) {
-  playRoleVideo("Sorciere.mp4", 'center');
+  if (!isCenteredVideo("Sorciere.mp4")) playRoleVideo("Sorciere.mp4");
   if (type === 2) playAudioFile("Sorciere 2 potions.mp3");
   else if (type === 'vie') playAudioFile("Sorciere potion de vie.mp3");
   else if (type === 'mort') playAudioFile("Sorciere potion de mort.mp3");
-}
-
-// --- GESTION DES MORTS (VIDÉO) ---
-function openDeathModal(mode) {
-  currentDeathMode = mode;
-  selectedDeathPlayers = [];
-  const container = document.getElementById('death-modal-players');
-  container.innerHTML = '';
-  document.getElementById('death-modal-title').textContent = mode === 'wolves' ? "🐺 Sélectionner les victimes (Loups)" : "🗳️ Sélectionner l'éliminé (Vote)";
-
-  players.forEach(p => {
-    if (!p.alive) return;
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-effect';
-    btn.textContent = p.name;
-    btn.onclick = () => {
-      if (mode === 'vote') {
-        selectedDeathPlayers = [p.name];
-        Array.from(container.children).forEach(b => b.style.backgroundColor = '');
-        btn.style.backgroundColor = '#dc2626';
-      } else {
-        if (selectedDeathPlayers.includes(p.name)) {
-          selectedDeathPlayers = selectedDeathPlayers.filter(n => n !== p.name);
-          btn.style.backgroundColor = '';
-        } else {
-          selectedDeathPlayers.push(p.name);
-          btn.style.backgroundColor = '#dc2626';
-        }
-      }
-    };
-    container.appendChild(btn);
-  });
-  document.getElementById('death-modal').style.display = 'flex';
-}
-
-function closeDeathModal() {
-  document.getElementById('death-modal').style.display = 'none';
-}
-
-function confirmDeath() {
-  if (selectedDeathPlayers.length === 0) return alert("Sélectionnez au moins un joueur !");
-  
-  const url = currentDeathMode === 'wolves'
-    ? "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Mort+Loup.mp4"
-    : "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Elimination+2.mp4";
-
-  sendToProjector({
-    action: 'playDeath',
-    mode: currentDeathMode,
-    url: url,
-    names: selectedDeathPlayers
-  });
-
-  // Tuer les joueurs automatiquement dans la régie
-  players.forEach((p, idx) => {
-    if (selectedDeathPlayers.includes(p.name) && p.alive) {
-      togglePlayerStatus(idx);
-    }
-  });
-
-  closeDeathModal();
 }
 
 function playDeaths(count) {
@@ -381,30 +439,151 @@ function playDeaths(count) {
 }
 
 // --- AUDIO ---
+const FALLBACK_TEXTS = {
+  "Le hurlement du loup 1.mp3": "Awouuuu !",
+  "Le hurlement du loup 2.mp3": "Awouuuu !",
+  "Le hurlement du loup 3.mp3": "Awouuuu !",
+  "Effet sorciere.mp3": "Hi hi hi hi hi !",
+  "Fermer les yeux.mp3": "Tout le monde ferme les yeux !",
+  "Maire.mp3": "Le village va maintenant élire son maire !",
+  "Voter.mp3": "Le village va maintenant délibérer et voter !",
+  "Appel Renard oui.mp3": "Oui, il y a au moins un Loup-Garou parmi ces trois personnes.",
+  "Appel Renard non.mp3": "Non, il n'y a aucun Loup-Garou parmi ces trois personnes.",
+  "Sorciere 2 potions.mp3": "Sorcière, vous possédez encore vos deux potions : la potion de vie et la potion de mort.",
+  "Sorciere potion de vie.mp3": "Sorcière, il ne vous reste plus que votre potion de vie.",
+  "Sorciere potion de mort.mp3": "Sorcière, il ne vous reste plus que votre potion de mort.",
+  "0 mort.mp3": "Bonne nouvelle ! Aucun mort n'est à déplorer ce matin !",
+  "1 mort.mp3": "Le village déplore un mort ce matin.",
+  "2 morts.mp3": "Cette nuit a été tragique, nous avons deux morts.",
+  "3 morts.mp3": "Carnage au village, trois victimes sont à déplorer ce matin.",
+  "Sorciere.mp3": "Sorcière, réveille-toi.",
+  "chasseur.mp3": "Chasseur, tu viens de mourir. Désigne ta dernière victime.",
+  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux voler l'un des deux rôles qui te sont proposés.",
+  "Appel Cupidon V2.mp3": "Cupidon, réveille-toi et désigne deux amoureux.",
+  "Appel voyante V2.mp3": "Voyante, réveille-toi et désigne un joueur dont tu veux connaître le rôle.",
+  "Appel renard V2.mp3": "Renard, réveille-toi et désigne un groupe de trois joueurs.",
+  "Appel Loups-Garous V2.mp3": "Loups-Garous, réveillez-vous et désignez votre victime.",
+  "Appel nuit V2.mp3": "La nuit tombe sur le village.",
+  "Appel jour V2.mp3": "Le jour se lève sur le village."
+};
+
+function onAudioFinished() {
+  setProjectorVideoVolume(1.0, 800);
+  if (overlayMode === 'corner') stopRoleVideo();
+}
+
+function audioCandidates(filename) {
+  const ascii = filename.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return [...new Set([filename, ascii, ascii.toLowerCase(), filename.toLowerCase()])];
+}
+
+let toastTimer = null;
+function showToast(msg, kind = 'error') {
+  let el = document.getElementById('mj-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mj-toast';
+    document.body.appendChild(el);
+  }
+  el.className = 'toast' + (kind === 'info' ? ' info' : '');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, kind === 'info' ? 12000 : 7000);
+}
+
+function diagnoseAudio(url, filename) {
+  const base = `Audio « ${filename} » : `;
+  fetch(url, { method: 'HEAD' })
+    .then((r) => {
+      const type = r.headers.get('content-type') || 'inconnu';
+      if (r.status === 404 || r.status === 400) {
+        showToast(base + `fichier introuvable (HTTP ${r.status}). Vérifiez le nom exact dans mj/audio et que le bucket est public.`);
+      } else if (r.ok) {
+        showToast(base + `le fichier existe mais n'est pas lisible (type « ${type} »). Ré-exportez-le en vrai MP3 et ré-uploadez-le.`);
+      } else {
+        showToast(base + `erreur HTTP ${r.status}.`);
+      }
+      console.warn(base, r.status, type, url);
+    })
+    .catch(() => showToast(base + "impossible de joindre Supabase (réseau ou CORS)."));
+}
+
 function playAudioFile(filename) {
-  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  window.speechSynthesis.cancel();
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
   setProjectorVideoVolume(0.25, 400);
-  const url = mediaUrl('audio', filename);
-  currentAudio = new Audio(url);
-  currentAudio.addEventListener('ended', () => setProjectorVideoVolume(1.0, 800));
-  currentAudio.play().catch(err => console.warn(err));
+
+  const candidates = audioCandidates(filename);
+
+  const tryPlay = (i) => {
+    const url = mediaUrl('audio', candidates[i]);
+    const audio = new Audio(url);
+    currentAudio = audio;
+
+    audio.addEventListener('ended', () => {
+      if (currentAudio === audio) onAudioFinished();
+    });
+
+    audio.addEventListener('error', () => {
+      if (currentAudio !== audio) return;
+      console.warn("Audio introuvable :", url);
+      if (i + 1 < candidates.length) {
+        tryPlay(i + 1);
+      } else {
+        diagnoseAudio(mediaUrl('audio', candidates[0]), filename);
+        fallbackSpeech(filename);
+      }
+    });
+
+    audio.play().catch((err) => {
+      if (currentAudio !== audio) return;
+      if (err.name === 'NotAllowedError') {
+        showToast("Lecture bloquée par le navigateur : cliquez sur la page puis réessayez.");
+        fallbackSpeech(filename);
+      }
+    });
+  };
+
+  tryPlay(0);
+}
+
+function fallbackSpeech(filename) {
+  const text = FALLBACK_TEXTS[filename];
+  if (!text) { onAudioFinished(); return; }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.85;
+  utterance.onend = onAudioFinished;
+  window.speechSynthesis.speak(utterance);
 }
 
 function stopAllMedia() {
   sendToProjector({ action: 'stop' });
-  overlayMode = null; currentOverlayFile = null;
-  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  overlayMode = null;
+  currentOverlayFile = null;
+  if (currentAudio) {
+    currentAudio.onended = null;
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+  window.speechSynthesis.cancel();
   setProjectorVideoVolume(1.0, 300);
 }
 
 function togglePauseAllMedia() {
   sendToProjector({ action: 'togglePause' });
   if (currentAudio && !currentAudio.ended) {
-    if (currentAudio.paused) currentAudio.play(); else currentAudio.pause();
+    if (currentAudio.paused) currentAudio.play().catch((err) => console.log(err));
+    else currentAudio.pause();
   }
 }
 
-// --- APPELS RÔLES ---
+// --- APPELS RÔLES & EFFETS ---
 function playRole(role) {
   const roleFiles = {
     voleur: { audio: "Appel voleur V3.mp3", video: "Voleur.mp4" },
@@ -415,8 +594,10 @@ function playRole(role) {
     sorciere: { audio: "Sorciere.mp3", video: "Sorciere.mp4" },
     chasseur: { audio: "chasseur.mp3", video: "Chasseur.mp4" }
   };
+
   const item = roleFiles[role];
   if (!item) return;
+  if (calledOnce.has(role)) return;
 
   playAudioFile(item.audio);
   if (item.video) playRoleVideo(item.video, 'center');
@@ -425,87 +606,118 @@ function playRole(role) {
     calledOnce.add(role);
     updateCallButtons();
   }
-  
   if (role === 'voleur') startThiefTurn();
-  if (role === 'cupidon') startCupidonTurn();
 }
 
-// --- TOUR CUPIDON ---
-function startCupidonTurn() {
-  const cupidons = players.filter(p => p.role === 'Cupidon');
-  if (cupidons.length === 0) return;
-  const aliveNames = players.filter(p => p.alive).map(p => p.name);
-  cupidons.forEach(c => {
-    if (c.connected && c.conn && c.conn.open) {
-      c.conn.send({ type: 'cupidonTurn', players: aliveNames });
-      showToast(`🏹 En attente du choix de ${c.name}...`, 'info');
-    }
-  });
+// --- VOL DE RÔLE ---
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-function handleCupidonSelect(conn, data) {
-  const p1 = data.choices[0];
-  const p2 = data.choices[1];
-  players.forEach(p => {
-    if (p.name === p1 || p.name === p2) p.inLove = true;
-  });
-  renderMJDashboard();
-  showToast(`💘 Cupidon a uni ${p1} et ${p2} !`, 'info');
-}
-
-// --- TOUR VOLEUR ---
 function buildThiefOffers(thief) {
   const byRole = new Map();
-  players.filter(p => p !== thief && p.role && p.role !== 'Voleur').forEach(p => {
-    if (!byRole.has(p.role)) byRole.set(p.role, []);
-    byRole.get(p.role).push(p);
-  });
-  const shuffledRoles = [...byRole.keys()].sort(() => 0.5 - Math.random());
-  return shuffledRoles.slice(0, 2).map(role => {
+  players
+    .filter((p) => p !== thief && p.role && p.role !== 'Voleur')
+    .forEach((p) => {
+      if (!byRole.has(p.role)) byRole.set(p.role, []);
+      byRole.get(p.role).push(p);
+    });
+  return shuffleArray([...byRole.keys()]).slice(0, 2).map((role) => {
     const holders = byRole.get(role);
     return { role, holder: holders[Math.floor(Math.random() * holders.length)].name };
   });
 }
+
+function sendThiefTurn(thief) {
+  const offers = thiefOffers.get(thief.name);
+  if (offers && thief.conn && thief.conn.open) {
+    thief.conn.send({ type: 'thiefTurn', options: offers.map((o) => o.role) });
+  }
+}
+
 function startThiefTurn() {
-  players.filter(p => p.role === 'Voleur').forEach(t => {
+  const thieves = players.filter((p) => p.role === 'Voleur');
+  if (thieves.length === 0) {
+    showToast("Aucun joueur n'a le rôle de Voleur.", 'info');
+    return;
+  }
+  thieves.forEach((t) => {
     const offers = buildThiefOffers(t);
+    if (offers.length === 0) {
+      showToast(`Aucun rôle à voler pour ${t.name}.`, 'info');
+      return;
+    }
     thiefOffers.set(t.name, offers);
-    if (t.connected && t.conn) t.conn.send({ type: 'thiefTurn', options: offers.map(o => o.role) });
+    if (t.connected) sendThiefTurn(t);
+    else showToast(`Le Voleur (${t.name}) est déconnecté : le choix lui sera proposé à sa reconnexion.`, 'info');
   });
 }
+
 function handleThiefSteal(conn, data) {
-  const thief = players.find(p => p.conn === conn);
-  if (!thief || !thiefOffers.has(thief.name)) return;
-  
+  const thief = players.find((p) => p.conn === conn);
+  if (!thief || thief.role !== 'Voleur' || !thiefOffers.has(thief.name)) return;
+  const offers = thiefOffers.get(thief.name);
+
   if (data.skip) {
     thiefOffers.delete(thief.name);
-    showToast(`🕵️ ${thief.name} garde son rôle.`, 'info');
-  } else {
-    const offer = thiefOffers.get(thief.name)[Number(data.choice)];
-    const holder = players.find(p => p !== thief && p.name === offer.holder);
-    thief.role = offer.role;
-    holder.role = 'Villageois';
-    if (thief.conn) thief.conn.send({ type: 'assignRole', role: thief.role });
-    if (holder.conn) holder.conn.send({ type: 'assignRole', role: holder.role });
-    thiefOffers.delete(thief.name);
-    renderMJDashboard();
-    showToast(`🕵️ ${thief.name} a volé « ${offer.role} » à ${holder.name}.`, 'info');
+    conn.send({ type: 'thiefDone' });
+    showToast(`🕵️ ${thief.name} (Voleur) garde son rôle.`, 'info');
+    return;
   }
+
+  const offer = offers[Number(data.choice)];
+  const holder = offer && players.find((p) => p !== thief && p.name === offer.holder);
+  if (!offer || !holder || holder.role !== offer.role) {
+    const fresh = buildThiefOffers(thief);
+    if (fresh.length) { thiefOffers.set(thief.name, fresh); sendThiefTurn(thief); }
+    else { thiefOffers.delete(thief.name); conn.send({ type: 'thiefDone' }); }
+    return;
+  }
+
+  thiefOffers.delete(thief.name);
+  thief.role = offer.role;
+  holder.role = 'Villageois';
+
+  if (thief.conn && thief.conn.open) thief.conn.send({ type: 'assignRole', role: thief.role });
+  if (holder.conn && holder.conn.open) holder.conn.send({ type: 'assignRole', role: holder.role });
   conn.send({ type: 'thiefDone' });
+
+  renderMJDashboard();
+  showToast(`🕵️ ${thief.name} a volé « ${offer.role} » à ${holder.name}, qui devient Villageois.`, 'info');
+}
+
+const HOWL_FILES = ["Le hurlement du loup 1.mp3", "Le hurlement du loup 2.mp3", "Le hurlement du loup 3.mp3"];
+let lastHowl = null;
+
+function playRandomHowl() {
+  const choices = HOWL_FILES.filter((f) => f !== lastHowl);
+  const pick = choices[Math.floor(Math.random() * choices.length)];
+  lastHowl = pick;
+  playAudioFile(pick);
 }
 
 function playEffect(effect) {
-  if (effect === 'hurlement') playAudioFile("Le hurlement du loup 1.mp3");
-  else if (effect === 'sorciere') playAudioFile("Effet sorciere.mp3");
+  if (effect === 'hurlement') {
+    playRandomHowl();
+  } else if (effect === 'sorciere') {
+    playAudioFile("Effet sorciere.mp3");
+  }
 }
 
-let toastTimer;
-function showToast(msg, kind = 'error') {
-  let el = document.getElementById('mj-toast');
-  if (!el) { el = document.createElement('div'); el.id = 'mj-toast'; document.body.appendChild(el); }
-  el.className = 'toast' + (kind === 'info' ? ' info' : '');
-  el.textContent = msg;
-  el.style.display = 'block';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 7000);
-}
+// --- RACCOURCIS CLAVIER ---
+document.addEventListener('keydown', (e) => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea') return;
+  if (e.key === 'Escape') stopAllMedia();
+  if (e.code === 'Space') {
+    e.preventDefault();
+    togglePauseAllMedia();
+  }
+});
+
+updateCallButtons();
