@@ -14,15 +14,31 @@
 <header>
   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Titre.png" alt="Les Loups-garous de Thiercelieux" class="site-title-img">
   <p>Panneau du Maître du Jeu & Contrôle Ambiance</p>
-  <button class="btn btn-projector" onclick="openProjectorWindow()" style="margin: 10px auto; max-width: 300px;">
-    🖥️ Ouvrir l'Écran Secondaire
-  </button>
+  
+  <div style="text-align: center; margin: 15px auto; max-width: 500px;">
+    <button class="btn btn-projector" onclick="openProjectorWindow()" style="margin: 0 auto 15px auto; max-width: 300px;">
+      🖥️ Ouvrir l'Écran Secondaire
+    </button>
+
+    <!-- Section Contrôles Régie (Direct) centrée sous le bouton de l'écran secondaire -->
+    <section class="card" style="margin-top: 10px;">
+      <h2 class="titre-wolf">⏹️ Contrôles Régie (Direct)</h2>
+      <div class="button-grid">
+        <button class="btn btn-effect" onclick="togglePauseAllMedia()">
+          <span class="icon">⏸️</span> Pause / Relancer
+        </button>
+        <button class="btn btn-danger" onclick="stopAllMedia()">
+          <span class="icon">⏹️</span> Arrêter Tout
+        </button>
+      </div>
+    </section>
+  </div>
 </header>
 
   <main class="container container-wide">
     <div class="main-layout">
 
-      <!-- COLONNE GAUCHE : Contrôles, Ambiance & Récapitulatif -->
+      <!-- COLONNE GAUCHE : Création, Distribution, Phases de Jeu & Récapitulatif -->
       <div class="column-left">
 
         <!-- Écran de Création du Salon -->
@@ -38,49 +54,7 @@
           </div>
         </section>
 
-        <!-- Contrôles Directs de la Régie -->
-        <section class="card">
-          <h2 class="titre-wolf">⏹️ Contrôles Régie (Direct)</h2>
-          <div class="button-grid">
-            <button class="btn btn-effect" onclick="togglePauseAllMedia()">
-              <span class="icon">⏸️</span> Pause / Relancer
-            </button>
-            <button class="btn btn-danger" onclick="stopAllMedia()">
-              <span class="icon">⏹️</span> Arrêter Tout
-            </button>
-          </div>
-        </section>
-
-        <!-- Régie Ambiance : Phases de Jeu -->
-        <section class="card">
-          <h2 class="titre-wolf">🌙 Phases du Jeu</h2>
-          <div class="button-grid">
-            <button class="btn btn-night" onclick="playNightPhase()">🌌 Nuit Tombante</button>
-            <button class="btn btn-day" onclick="playDayPhase()">☀️ Le Jour Se Lève</button>
-          </div>
-        </section>
-
-        <!-- Tableau de Bord Récapitulatif du MJ -->
-        <section class="card" id="mj-dashboard" style="display: none;">
-          <h2>📜 Récapitulatif du MJ</h2>
-          <table class="mj-table">
-            <thead>
-              <tr>
-                <th>Joueur</th>
-                <th>Rôle</th>
-                <th>État</th>
-              </tr>
-            </thead>
-            <tbody id="mj-table-body"></tbody>
-          </table>
-        </section>
-
-      </div>
-
-      <!-- COLONNE DROITE : Distribution & Actions en Jeu -->
-      <div class="column-right">
-
-        <!-- Configuration des Rôles et Joueurs Connectés -->
+        <!-- Configuration des Rôles et Joueurs Connectés (Sous Création de la Partie) -->
         <section class="card" id="mj-setup-card" style="display: none;">
           <h2>🃏 Rôles & Distribution</h2>
           
@@ -138,6 +112,35 @@
 
           <button class="btn btn-night btn-large" onclick="distributeRolesNetwork()">🔀 Distribuer les Rôles aux Joueurs</button>
         </section>
+
+        <!-- Régie Ambiance : Phases de Jeu -->
+        <section class="card">
+          <h2 class="titre-wolf">🌙 Phases du Jeu</h2>
+          <div class="button-grid">
+            <button class="btn btn-night" onclick="playNightPhase()">🌌 Nuit Tombante</button>
+            <button class="btn btn-day" onclick="playDayPhase()">☀️ Le Jour Se Lève</button>
+          </div>
+        </section>
+
+        <!-- Tableau de Bord Récapitulatif du MJ -->
+        <section class="card" id="mj-dashboard" style="display: none;">
+          <h2>📜 Récapitulatif du MJ</h2>
+          <table class="mj-table">
+            <thead>
+              <tr>
+                <th>Joueur</th>
+                <th>Rôle</th>
+                <th>État</th>
+              </tr>
+            </thead>
+            <tbody id="mj-table-body"></tbody>
+          </table>
+        </section>
+
+      </div>
+
+      <!-- COLONNE DROITE : Actions & Interventions en Jeu -->
+      <div class="column-right">
 
         <!-- Consignes & Interventions MJ -->
         <section class="card">
