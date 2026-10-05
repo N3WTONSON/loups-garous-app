@@ -20,7 +20,7 @@
       🖥️ Ouvrir l'Écran Secondaire
     </button>
 
-    <!-- Section Contrôles Régie (Direct) centrée sous l'écran secondaire -->
+    <!-- Section Contrôles Régie (Direct) centrée sous le bouton de l'écran secondaire -->
     <section class="card" style="margin-top: 10px;">
       <h2 class="titre-wolf">⏹️ Contrôles Régie (Direct)</h2>
       <div class="button-grid">
@@ -38,7 +38,7 @@
   <main class="container container-wide">
     <div class="main-layout">
 
-      <!-- COLONNE GAUCHE -->
+      <!-- COLONNE GAUCHE : Création, Distribution, Phases de Jeu & Récapitulatif -->
       <div class="column-left">
 
         <!-- Écran de Création du Salon -->
@@ -54,7 +54,7 @@
           </div>
         </section>
 
-        <!-- Configuration des Rôles et Joueurs Connectés -->
+        <!-- Configuration des Rôles et Joueurs Connectés (Sous Création de la Partie) -->
         <section class="card" id="mj-setup-card" style="display: none;">
           <h2>🃏 Rôles & Distribution</h2>
           
@@ -139,7 +139,7 @@
 
       </div>
 
-      <!-- COLONNE DROITE -->
+      <!-- COLONNE DROITE : Actions & Interventions en Jeu -->
       <div class="column-right">
 
         <!-- Consignes & Interventions MJ -->
@@ -226,21 +226,20 @@
           </div>
         </section>
 
+        <!-- Effets Sonores -->
+        <section class="card">
+          <h2 class="titre-wolf">⚡ Effets Sonores</h2>
+          <div class="button-grid">
+            <button class="btn btn-effect" onclick="playEffect('hurlement')">🐺 Hurlement</button>
+            <button class="btn btn-effect" onclick="playEffect('sorciere')">🧙‍♀️ Rire de la Sorcière</button>
+          </div>
+        </section>
+
       </div>
 
     </div>
-
-    <!-- SECTION EFFETS SONORES (Centrée en bas sur toute la largeur) -->
-    <section class="card card-bottom-full" style="margin-top: 25px;">
-      <h2 class="titre-wolf" style="text-align: center;">⚡ Effets Sonores</h2>
-      <div class="button-grid" style="justify-content: center;">
-        <button class="btn btn-effect" onclick="playEffect('hurlement')">🐺 Hurlement</button>
-        <button class="btn btn-effect" onclick="playEffect('sorciere')">🧙‍♀️ Rire de la Sorcière</button>
-      </div>
-    </section>
-
   </main>
-  <p id="app-version" class="hint" style="text-align:center; margin-top: 20px;">Version 21</p>
+  <p id="app-version" class="hint" style="text-align:center;">Version 21</p>
 
   <script>
     (function () {
