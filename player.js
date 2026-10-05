@@ -66,7 +66,7 @@ const roleData = {
   },
   "Voleur": {
     image: "Voleur.png",
-    description: "🕵️ <strong>Le Voleur :</strong> La première nuit, quand le Maître du Jeu t'appelle, tu peux voler le rôle d'un autre joueur : il deviendra simple Villageois. Tu ne verras sa carte qu'après le vol !"
+    description: "🕵️ <strong>Le Voleur :</strong> La première nuit, quand le Maître du Jeu t'appelle, deux rôles te sont proposés au hasard : tu en choisis un et tu le voles. Le joueur qui le possédait devient simple Villageois."
   },
   "Renard": {
     image: "Renard.jpg",
@@ -184,7 +184,7 @@ function connect(room, name, token, isAuto) {
         myRole = data.role;
         setupRoleCard(data.role);
       } else if (data.type === 'thiefTurn') {
-        showThiefPanel(data.targets || []);
+        showThiefPanel(data.options || []);
       } else if (data.type === 'thiefDone') {
         hideThiefPanel();
       }
@@ -271,20 +271,37 @@ function toggleRoleReveal() {
   }
 }
 
-// --- Tour du Voleur : choisir un joueur dont on vole le rôle ---
-function showThiefPanel(targets) {
+// --- Tour du Voleur : choisir l'un des 2 rôles proposés (cartes, sans nom de joueur) ---
+function showThiefPanel(options) {
   const panel = document.getElementById('thief-panel');
-  const list = document.getElementById('thief-targets');
+  const list = document.getElementById('thief-cards');
   if (!panel || !list) return;
 
   list.innerHTML = '';
-  targets.forEach((name) => {
-    const b = document.createElement('button');
-    b.className = 'btn btn-night nom-joueur';
-    b.textContent = name;
-    b.onclick = () => thiefChoose(name);
-    list.appendChild(b);
+  options.forEach((role, index) => {
+    const data = roleData[role] || { image: null, description: `🎭 <strong>${escapeText(role)}</strong>` };
+
+    const card = document.createElement('button');
+    card.className = 'thief-card';
+
+    if (data.image) {
+      const img = document.createElement('img');
+      img.alt = role;
+      img.onerror = () => { img.style.display = 'none'; };
+      img.src = mediaUrl('images', data.image);
+      card.appendChild(img);
+    }
+    const title = document.createElement('h4');
+    title.textContent = role;
+    card.appendChild(title);
+    const desc = document.createElement('p');
+    desc.innerHTML = data.description;
+    card.appendChild(desc);
+
+    card.onclick = () => thiefChoose(index, role);
+    list.appendChild(card);
   });
+
   document.getElementById('thief-skip').disabled = false;
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -295,11 +312,11 @@ function lockThiefPanel() {
   document.querySelectorAll('#thief-panel button').forEach((b) => { b.disabled = true; });
 }
 
-function thiefChoose(name) {
+function thiefChoose(index, role) {
   if (!conn || !conn.open) return;
-  if (!confirm(`Voler le rôle de ${name} ? Il deviendra simple Villageois.`)) return;
+  if (!confirm(`Voler le rôle « ${role} » ?`)) return;
   lockThiefPanel();
-  conn.send({ type: 'thiefSteal', targetName: name });
+  conn.send({ type: 'thiefSteal', choice: index });
 }
 
 function thiefSkip() {

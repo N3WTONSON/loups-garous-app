@@ -529,5 +529,41 @@ input[type="text"]:focus { outline-color: #dc2626; }
 }
 .thief-panel h3 { margin: 0 0 8px; font-size: 1.3rem; color: #f4dcdc; }
 .thief-panel p { margin: 0 0 12px; color: #cbd5e1; line-height: 1.4; }
-.thief-targets { display: grid; gap: 10px; margin-bottom: 12px; }
-.thief-targets .btn { width: 100%; font-size: 1.2rem; }
+.thief-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.thief-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  color: var(--text-color);
+  background: linear-gradient(180deg, rgba(72, 10, 14, 0.60), rgba(20, 8, 12, 0.85));
+  border: 2px solid rgba(153, 27, 27, 0.85);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font: inherit;
+}
+.thief-card:hover { border-color: #ef4444; }
+.thief-card:disabled { opacity: 0.5; cursor: not-allowed; }
+.thief-card img {
+  width: 100%;
+  max-height: 190px;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+.thief-card h4 {
+  margin: 0;
+  font-family: 'Wolf Brothers', 'Segoe UI', sans-serif;
+  font-weight: normal;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+  color: #f4dcdc;
+}
+.thief-card p { margin: 0; font-size: 0.8rem; line-height: 1.35; color: #cbd5e1; }

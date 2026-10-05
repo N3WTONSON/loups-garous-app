@@ -1,4 +1,4 @@
-const VERSION_APP = "22";
+const VERSION_APP = "23";
 console.info("Loup-Garou régie - version " + VERSION_APP);
 
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
@@ -77,7 +77,7 @@ let roomCode = "";
 let players = [];
 let roles = [];
 let calledOnce = new Set();       // appels à usage unique déjà faits (voleur, cupidon)
-let thiefWaiting = new Set();     // Voleurs qui doivent encore choisir
+let thiefOffers = new Map();      // nom du Voleur -> [{ role, holder }] (2 rôles proposés)
 let distributed = false;
 let activeCallRoles = new Set();
 let hostOpened = false;
@@ -123,7 +123,7 @@ function syncLobbyToProjector() {
 // --- ÉCRAN SECONDAIRE ---
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=22', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=23', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -228,7 +228,7 @@ function handleJoin(conn, data) {
 
   conn.send({ type: 'joined' });
   if (player.role) conn.send({ type: 'assignRole', role: player.role });
-  if (thiefWaiting.has(player.name)) sendThiefTurn(player);
+  if (thiefOffers.has(player.name)) sendThiefTurn(player);
   refreshPlayerViews();
 }
 
@@ -281,7 +281,7 @@ function distributeRolesNetwork() {
   distributed = true;
   activeCallRoles = new Set(roles);
   calledOnce = new Set();     // nouvelle distribution = nouvelle partie
-  thiefWaiting = new Set();
+  thiefOffers = new Map();
   updateCallButtons();
 
   renderMJDashboard();
@@ -439,7 +439,7 @@ const FALLBACK_TEXTS = {
   "3 morts.mp3": "Carnage au village, trois victimes sont à déplorer ce matin.",
   "Sorciere.mp3": "Sorcière, réveille-toi.",
   "chasseur.mp3": "Chasseur, tu viens de mourir. Désigne ta dernière victime.",
-  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux voler le rôle d'un autre joueur.",
+  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux voler l'un des deux rôles qui te sont proposés.",
   "Appel Cupidon V2.mp3": "Cupidon, réveille-toi et désigne deux amoureux.",
   "Appel voyante V2.mp3": "Voyante, réveille-toi et désigne un joueur dont tu veux connaître le rôle.",
   "Appel renard V2.mp3": "Renard, réveille-toi et désigne un groupe de trois joueurs.",
@@ -590,10 +590,37 @@ function playRole(role) {
   if (role === 'voleur') startThiefTurn();
 }
 
-// --- VOL DE RÔLE (le Voleur choisit un joueur sur son téléphone) ---
+// --- VOL DE RÔLE ---
+// Le Voleur voit 2 rôles tirés au hasard parmi ceux des autres joueurs (sans les noms des joueurs).
+// Il en choisit un : il l'obtient, et le joueur qui le possédait devient simple Villageois.
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildThiefOffers(thief) {
+  const byRole = new Map();
+  players
+    .filter((p) => p !== thief && p.role && p.role !== 'Voleur')
+    .forEach((p) => {
+      if (!byRole.has(p.role)) byRole.set(p.role, []);
+      byRole.get(p.role).push(p);
+    });
+  return shuffleArray([...byRole.keys()]).slice(0, 2).map((role) => {
+    const holders = byRole.get(role);
+    return { role, holder: holders[Math.floor(Math.random() * holders.length)].name };
+  });
+}
+
 function sendThiefTurn(thief) {
-  if (thief.conn && thief.conn.open) {
-    thief.conn.send({ type: 'thiefTurn', targets: players.filter((p) => p !== thief).map((p) => p.name) });
+  const offers = thiefOffers.get(thief.name);
+  if (offers && thief.conn && thief.conn.open) {
+    // on n'envoie que les noms de rôles : jamais l'identité des joueurs
+    thief.conn.send({ type: 'thiefTurn', options: offers.map((o) => o.role) });
   }
 }
 
@@ -604,7 +631,12 @@ function startThiefTurn() {
     return;
   }
   thieves.forEach((t) => {
-    thiefWaiting.add(t.name);
+    const offers = buildThiefOffers(t);
+    if (offers.length === 0) {
+      showToast(`Aucun rôle à voler pour ${t.name}.`, 'info');
+      return;
+    }
+    thiefOffers.set(t.name, offers);
     if (t.connected) sendThiefTurn(t);
     else showToast(`Le Voleur (${t.name}) est déconnecté : le choix lui sera proposé à sa reconnexion.`, 'info');
   });
@@ -612,29 +644,36 @@ function startThiefTurn() {
 
 function handleThiefSteal(conn, data) {
   const thief = players.find((p) => p.conn === conn);
-  if (!thief || thief.role !== 'Voleur' || !thiefWaiting.has(thief.name)) return;
+  if (!thief || thief.role !== 'Voleur' || !thiefOffers.has(thief.name)) return;
+  const offers = thiefOffers.get(thief.name);
 
   if (data.skip) {
-    thiefWaiting.delete(thief.name);
+    thiefOffers.delete(thief.name);
     conn.send({ type: 'thiefDone' });
     showToast(`🕵️ ${thief.name} (Voleur) garde son rôle.`, 'info');
     return;
   }
 
-  const target = players.find((p) => p !== thief && p.name === data.targetName);
-  if (!target) { sendThiefTurn(thief); return; }
+  const offer = offers[Number(data.choice)];
+  const holder = offer && players.find((p) => p !== thief && p.name === offer.holder);
+  if (!offer || !holder || holder.role !== offer.role) {
+    // choix invalide ou rôle modifié entre-temps : on repropose un tirage à jour
+    const fresh = buildThiefOffers(thief);
+    if (fresh.length) { thiefOffers.set(thief.name, fresh); sendThiefTurn(thief); }
+    else { thiefOffers.delete(thief.name); conn.send({ type: 'thiefDone' }); }
+    return;
+  }
 
-  thiefWaiting.delete(thief.name);
-  const stolen = target.role;
-  thief.role = stolen;
-  target.role = 'Villageois';
+  thiefOffers.delete(thief.name);
+  thief.role = offer.role;
+  holder.role = 'Villageois';
 
   if (thief.conn && thief.conn.open) thief.conn.send({ type: 'assignRole', role: thief.role });
-  if (target.conn && target.conn.open) target.conn.send({ type: 'assignRole', role: target.role });
+  if (holder.conn && holder.conn.open) holder.conn.send({ type: 'assignRole', role: holder.role });
   conn.send({ type: 'thiefDone' });
 
   renderMJDashboard();
-  showToast(`🕵️ ${thief.name} a volé le rôle « ${stolen} » de ${target.name}, qui devient Villageois.`, 'info');
+  showToast(`🕵️ ${thief.name} a volé « ${offer.role} » à ${holder.name}, qui devient Villageois.`, 'info');
 }
 
 const HOWL_FILES = ["Le hurlement du loup 1.mp3", "Le hurlement du loup 2.mp3", "Le hurlement du loup 3.mp3"];
