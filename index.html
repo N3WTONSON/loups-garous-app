@@ -22,7 +22,7 @@
   <main class="container container-wide">
     <div class="main-layout">
 
-      <!-- COLONNE GAUCHE : Configuration & Ambiance -->
+      <!-- COLONNE GAUCHE : Contrôles, Ambiance & Récapitulatif -->
       <div class="column-left">
 
         <!-- Écran de Création du Salon -->
@@ -38,8 +38,50 @@
           </div>
         </section>
 
+        <!-- Contrôles Directs de la Régie -->
+        <section class="card">
+          <h2 class="titre-wolf">⏹️ Contrôles Régie (Direct)</h2>
+          <div class="button-grid">
+            <button class="btn btn-effect" onclick="togglePauseAllMedia()">
+              <span class="icon">⏸️</span> Pause / Relancer
+            </button>
+            <button class="btn btn-danger" onclick="stopAllMedia()">
+              <span class="icon">⏹️</span> Arrêter Tout
+            </button>
+          </div>
+        </section>
+
+        <!-- Régie Ambiance : Phases de Jeu -->
+        <section class="card">
+          <h2 class="titre-wolf">🌙 Phases du Jeu</h2>
+          <div class="button-grid">
+            <button class="btn btn-night" onclick="playNightPhase()">🌌 Nuit Tombante</button>
+            <button class="btn btn-day" onclick="playDayPhase()">☀️ Le Jour Se Lève</button>
+          </div>
+        </section>
+
+        <!-- Tableau de Bord Récapitulatif du MJ -->
+        <section class="card" id="mj-dashboard" style="display: none;">
+          <h2>📜 Récapitulatif du MJ</h2>
+          <table class="mj-table">
+            <thead>
+              <tr>
+                <th>Joueur</th>
+                <th>Rôle</th>
+                <th>État</th>
+              </tr>
+            </thead>
+            <tbody id="mj-table-body"></tbody>
+          </table>
+        </section>
+
+      </div>
+
+      <!-- COLONNE DROITE : Distribution & Actions en Jeu -->
+      <div class="column-right">
+
         <!-- Configuration des Rôles et Joueurs Connectés -->
-		<section class="card" id="mj-setup-card" style="display: none;">
+        <section class="card" id="mj-setup-card" style="display: none;">
           <h2>🃏 Rôles & Distribution</h2>
           
           <div class="setup-grid">
@@ -51,7 +93,6 @@
             <div class="setup-block">
               <h3>🎭 Rôles en jeu (<span id="role-count">0</span>)</h3>
               
-              <!-- Grille de sélection des rôles avec images -->
               <div class="role-selector-grid role-grid">
                 <button class="btn-role-card" onclick="addRole('Loup-Garou')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png" alt="Loup-Garou">
@@ -98,28 +139,6 @@
           <button class="btn btn-night btn-large" onclick="distributeRolesNetwork()">🔀 Distribuer les Rôles aux Joueurs</button>
         </section>
 
-        <!-- Contrôles Directs de la Régie -->
-        <section class="card">
-          <h2 class="titre-wolf">⏹️ Contrôles Régie (Direct)</h2>
-          <div class="button-grid">
-            <button class="btn btn-effect" onclick="togglePauseAllMedia()">
-              <span class="icon">⏸️</span> Pause / Relancer
-            </button>
-            <button class="btn btn-danger" onclick="stopAllMedia()">
-              <span class="icon">⏹️</span> Arrêter Tout
-            </button>
-          </div>
-        </section>
-
-        <!-- Régie Ambiance : Phases de Jeu -->
-        <section class="card">
-          <h2 class="titre-wolf">🌙 Phases du Jeu</h2>
-          <div class="button-grid">
-            <button class="btn btn-night" onclick="playNightPhase()">🌌 Nuit Tombante</button>
-            <button class="btn btn-day" onclick="playDayPhase()">☀️ Le Jour Se Lève</button>
-          </div>
-        </section>
-
         <!-- Consignes & Interventions MJ -->
         <section class="card">
           <h2 class="titre-wolf">📢 Consignes & Interventions</h2>
@@ -142,7 +161,7 @@
             </button>
           </div>
 
-		<h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonces Sorcière (Potions) :</h3>
+          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonces Sorcière (Potions) :</h3>
           <div class="button-grid">
             <button class="btn btn-sorciere-orange" onclick="playSorcierePotions(2)">
               🧪🧪 2 Potions
@@ -164,7 +183,7 @@
           </div>
         </section>
 
-        <!-- Section Personnages avec images de cartes unifiées -->
+        <!-- Appels des Personnages -->
         <section class="card">
           <h2 class="titre-wolf">🎭 Appels des Personnages</h2>
           <p id="calls-hint" class="hint" style="margin: 10px 0 0;"></p>
@@ -204,7 +223,7 @@
           </div>
         </section>
 
-        <!-- Régie Ambiance : Effets Sonores -->
+        <!-- Effets Sonores -->
         <section class="card">
           <h2 class="titre-wolf">⚡ Effets Sonores</h2>
           <div class="button-grid">
@@ -213,23 +232,6 @@
           </div>
         </section>
 
-      </div>
-
-      <!-- COLONNE DROITE : Tableau de Bord Récapitulatif du MJ -->
-      <div class="column-right">
-        <section class="card" id="mj-dashboard" style="display: none;">
-          <h2>📜 Récapitulatif du MJ</h2>
-          <table class="mj-table">
-            <thead>
-              <tr>
-                <th>Joueur</th>
-                <th>Rôle</th>
-                <th>État</th>
-              </tr>
-            </thead>
-            <tbody id="mj-table-body"></tbody>
-          </table>
-        </section>
       </div>
 
     </div>
@@ -254,14 +256,14 @@
       find(["Titre.png", "titre.png"], function (url) {
         var img = document.querySelector(".site-title-img");
         if (url && img) { img.src = url; console.info("Titre chargé depuis :", url); }
-        else console.warn("Titre.png introuvable sur Supabase (essayé dans plusieurs dossiers).");
+        else console.warn("Titre.png introuvable sur Supabase.");
       });
       find(["fond-village.jpg", "fond-village.jpeg", "fond-village.png"], function (url) {
         if (url) {
           document.body.style.backgroundImage =
             "radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%), url(\"" + url + "\")";
           console.info("Fond chargé depuis :", url);
-        } else console.warn("fond-village.jpg introuvable sur Supabase (essayé dans plusieurs dossiers).");
+        } else console.warn("fond-village.jpg introuvable sur Supabase.");
       });
     })();
   </script>
