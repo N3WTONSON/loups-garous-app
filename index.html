@@ -181,7 +181,13 @@
             </button>
           </div>
 
-          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonce des Morts :</h3>
+          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonce des Morts (Vidéos Plein Écran) :</h3>
+          <div class="button-grid">
+            <button class="btn btn-danger" onclick="openDeathModal('wolves')">🐺 Mort par Loups</button>
+            <button class="btn btn-danger" onclick="openDeathModal('vote')">🗳️️ Élimination Vote</button>
+          </div>
+          
+          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonce Classique (Audio uniquement) :</h3>
           <div class="button-grid">
             <button class="btn btn-vert" onclick="playDeaths(0)">🕊️ Aucun Mort</button>
             <button class="btn btn-danger" onclick="playDeaths(1)">💀 1 Mort</button>
@@ -277,5 +283,17 @@
     })();
   </script>
   <script src="script.js?v=23"></script>
+  
+  <!-- Modal de sélection des joueurs tués -->
+  <div id="death-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center;">
+    <div class="modal-content card" style="width:90%; max-width:500px; padding:20px; text-align:center; border: 2px solid #dc2626;">
+      <h3 id="death-modal-title" style="margin-top:0; font-size:1.5rem; color:#fca5a5;">Annonce</h3>
+      <div id="death-modal-players" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:20px 0;"></div>
+      <div style="display:flex; gap:10px; justify-content:center;">
+          <button class="btn btn-effect" onclick="closeDeathModal()">Annuler</button>
+          <button class="btn btn-danger" onclick="confirmDeath()">Confirmer l'Annonce</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
