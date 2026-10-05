@@ -4,7 +4,7 @@ console.info("Loup-Garou régie - version " + VERSION_APP);
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
 const ASSETS = {
-  images: {
+ images: {
     "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png",
     "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png",
     "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png",
@@ -67,7 +67,7 @@ function mediaUrl(kind, name) {
   return (ASSETS[kind] && ASSETS[kind][name]) || assetUrl(ASSET_FOLDERS[kind] + "/" + name);
 }
 
-// --- CONFIGURATION YOUTUBE ---
+// --- CONFIGURATION ---
 const YT_ID_NUIT = "FDHc4qUNMTQ";
 const YT_ID_JOUR = "bNyXbxpWiok";
 
@@ -85,6 +85,7 @@ let projectorWindow = null;
 let overlayMode = null;
 let currentOverlayFile = null;
 
+// --- UTILITAIRES ---
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -103,6 +104,7 @@ function sendToProjector(msg) {
   return true;
 }
 
+// SYNCHRONISATION DU SALON (QR CODE + PSEUDOS DES JOUEURS) VERS LE PROJECTEUR
 function syncLobbyToProjector() {
   if (!projectorOpen() || !roomCode) return;
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
@@ -116,6 +118,7 @@ function syncLobbyToProjector() {
   });
 }
 
+// --- ÉCRAN SECONDAIRE ---
 function openProjectorWindow() {
   if (!projectorOpen()) {
     projectorWindow = window.open('projecteur.html?v=21', 'ProjecteurLoupGarou', 'width=1280,height=720');
@@ -130,6 +133,7 @@ window.addEventListener('message', (event) => {
   }
 });
 
+// --- SALON PEERJS ---
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
@@ -152,7 +156,7 @@ function initHost(attempt = 0) {
 
     const urlEl = document.getElementById('join-url');
     if (window.location.origin === 'null') {
-      urlEl.textContent = "⚠️ Page ouverte en file:// : hébergez le site sur un serveur (http/https).";
+      urlEl.textContent = "⚠️ Page ouverte en file:// : le QR code ne fonctionnera pas. Hébergez le site (http/https).";
     } else {
       urlEl.textContent = joinUrl;
     }
@@ -180,7 +184,9 @@ function initHost(attempt = 0) {
     } else if (err.type === 'unavailable-id') {
       alert("Impossible de réserver un code de salon. Réessayez.");
     } else if (!hostOpened) {
-      alert("Impossible de créer le salon (" + err.type + "). Vérifiez votre réseau.");
+      alert("Impossible de créer le salon (" + err.type + "). Vérifiez votre connexion.");
+    } else {
+      console.warn("Erreur PeerJS :", err);
     }
   });
 }
@@ -257,8 +263,8 @@ function distributeRolesNetwork() {
 
   if (players.length === 0 || roles.length !== expected) {
     alert(hasVoleur
-      ? `Avec le Voleur, il faut ${players.length + 2} rôles. Actuellement : ${roles.length}.`
-      : "Vérifiez que le nombre de joueurs correspond au nombre de rôles.");
+      ? `Avec le Voleur, il faut ${players.length + 2} rôles (joueurs + 2 cartes). Actuellement : ${roles.length}.`
+      : "Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
     return;
   }
 
@@ -293,7 +299,7 @@ function updateCallButtons() {
   });
 
   if (!distributed) {
-    hint.textContent = "Distribuez les rôles : seuls les personnages en jeu apparaîtront ici.";
+    hint.textContent = "Distribuez les rôles : seuls les personnages en jeu apparaîtront ici (le Maire est toujours disponible).";
     hint.style.display = 'block';
   } else if (visible === 0) {
     hint.textContent = "Aucun personnage à appeler dans cette partie.";
@@ -369,6 +375,7 @@ function playDayPhase() {
   playAudioFile("Appel jour V2.mp3");
 }
 
+// --- CONSIGNES & INTERVENTIONS ---
 function playCommand(cmd) {
   if (cmd === 'fermer_yeux') {
     playAudioFile("Fermer les yeux.mp3");
@@ -397,7 +404,7 @@ function playDeaths(count) {
   if (files[count]) playAudioFile(files[count]);
 }
 
-// --- AUDIO & DUCKING ---
+// --- AUDIO ---
 const FALLBACK_TEXTS = {
   "Le hurlement du loup 1.mp3": "Awouuuu !",
   "Le hurlement du loup 2.mp3": "Awouuuu !",
@@ -408,22 +415,22 @@ const FALLBACK_TEXTS = {
   "Voter.mp3": "Le village va maintenant délibérer et voter !",
   "Appel Renard oui.mp3": "Oui, il y a au moins un Loup-Garou parmi ces trois personnes.",
   "Appel Renard non.mp3": "Non, il n'y a aucun Loup-Garou parmi ces trois personnes.",
-  "Sorciere 2 potions.mp3": "Sorcière, vous possédez encore vos deux potions.",
+  "Sorciere 2 potions.mp3": "Sorcière, vous possédez encore vos deux potions : la potion de vie et la potion de mort.",
   "Sorciere potion de vie.mp3": "Sorcière, il ne vous reste plus que votre potion de vie.",
   "Sorciere potion de mort.mp3": "Sorcière, il ne vous reste plus que votre potion de mort.",
-  "0 mort.mp3": "Aucun mort ce matin !",
-  "1 mort.mp3": "Un mort ce matin.",
-  "2 morts.mp3": "Deux morts ce matin.",
-  "3 morts.mp3": "Trois morts ce matin.",
+  "0 mort.mp3": "Bonne nouvelle ! Aucun mort n'est à déplorer ce matin !",
+  "1 mort.mp3": "Le village déplore un mort ce matin.",
+  "2 morts.mp3": "Cette nuit a été tragique, nous avons deux morts.",
+  "3 morts.mp3": "Carnage au village, trois victimes sont à déplorer ce matin.",
   "Sorciere.mp3": "Sorcière, réveille-toi.",
-  "chasseur.mp3": "Chasseur, désigne ta victime.",
-  "Appel voleur V3.mp3": "Voleur, réveille-toi.",
-  "Appel Cupidon V2.mp3": "Cupidon, réveille-toi.",
-  "Appel voyante V2.mp3": "Voyante, réveille-toi.",
-  "Appel renard V2.mp3": "Renard, réveille-toi.",
-  "Appel Loups-Garous V2.mp3": "Loups-Garous, réveillez-vous.",
+  "chasseur.mp3": "Chasseur, tu viens de mourir. Désigne ta dernière victime.",
+  "Appel voleur V3.mp3": "Voleur, réveille-toi. Tu peux échanger ta carte avec l'une des cartes restantes.",
+  "Appel Cupidon V2.mp3": "Cupidon, réveille-toi et désigne deux amoureux.",
+  "Appel voyante V2.mp3": "Voyante, réveille-toi et désigne un joueur dont tu veux connaître le rôle.",
+  "Appel renard V2.mp3": "Renard, réveille-toi et désigne un groupe de trois joueurs.",
+  "Appel Loups-Garous V2.mp3": "Loups-Garous, réveillez-vous et désignez votre victime.",
   "Appel nuit V2.mp3": "La nuit tombe sur le village.",
-  "Appel jour V2.mp3": "Le jour se lève."
+  "Appel jour V2.mp3": "Le jour se lève sur le village."
 };
 
 function onAudioFinished() {
@@ -451,6 +458,23 @@ function showToast(msg) {
   toastTimer = setTimeout(() => { el.style.display = 'none'; }, 7000);
 }
 
+function diagnoseAudio(url, filename) {
+  const base = `Audio « ${filename} » : `;
+  fetch(url, { method: 'HEAD' })
+    .then((r) => {
+      const type = r.headers.get('content-type') || 'inconnu';
+      if (r.status === 404 || r.status === 400) {
+        showToast(base + `fichier introuvable (HTTP ${r.status}). Vérifiez le nom exact dans mj/audio et que le bucket est public.`);
+      } else if (r.ok) {
+        showToast(base + `le fichier existe mais n'est pas lisible (type « ${type} »). Ré-exportez-le en vrai MP3 et ré-uploadez-le.`);
+      } else {
+        showToast(base + `erreur HTTP ${r.status}.`);
+      }
+      console.warn(base, r.status, type, url);
+    })
+    .catch(() => showToast(base + "impossible de joindre Supabase (réseau ou CORS)."));
+}
+
 function playAudioFile(filename) {
   window.speechSynthesis.cancel();
   if (currentAudio) {
@@ -472,9 +496,11 @@ function playAudioFile(filename) {
 
     audio.addEventListener('error', () => {
       if (currentAudio !== audio) return;
+      console.warn("Audio introuvable :", url);
       if (i + 1 < candidates.length) {
         tryPlay(i + 1);
       } else {
+        diagnoseAudio(mediaUrl('audio', candidates[0]), filename);
         fallbackSpeech(filename);
       }
     });
@@ -482,7 +508,7 @@ function playAudioFile(filename) {
     audio.play().catch((err) => {
       if (currentAudio !== audio) return;
       if (err.name === 'NotAllowedError') {
-        showToast("Lecture bloquée : cliquez sur la page puis réessayez.");
+        showToast("Lecture bloquée par le navigateur : cliquez sur la page puis réessayez.");
         fallbackSpeech(filename);
       }
     });
@@ -518,11 +544,12 @@ function stopAllMedia() {
 function togglePauseAllMedia() {
   sendToProjector({ action: 'togglePause' });
   if (currentAudio && !currentAudio.ended) {
-    if (currentAudio.paused) currentAudio.play().catch(() => {});
+    if (currentAudio.paused) currentAudio.play().catch((err) => console.log(err));
     else currentAudio.pause();
   }
 }
 
+// --- APPELS RÔLES & EFFETS ---
 function playRole(role) {
   const roleFiles = {
     voleur: { audio: "Appel voleur V3.mp3", video: "Voleur.mp4" },
@@ -559,6 +586,7 @@ function playEffect(effect) {
   }
 }
 
+// --- RACCOURCIS CLAVIER ---
 document.addEventListener('keydown', (e) => {
   const tag = (e.target.tagName || '').toLowerCase();
   if (tag === 'input' || tag === 'textarea') return;
