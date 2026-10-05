@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loup-Garou - Espace Joueur</title>
+  <link rel="stylesheet" href="style.css?v=16">
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+  <header>
+    <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Titre.png" alt="Les Loups-garous de Thiercelieux" class="site-title-img">
+  </header>
+
+  <main class="container">
+    <section class="card" id="join-card">
+      <h2>📱 Rejoindre la Partie</h2>
+      <div class="input-group">
+        <input type="text" id="room-code" placeholder="Code du salon (ex: 8B2X)" maxlength="8"
+               autocomplete="off" autocapitalize="characters" style="text-transform: uppercase;">
+        <input type="text" id="player-name" placeholder="Votre pseudo" maxlength="20" autocomplete="nickname">
+        <button class="btn btn-day" id="join-btn" onclick="joinRoom()">Rejoindre</button>
+        <p id="join-error" class="error-message" role="alert" style="display: none;"></p>
+      </div>
+    </section>
+
+    <section class="card" id="game-card" style="display: none; text-align: center;">
+      <h2 id="welcome-title" class="nom-joueur">Bienvenue !</h2>
+      <p id="status-text">En attente de la distribution par le Maître du Jeu...</p>
+
+		<div id="card-area" style="display: none;">
+        <!-- Dos de carte cliquable avec image Verso.png -->
+        <div id="secret-card" class="card-back" role="button" tabindex="0" onclick="toggleRoleReveal()">
+          <img id="verso-image" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso.png" alt="Verso de carte" class="verso-img">
+          <span>👁️ Toucher pour révéler</span>
+        </div>
+
+        <div id="role-details" class="role-details" style="display: none;">
+          <img id="role-image-display" alt="Carte de votre rôle">
+          <h3 id="role-name-display"></h3>
+          <p id="role-desc-display"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <p class="hint" style="text-align:center;">Version 20</p>
+
+  <script>
+    // Recherche automatique du titre et du fond : essaie plusieurs emplacements Supabase
+    // et affiche dans la console (F12) l'adresse qui a fonctionné.
+    (function () {
+      var B = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/";
+      var DIRS = ["assets/images/", "assets/mj/images/", "assets/joueur/images/", "images/", "mj/images/", "joueur/images/"];
+      function find(names, cb) {
+        var urls = [];
+        names.forEach(function (n) { DIRS.forEach(function (d) { urls.push(B + d + encodeURIComponent(n)); }); });
+        (function next(i) {
+          if (i >= urls.length) { cb(null); return; }
+          var im = new Image();
+          im.onload = function () { cb(urls[i]); };
+          im.onerror = function () { next(i + 1); };
+          im.src = urls[i];
+        })(0);
+      }
+      find(["Titre.png", "titre.png"], function (url) {
+        var img = document.querySelector(".site-title-img");
+        if (url && img) { img.src = url; console.info("Titre chargé depuis :", url); }
+        else console.warn("Titre.png introuvable sur Supabase (essayé dans plusieurs dossiers).");
+      });
+      find(["fond-village.jpg", "fond-village.jpeg", "fond-village.png"], function (url) {
+        if (url) {
+          document.body.style.backgroundImage =
+            "radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%), url(\"" + url + "\")";
+          console.info("Fond chargé depuis :", url);
+        } else console.warn("fond-village.jpg introuvable sur Supabase (essayé dans plusieurs dossiers).");
+      });
+    })();
+  </script>
+  <script src="player.js?v=14"></script>
+</body>
+</html>

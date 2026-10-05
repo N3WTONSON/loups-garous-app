@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="data:,">
+  <title>Loup-Garou - Écran Projecteur</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background-color: #000;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #overlay-video {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 25%; height: auto;
+      max-height: 40%;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      display: none;
+      z-index: 10;
+      object-fit: cover;
+    }
+
+    /* Appel de personnage : vidéo centrée, 50 % de l'écran */
+    #overlay-video.center {
+      top: 50%; left: 50%; right: auto;
+      transform: translate(-50%, -50%);
+      width: 50%; height: auto;
+      aspect-ratio: 16 / 9;      /* cadre au format 1920x1080 */
+      max-height: 90%;
+      box-sizing: border-box;
+      background: #000;
+      object-fit: contain;
+    }
+
+    #start-btn {
+      position: absolute;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="player"></div>
+  <video id="overlay-video" playsinline></video>
+  <button id="start-btn">🔊 Activer le son</button>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    console.info('Projecteur - version 19');
+    let ytPlayer = null;
+    let ytReady = false;
+    let pendingVideoId = null;   // scène demandée avant que YouTube soit prêt
+    let targetVolume = 100;      // volume courant (0-100), conservé entre les scènes
+    let fadeInterval = null;
+    const overlayVideo = document.getElementById('overlay-video');
+
+    // Position de la vidéo : 'center' = au milieu, 50 % de l'écran ; sinon petite incrustation en haut à droite
+    function setOverlayMode(center) {
+      const st = overlayVideo.style;
+      overlayVideo.classList.toggle('center', center);
+      if (center) {
+        st.setProperty('top', '50%', 'important');
+        st.setProperty('left', '50%', 'important');
+        st.setProperty('right', 'auto', 'important');
+        st.setProperty('transform', 'translate(-50%, -50%)', 'important');
+        st.setProperty('width', '50%', 'important');
+        st.setProperty('height', 'auto', 'important');
+        st.setProperty('aspect-ratio', '16 / 9', 'important');
+        st.setProperty('max-height', '90%', 'important');
+        st.setProperty('box-sizing', 'border-box', 'important');
+        st.setProperty('background', '#000', 'important');
+        st.setProperty('object-fit', 'contain', 'important');
+      } else {
+        ['top', 'left', 'right', 'transform', 'width', 'height', 'aspect-ratio', 'max-height', 'box-sizing', 'background', 'object-fit']
+          .forEach((prop) => st.removeProperty(prop));
+      }
+    }
+
+    function hideOverlay() {
+      overlayVideo.pause();
+      overlayVideo.style.display = 'none';
+      setOverlayMode(false);
+      overlayVideo.removeAttribute('src');
+      overlayVideo.load();
+    }
+
+    function onYouTubeIframeAPIReady() {
+      ytPlayer = new YT.Player('player', {
+        playerVars: {
+          autoplay: 1, controls: 0, rel: 0, modestbranding: 1,
+          playsinline: 1, disablekb: 1, iv_load_policy: 3
+        },
+        events: {
+          onReady: () => {
+            ytReady = true;
+            if (pendingVideoId) { playScene(pendingVideoId); pendingVideoId = null; }
+            if (window.opener) window.opener.postMessage({ action: 'projectorReady' }, '*');
+          },
+          onStateChange: (event) => {
+            // Ambiance de fond : on reboucle la scène sans prévenir la régie
+            if (event.data === YT.PlayerState.ENDED) {
+              ytPlayer.seekTo(0, true);
+              ytPlayer.playVideo();
+            }
+          }
+        }
+      });
+    }
+
+    function playScene(videoId) {
+      hideOverlay();
+      ytPlayer.loadVideoById(videoId);
+      ytPlayer.setVolume(targetVolume);
+      ytPlayer.playVideo();
+    }
+
+    // Fondu sonore progressif (volume attendu de 0 à 1)
+    function fadeVolumeTo(target01, durationMs = 600) {
+      targetVolume = Math.max(0, Math.min(100, target01 * 100));
+      if (!ytReady) return;
+      clearInterval(fadeInterval);
+
+      const startVolume = ytPlayer.getVolume();
+      const distance = targetVolume - startVolume;
+      const steps = 30;
+      const stepTime = durationMs / steps;
+      let currentStep = 0;
+
+      fadeInterval = setInterval(() => {
+        currentStep++;
+        ytPlayer.setVolume(Math.max(0, Math.min(100, startVolume + distance * (currentStep / steps))));
+        if (currentStep >= steps) {
+          ytPlayer.setVolume(targetVolume);
+          clearInterval(fadeInterval);
+        }
+      }, stepTime);
+    }
+
+    // Un clic dans cette fenêtre lève le blocage de lecture avec son
+    document.getElementById('start-btn').addEventListener('click', (e) => {
+      e.target.style.display = 'none';
+      if (ytReady) { ytPlayer.unMute(); ytPlayer.setVolume(targetVolume); }
+    });
+
+    // Commandes de la régie (uniquement depuis la fenêtre qui nous a ouverts)
+    window.addEventListener('message', (event) => {
+      if (event.source !== window.opener) return;
+      const data = event.data;
+      if (!data || !data.action) return;
+
+      switch (data.action) {
+        case 'playYTVideo':
+          if (ytReady) playScene(data.videoId);
+          else pendingVideoId = data.videoId;
+          break;
+
+        case 'playOverlayVideo':
+          setOverlayMode(data.mode === 'center');
+          overlayVideo.src = data.url;
+          overlayVideo.loop = true;
+          overlayVideo.style.display = 'block';
+          overlayVideo.play().catch((err) => console.error("Erreur overlay :", err));
+          break;
+
+        case 'stopOverlayVideo':
+          hideOverlay();
+          break;
+
+        case 'stop':
+          if (ytReady) ytPlayer.stopVideo();
+          hideOverlay();
+          break;
+
+        case 'togglePause':
+          if (ytReady) {
+            const state = ytPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
+            else if (state === YT.PlayerState.PAUSED) ytPlayer.playVideo();
+          }
+          if (overlayVideo.hasAttribute('src')) {
+            if (overlayVideo.paused) overlayVideo.play().catch(() => {});
+            else overlayVideo.pause();
+          }
+          break;
+
+        case 'setVolume':
+          fadeVolumeTo(data.volume, data.duration || 600);
+          break;
+      }
+    });
+  </script>
+</body>
+</html>
