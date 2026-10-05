@@ -1,8 +1,6 @@
-const VERSION_APP = "20";
+const VERSION_APP = "21";
 console.info("Loup-Garou régie - version " + VERSION_APP);
-// ===== LIENS SUPABASE (anciennement config.js) =====
-// Liens directs vers le bucket Supabase "assets" (bucket PUBLIC requis).
-// Chaque fichier est référencé par son URL complète : modifiez une ligne si un fichier change de nom.
+
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
 const ASSETS = {
@@ -21,7 +19,6 @@ const ASSETS = {
     "fond-village.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg",
   },
   audio: {
-    // Fichiers présents dans votre liste :
     "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
     "1 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/1%20mort.mp3",
     "2 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/2%20morts.mp3",
@@ -41,7 +38,6 @@ const ASSETS = {
     "Le hurlement du loup 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%202.mp3",
     "Le hurlement du loup 3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%203.mp3",
     "Effet sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Effet%20sorciere.mp3",
-    // Fichiers à vérifier / uploader (absents de votre liste) :
     "Maire.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Maire.mp3",
     "Sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere.mp3",
     "Sorciere 2 potions.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%202%20potions.mp3",
@@ -57,42 +53,37 @@ const ASSETS = {
     "Maire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Maire.mp4",
     "Renard.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Renard.mp4",
     "Voleur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Voleur.mp4",
-    // À vérifier / uploader :
     "Sorciere.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Sorciere.mp4",
   }
 };
 
 const ASSET_FOLDERS = { images: "images", audio: "mj/audio", video: "mj/video" };
 
-// URL générique (secours si un nom n'est pas dans la table ci-dessus)
 function assetUrl(path) {
   return SUPABASE_BASE + "/" + path.split("/").map(encodeURIComponent).join("/");
 }
 
-// mediaUrl("audio", "0 mort.mp3") -> lien direct Supabase
 function mediaUrl(kind, name) {
   return (ASSETS[kind] && ASSETS[kind][name]) || assetUrl(ASSET_FOLDERS[kind] + "/" + name);
 }
 
-// ===== FIN LIENS SUPABASE =====
-
 // --- CONFIGURATION ---
-const YT_ID_NUIT = "FDHc4qUNMTQ"; // Scène nuit fond
-const YT_ID_JOUR = "bNyXbxpWiok"; // Scène jour V3
+const YT_ID_NUIT = "FDHc4qUNMTQ";
+const YT_ID_JOUR = "bNyXbxpWiok";
 
 let peer = null;
 let roomCode = "";
-let players = [];      // { name, token, role, alive, conn, connected }
+let players = [];
 let roles = [];
-let voleurCards = [];  // 2 cartes restantes quand le Voleur est en jeu
+let voleurCards = [];
 let distributed = false;
-let activeCallRoles = new Set(); // rôles en jeu au moment de la distribution
+let activeCallRoles = new Set();
 let hostOpened = false;
 
 let currentAudio = null;
 let projectorWindow = null;
-let overlayMode = null;        // 'center' (appel de personnage) | 'corner' (réponses) | null
-let currentOverlayFile = null; // fichier vidéo actuellement incrusté
+let overlayMode = null;
+let currentOverlayFile = null;
 
 // --- UTILITAIRES ---
 function escapeHtml(str) {
@@ -113,14 +104,34 @@ function sendToProjector(msg) {
   return true;
 }
 
+// SYNCHRONISATION DU SALON (QR CODE + PSEUDOS DES JOUEURS) VERS LE PROJECTEUR
+function syncLobbyToProjector() {
+  if (!projectorOpen() || !roomCode) return;
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const joinUrl = `${window.location.origin}${basePath}joueur.html?room=${roomCode}`;
+  
+  sendToProjector({
+    action: 'updateLobby',
+    roomCode: roomCode,
+    joinUrl: joinUrl,
+    players: players.map(p => ({ name: p.name, connected: p.connected }))
+  });
+}
+
 // --- ÉCRAN SECONDAIRE ---
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=19', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=21', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
 }
+
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'projectorReady') {
+    syncLobbyToProjector();
+  }
+});
 
 // --- SALON PEERJS ---
 function generateRoomCode() {
@@ -149,6 +160,8 @@ function initHost(attempt = 0) {
     } else {
       urlEl.textContent = joinUrl;
     }
+
+    syncLobbyToProjector();
   });
 
   peer.on('connection', (conn) => {
@@ -167,7 +180,7 @@ function initHost(attempt = 0) {
 
   peer.on('error', (err) => {
     if (err.type === 'unavailable-id' && attempt < 3) {
-      initHost(attempt + 1); // code déjà pris : on en tire un autre
+      initHost(attempt + 1);
     } else if (err.type === 'unavailable-id') {
       alert("Impossible de réserver un code de salon. Réessayez.");
     } else if (!hostOpened) {
@@ -196,7 +209,6 @@ function handleJoin(conn, data) {
       return;
     }
     if (!sameToken && !player.connected) {
-      // Pseudo libre après déconnexion : on autorise la reprise de place
       player.token = token || player.token;
     }
     player.conn = conn;
@@ -217,6 +229,7 @@ function handleJoin(conn, data) {
 
 function refreshPlayerViews() {
   updateMJPlayerList();
+  syncLobbyToProjector();
   if (distributed) renderMJDashboard();
 }
 
@@ -273,7 +286,6 @@ function distributeRolesNetwork() {
   renderMJDashboard();
 }
 
-// « Appels des Personnages » : seuls les rôles distribués sont affichés (le Maire est toujours disponible)
 function updateCallButtons() {
   const grid = document.getElementById('calls-grid');
   const hint = document.getElementById('calls-hint');
@@ -328,8 +340,6 @@ function setProjectorVideoVolume(vol, duration = 600) {
   sendToProjector({ action: 'setVolume', volume: vol, duration });
 }
 
-// mode 'center' : vidéo centrée à 50 %, en boucle jusqu'au prochain personnage / à la prochaine scène
-// mode 'corner' : petite incrustation en haut à droite, retirée à la fin de la voix
 function playRoleVideo(fileName, mode = 'corner') {
   overlayMode = mode;
   currentOverlayFile = fileName;
@@ -342,7 +352,6 @@ function stopRoleVideo() {
   sendToProjector({ action: 'stopOverlayVideo' });
 }
 
-// Vrai si la vidéo de ce personnage est déjà centrée à l'écran
 function isCenteredVideo(fileName) {
   return overlayMode === 'center' && currentOverlayFile === fileName;
 }
@@ -351,7 +360,6 @@ function playScene(videoId) {
   if (!sendToProjector({ action: 'playYTVideo', videoId })) {
     alert("Veuillez d'abord cliquer sur 'Ouvrir l'Écran Secondaire' !");
   } else {
-    // Changement de scène : le projecteur retire la vidéo du personnage
     overlayMode = null;
     currentOverlayFile = null;
   }
@@ -427,12 +435,9 @@ const FALLBACK_TEXTS = {
 
 function onAudioFinished() {
   setProjectorVideoVolume(1.0, 800);
-  // Seules les petites incrustations disparaissent avec la voix ;
-  // la vidéo centrée d'un appel de personnage continue en boucle.
   if (overlayMode === 'corner') stopRoleVideo();
 }
 
-// Variantes tentées si le fichier n'est pas trouvé (accents / majuscules)
 function audioCandidates(filename) {
   const ascii = filename.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return [...new Set([filename, ascii, ascii.toLowerCase(), filename.toLowerCase()])];
@@ -453,7 +458,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => { el.style.display = 'none'; }, 7000);
 }
 
-// Interroge le lien pour dire précisément pourquoi le son ne se charge pas
 function diagnoseAudio(url, filename) {
   const base = `Audio « ${filename} » : `;
   fetch(url, { method: 'HEAD' })
@@ -507,7 +511,6 @@ function playAudioFile(filename) {
         showToast("Lecture bloquée par le navigateur : cliquez sur la page puis réessayez.");
         fallbackSpeech(filename);
       }
-      // AbortError ignoré ; NotSupportedError est géré par l'évènement 'error'
     });
   };
 
@@ -516,7 +519,7 @@ function playAudioFile(filename) {
 
 function fallbackSpeech(filename) {
   const text = FALLBACK_TEXTS[filename];
-  if (!text) { onAudioFinished(); return; } // pas de voix de secours pertinente
+  if (!text) { onAudioFinished(); return; }
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'fr-FR';
@@ -565,7 +568,6 @@ function playRole(role) {
   }
 }
 
-// Hurlement : un des 3 sons au hasard, jamais le même que le dernier joué
 const HOWL_FILES = ["Le hurlement du loup 1.mp3", "Le hurlement du loup 2.mp3", "Le hurlement du loup 3.mp3"];
 let lastHowl = null;
 
@@ -595,5 +597,4 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// État initial des boutons d'appel (avant distribution)
 updateCallButtons();

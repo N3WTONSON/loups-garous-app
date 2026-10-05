@@ -5,10 +5,26 @@
   <link rel="icon" href="data:,">
   <title>Loup-Garou - Écran Projecteur</title>
   <style>
+    /* Police Wolf Brothers */
+    @font-face {
+      font-family: 'Wolf Brothers';
+      src: url('wolfbrothers.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     body, html {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
-      background-color: #000;
+      background-color: #0b0d14;
+      background-image: radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%),
+                        url('https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #e2e8f0;
       overflow: hidden;
       position: relative;
     }
@@ -37,7 +53,7 @@
       top: 50%; left: 50%; right: auto;
       transform: translate(-50%, -50%);
       width: 50%; height: auto;
-      aspect-ratio: 16 / 9;      /* cadre au format 1920x1080 */
+      aspect-ratio: 16 / 9;
       max-height: 90%;
       box-sizing: border-box;
       background: #000;
@@ -57,25 +73,190 @@
       color: #fff;
       cursor: pointer;
     }
+
+    /* ÉCRAN D'ATTENTE DE DEBUT DE PARTIE (QR CODE + LISTE DES JOUEURS) */
+    #waiting-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    .projector-title {
+      font-family: 'Wolf Brothers', sans-serif;
+      font-size: 3rem;
+      color: #f4dcdc;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 16px rgba(185, 28, 28, 0.5);
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .lobby-container {
+      display: flex;
+      gap: 50px;
+      align-items: stretch;
+      max-width: 1100px;
+      width: 90%;
+    }
+
+    /* CARTE DU THÈME GRIFFURE & SANG */
+    .blood-card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(42, 9, 12, 0.92), rgba(17, 10, 16, 0.95));
+      border: 1px solid rgba(127, 29, 29, 0.75);
+      border-top: 3px solid #7f1d1d;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(120, 0, 0, 0.25);
+    }
+
+    .blood-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 30px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='30' viewBox='0 0 240 30'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%234a0505'/%3E%3Cstop offset='1' stop-color='%23c21f1f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23g)'%3E%3Crect x='0' y='0' width='240' height='4'/%3E%3Cpath d='M14 0h7v10a3.5 3.5 0 0 1-7 0z'/%3E%3Cpath d='M52 0h8v20a4 4 0 0 1-8 0z'/%3E%3Cpath d='M96 0h6v7a3 3 0 0 1-6 0z'/%3E%3Cpath d='M130 0h7v15a3.5 3.5 0 0 1-7 0z'/%3E%3Cpath d='M170 0h9v25a4.5 4.5 0 0 1-9 0z'/%3E%3Cpath d='M210 0h6v12a3 3 0 0 1-6 0z'/%3E%3C/g%3E%3C/svg%3E") repeat-x left top;
+      pointer-events: none;
+    }
+
+    .blood-card::after {
+      content: "";
+      position: absolute;
+      top: 8px; right: 12px;
+      width: 50px; height: 60px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='100' viewBox='0 0 90 100'%3E%3Cdefs%3E%3ClinearGradient id='c' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d1d' stop-opacity='0.95'/%3E%3Cstop offset='1' stop-color='%237f1d1d' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='url(%23c)'%3E%3Cpolygon points='6,0 14,0 38,100'/%3E%3Cpolygon points='30,0 39,0 62,100'/%3E%3Cpolygon points='54,0 63,0 86,100'/%3E%3C/g%3E%3C/svg%3E") no-repeat center / contain;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .qr-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .qr-code-img {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+      margin-bottom: 15px;
+    }
+
+    .qr-box p {
+      margin: 6px 0;
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .room-code-badge {
+      font-family: 'Wolf Brothers', sans-serif;
+      font-size: 2.2rem;
+      color: #ef4444;
+      letter-spacing: 3px;
+    }
+
+    .players-box {
+      flex: 1.2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .players-box h3 {
+      font-family: 'Wolf Brothers', sans-serif;
+      font-size: 1.8rem;
+      margin: 0 0 15px 0;
+      color: #f4dcdc;
+      letter-spacing: 1px;
+      border-bottom: 2px solid #7f1d1d;
+      padding-bottom: 8px;
+    }
+
+    .players-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .players-list li {
+      background: rgba(80, 10, 14, 0.7);
+      border: 1px solid rgba(185, 28, 28, 0.6);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-family: 'Wolf Brothers', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      color: #fca5a5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ÉCRAN DE SALON D'ATTENTE -->
+  <div id="waiting-screen">
+    <div class="projector-title">🌐 Rejoindre la Partie</div>
+    <div class="lobby-container">
+      
+      <!-- Colonne Gauche : QR Code -->
+      <div class="blood-card qr-box">
+        <div id="qr-code-target" class="qr-code-img"></div>
+        <p>Scannez pour rejoindre</p>
+        <div class="room-code-badge">CODE : <span id="room-code-text">----</span></div>
+      </div>
+
+      <!-- Colonne Droite : Liste des Joueurs -->
+      <div class="blood-card players-box">
+        <h3>👥 Joueurs présents (<span id="player-count">0</span>)</h3>
+        <ul id="player-list-target" class="players-list">
+          <li style="color: #94a3b8; font-family: sans-serif; font-size: 0.9rem;">En attente de joueurs...</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
 
   <div id="player"></div>
   <video id="overlay-video" playsinline></video>
   <button id="start-btn">🔊 Activer le son</button>
 
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
+
   <script>
-    console.info('Projecteur - version 19');
+    console.info('Projecteur - version 21');
     let ytPlayer = null;
     let ytReady = false;
-    let pendingVideoId = null;   // scène demandée avant que YouTube soit prêt
-    let targetVolume = 100;      // volume courant (0-100), conservé entre les scènes
+    let pendingVideoId = null;
+    let targetVolume = 100;
     let fadeInterval = null;
     const overlayVideo = document.getElementById('overlay-video');
+    const waitingScreen = document.getElementById('waiting-screen');
+    let currentQrUrl = null;
 
-    // Position de la vidéo : 'center' = au milieu, 50 % de l'écran ; sinon petite incrustation en haut à droite
+    function hideWaitingScreen() {
+      if (waitingScreen) {
+        waitingScreen.style.display = 'none';
+      }
+    }
+
     function setOverlayMode(center) {
       const st = overlayVideo.style;
       overlayVideo.classList.toggle('center', center);
@@ -118,7 +299,6 @@
             if (window.opener) window.opener.postMessage({ action: 'projectorReady' }, '*');
           },
           onStateChange: (event) => {
-            // Ambiance de fond : on reboucle la scène sans prévenir la régie
             if (event.data === YT.PlayerState.ENDED) {
               ytPlayer.seekTo(0, true);
               ytPlayer.playVideo();
@@ -129,13 +309,13 @@
     }
 
     function playScene(videoId) {
+      hideWaitingScreen();
       hideOverlay();
       ytPlayer.loadVideoById(videoId);
       ytPlayer.setVolume(targetVolume);
       ytPlayer.playVideo();
     }
 
-    // Fondu sonore progressif (volume attendu de 0 à 1)
     function fadeVolumeTo(target01, durationMs = 600) {
       targetVolume = Math.max(0, Math.min(100, target01 * 100));
       if (!ytReady) return;
@@ -157,25 +337,42 @@
       }, stepTime);
     }
 
-    // Un clic dans cette fenêtre lève le blocage de lecture avec son
     document.getElementById('start-btn').addEventListener('click', (e) => {
       e.target.style.display = 'none';
       if (ytReady) { ytPlayer.unMute(); ytPlayer.setVolume(targetVolume); }
     });
 
-    // Commandes de la régie (uniquement depuis la fenêtre qui nous a ouverts)
     window.addEventListener('message', (event) => {
       if (event.source !== window.opener) return;
       const data = event.data;
       if (!data || !data.action) return;
 
       switch (data.action) {
+        case 'updateLobby':
+          document.getElementById('room-code-text').textContent = data.roomCode || '----';
+          if (data.joinUrl && data.joinUrl !== currentQrUrl) {
+            const qrTarget = document.getElementById('qr-code-target');
+            qrTarget.innerHTML = '';
+            new QRCode(qrTarget, { text: data.joinUrl, width: 160, height: 160 });
+            currentQrUrl = data.joinUrl;
+          }
+          const pList = document.getElementById('player-list-target');
+          document.getElementById('player-count').textContent = data.players ? data.players.length : 0;
+          if (data.players && data.players.length > 0) {
+            pList.innerHTML = data.players.map(p => `<li>🟢 ${p.name}</li>`).join('');
+          } else {
+            pList.innerHTML = '<li style="color: #94a3b8; font-family: sans-serif; font-size: 0.9rem;">En attente de joueurs...</li>';
+          }
+          break;
+
         case 'playYTVideo':
+          hideWaitingScreen();
           if (ytReady) playScene(data.videoId);
           else pendingVideoId = data.videoId;
           break;
 
         case 'playOverlayVideo':
+          hideWaitingScreen();
           setOverlayMode(data.mode === 'center');
           overlayVideo.src = data.url;
           overlayVideo.loop = true;
