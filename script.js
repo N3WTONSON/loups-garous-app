@@ -4,7 +4,7 @@ console.info("Loup-Garou régie - version " + VERSION_APP);
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
 const ASSETS = {
- images: {
+  images: {
     "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png",
     "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png",
     "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png",
@@ -70,14 +70,14 @@ function mediaUrl(kind, name) {
 // --- CONFIGURATION ---
 const YT_ID_NUIT = "FDHc4qUNMTQ";
 const YT_ID_JOUR = "bNyXbxpWiok";
-const YT_ID_PRESENTATION = "VSfS9oM630s"; // présentation des personnages
+const YT_ID_PRESENTATION = "VSfS9oM630s";
 
 let peer = null;
 let roomCode = "";
 let players = [];
 let roles = [];
-let calledOnce = new Set();       // appels à usage unique déjà faits (voleur, cupidon)
-let thiefOffers = new Map();      // nom du Voleur -> [{ role, holder }] (2 rôles proposés)
+let calledOnce = new Set();
+let thiefOffers = new Map();
 let distributed = false;
 let activeCallRoles = new Set();
 let hostOpened = false;
@@ -106,7 +106,6 @@ function sendToProjector(msg) {
   return true;
 }
 
-// SYNCHRONISATION DU SALON (QR CODE + PSEUDOS DES JOUEURS) VERS LE PROJECTEUR
 function syncLobbyToProjector() {
   if (!projectorOpen() || !roomCode) return;
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
@@ -120,7 +119,6 @@ function syncLobbyToProjector() {
   });
 }
 
-// --- ÉCRAN SECONDAIRE ---
 function openProjectorWindow() {
   if (!projectorOpen()) {
     projectorWindow = window.open('projecteur.html?v=23', 'ProjecteurLoupGarou', 'width=1280,height=720');
@@ -135,7 +133,6 @@ window.addEventListener('message', (event) => {
   }
 });
 
-// --- SALON PEERJS ---
 function generateRoomCode() {
   return Math.random().toString(36).substring(2, 6).toUpperCase();
 }
@@ -222,7 +219,7 @@ function handleJoin(conn, data) {
       conn.send({ type: 'rejected', message: "La partie a déjà commencé." });
       return;
     }
-    player = { name, token, role: "", alive: true, conn, connected: true };
+    player = { name, token, role: "", alive: true, inLove: false, conn, connected: true };
     players.push(player);
   }
 
@@ -276,11 +273,13 @@ function distributeRolesNetwork() {
 
   players.forEach((player, i) => {
     player.role = shuffled[i];
+    player.alive = true;
+    player.inLove = false;
     if (player.conn && player.conn.open) player.conn.send({ type: 'assignRole', role: player.role });
   });
   distributed = true;
   activeCallRoles = new Set(roles);
-  calledOnce = new Set();     // nouvelle distribution = nouvelle partie
+  calledOnce = new Set();
   thiefOffers = new Map();
   updateCallButtons();
 
@@ -298,7 +297,6 @@ function updateCallButtons() {
     btn.style.display = show ? '' : 'none';
     if (show) visible++;
 
-    // Voleur et Cupidon : un seul appel par partie, le bouton se grise ensuite
     const once = btn.dataset.call;
     const used = !!once && calledOnce.has(once);
     btn.disabled = used;
@@ -323,6 +321,12 @@ function renderMJDashboard() {
       <td><strong class="nom-joueur">${escapeHtml(item.name)}</strong> ${item.connected ? '' : '📴'}</td>
       <td>🎭 ${escapeHtml(item.role)}</td>
       <td>
+        <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <input type="checkbox" ${item.inLove ? 'checked' : ''} onchange="togglePlayerLove(${index})">
+          💘 Amoureux
+        </label>
+      </td>
+      <td>
         <button class="status-btn ${item.alive ? 'status-alive' : 'status-dead'}" onclick="togglePlayerStatus(${index})">
           ${item.alive ? '🟢 En vie' : '💀 Mort'}
         </button>
@@ -334,8 +338,24 @@ function renderMJDashboard() {
   document.getElementById('mj-dashboard').style.display = 'block';
 }
 
+function togglePlayerLove(index) {
+  players[index].inLove = !players[index].inLove;
+  renderMJDashboard();
+}
+
 function togglePlayerStatus(index) {
-  players[index].alive = !players[index].alive;
+  const p = players[index];
+  p.alive = !p.alive;
+
+  // Si le joueur vient de mourir et fait partie des amoureux de Cupidon, l'autre meurt de chagrin
+  if (!p.alive && p.inLove) {
+    const partner = players.find((pl, i) => i !== index && pl.inLove && pl.alive);
+    if (partner) {
+      partner.alive = false;
+      showToast(`💘 ${partner.name} meurt immédiatement de chagrin pour avoir perdu son amour (${p.name}) !`, 'info');
+    }
+  }
+
   renderMJDashboard();
 }
 
@@ -344,7 +364,7 @@ function setProjectorVideoVolume(vol, duration = 600) {
   sendToProjector({ action: 'setVolume', volume: vol, duration });
 }
 
-function playRoleVideo(fileName, mode = 'corner') {
+function playRoleVideo(fileName, mode = 'center') {
   overlayMode = mode;
   currentOverlayFile = fileName;
   sendToProjector({ action: 'playOverlayVideo', url: mediaUrl('video', fileName), mode });
@@ -379,7 +399,6 @@ function playDayPhase() {
   playAudioFile("Appel jour V2.mp3");
 }
 
-// Vidéo de présentation des personnages (une seule lecture, sans boucle)
 function presentCharacters() {
   if (currentAudio) {
     currentAudio.pause();
@@ -395,8 +414,8 @@ function playCommand(cmd) {
   if (cmd === 'fermer_yeux') {
     playAudioFile("Fermer les yeux.mp3");
   } else if (cmd === 'voter_maire') {
+    // Affiche la vidéo du Maire centrée en grand format sans diffuser l'audio Maire.mp3
     playRoleVideo("Maire.mp4", 'center');
-    playAudioFile("Maire.mp3");
   } else if (cmd === 'voter') {
     playAudioFile("Voter.mp3");
   }
@@ -578,7 +597,7 @@ function playRole(role) {
 
   const item = roleFiles[role];
   if (!item) return;
-  if (calledOnce.has(role)) return; // Voleur / Cupidon : déjà appelés
+  if (calledOnce.has(role)) return;
 
   playAudioFile(item.audio);
   if (item.video) playRoleVideo(item.video, 'center');
@@ -591,8 +610,6 @@ function playRole(role) {
 }
 
 // --- VOL DE RÔLE ---
-// Le Voleur voit 2 rôles tirés au hasard parmi ceux des autres joueurs (sans les noms des joueurs).
-// Il en choisit un : il l'obtient, et le joueur qui le possédait devient simple Villageois.
 function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -619,7 +636,6 @@ function buildThiefOffers(thief) {
 function sendThiefTurn(thief) {
   const offers = thiefOffers.get(thief.name);
   if (offers && thief.conn && thief.conn.open) {
-    // on n'envoie que les noms de rôles : jamais l'identité des joueurs
     thief.conn.send({ type: 'thiefTurn', options: offers.map((o) => o.role) });
   }
 }
@@ -657,7 +673,6 @@ function handleThiefSteal(conn, data) {
   const offer = offers[Number(data.choice)];
   const holder = offer && players.find((p) => p !== thief && p.name === offer.holder);
   if (!offer || !holder || holder.role !== offer.role) {
-    // choix invalide ou rôle modifié entre-temps : on repropose un tirage à jour
     const fresh = buildThiefOffers(thief);
     if (fresh.length) { thiefOffers.set(thief.name, fresh); sendThiefTurn(thief); }
     else { thiefOffers.delete(thief.name); conn.send({ type: 'thiefDone' }); }
