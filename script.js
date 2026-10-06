@@ -1,4 +1,4 @@
-const VERSION_APP = "23";
+const VERSION_APP = "25";
 console.info("Loup-Garou régie - version " + VERSION_APP);
 
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
@@ -46,6 +46,9 @@ const ASSETS = {
     "chasseur.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/chasseur.mp3",
   },
   video: {
+    "Mort Loup.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Mort%20Loup.mp4",
+    "Elimination 2.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Elimination%202.mp4",
+    "Empoisoner.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Empoisoner.mp4",
     "Chasseur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Chasseur.mp4",
     "Cupidon.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Cupidon.mp4",
     "La voyante.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/La%20voyante.mp4",
@@ -121,7 +124,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=23', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=25', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -168,6 +171,11 @@ function initHost(attempt = 0) {
       if (!data) return;
       if (data.type === 'join') handleJoin(conn, data);
       else if (data.type === 'thiefSteal') handleThiefSteal(conn, data);
+      else if (data.type === 'cupidChoice') handleCupidChoice(conn, data);
+      else if (data.type === 'wolfVote') handleWolfVote(conn, data);
+      else if (data.type === 'wolfFinal') handleWolfFinal(conn);
+      else if (data.type === 'witchAction') handleWitchAction(conn, data);
+      else if (data.type === 'villageVote') handleVillageVote(conn, data);
     });
 
     conn.on('close', () => {
@@ -225,7 +233,7 @@ function handleJoin(conn, data) {
 
   conn.send({ type: 'joined' });
   if (player.role) conn.send({ type: 'assignRole', role: player.role });
-  if (thiefOffers.has(player.name)) sendThiefTurn(player);
+  resyncPlayer(player);
   refreshPlayerViews();
 }
 
@@ -236,6 +244,10 @@ function refreshPlayerViews() {
 }
 
 function addRole(roleName) {
+  if (UNIQUE_ROLES.includes(roleName) && roles.includes(roleName)) {
+    showToast(`« ${roleName} » ne peut être présent qu'une seule fois dans la partie.`, 'info');
+    return;
+  }
   roles.push(roleName);
   updateMJRoleList();
 }
@@ -257,11 +269,45 @@ function updateMJRoleList() {
     .map((r, i) => `<li>${escapeHtml(r)} <span class="remove" onclick="removeRole(${i})">&times;</span></li>`)
     .join('');
   document.getElementById('role-count').innerText = roles.length;
+
+  // rôles à exemplaire unique : le bouton se grise une fois ajouté
+  document.querySelectorAll('[data-pick]').forEach((btn) => {
+    const taken = UNIQUE_ROLES.includes(btn.dataset.pick) && roles.includes(btn.dataset.pick);
+    btn.disabled = taken;
+    btn.classList.toggle('used', taken);
+  });
+
+  // ratio : plus de Villageois que de Loups-Garous
+  const ratio = document.getElementById('role-ratio');
+  if (ratio) {
+    const v = roles.filter((r) => r === 'Villageois').length;
+    const w = roles.filter((r) => r === 'Loup-Garou').length;
+    const ok = w >= 1 && v > w;
+    ratio.className = 'hint role-ratio ' + (ok ? 'ok' : (roles.length ? 'bad' : ''));
+    ratio.textContent = roles.length
+      ? `Villageois : ${v} · Loups-Garous : ${w} — ${ok ? '✅ ratio valide' : '⚠️ il faut au moins 1 Loup-Garou et plus de Villageois que de Loups-Garous'}`
+      : "Rôle unique : Voyante, Sorcière, Chasseur, Cupidon, Voleur, Renard, Petite Fille. Ratio : plus de Villageois que de Loups-Garous.";
+  }
 }
 
 function distributeRolesNetwork() {
   if (players.length === 0 || roles.length !== players.length) {
     alert("Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
+    return;
+  }
+  const dup = UNIQUE_ROLES.find((r) => roles.filter((x) => x === r).length > 1);
+  if (dup) {
+    alert(`Le rôle « ${dup} » ne peut être présent qu'une seule fois.`);
+    return;
+  }
+  const nbWolves = roles.filter((r) => r === 'Loup-Garou').length;
+  const nbVillagers = roles.filter((r) => r === 'Villageois').length;
+  if (nbWolves < 1) {
+    alert("Ajoutez au moins un Loup-Garou.");
+    return;
+  }
+  if (nbVillagers <= nbWolves) {
+    alert(`Il faut plus de Villageois que de Loups-Garous (actuellement ${nbVillagers} Villageois pour ${nbWolves} Loup(s)-Garou(s)).`);
     return;
   }
 
@@ -275,12 +321,18 @@ function distributeRolesNetwork() {
     player.role = shuffled[i];
     player.alive = true;
     player.inLove = false;
-    if (player.conn && player.conn.open) player.conn.send({ type: 'assignRole', role: player.role });
+    player.diedOfLove = false;
+    if (player.conn && player.conn.open) {
+      player.conn.send({ type: 'assignRole', role: player.role });
+      player.conn.send({ type: 'status', alive: true });
+      player.conn.send({ type: 'lover', partner: null });
+    }
   });
   distributed = true;
   activeCallRoles = new Set(roles);
   calledOnce = new Set();
   thiefOffers = new Map();
+  resetGameAutomation();
   updateCallButtons();
 
   renderMJDashboard();
@@ -317,7 +369,7 @@ function updateCallButtons() {
 function renderMJDashboard() {
   const tbody = document.getElementById('mj-table-body');
   let html = players.map((item, index) => `
-    <tr>
+    <tr class="${item.alive ? '' : 'dead'}">
       <td><strong class="nom-joueur">${escapeHtml(item.name)}</strong> ${item.connected ? '' : '📴'}</td>
       <td>🎭 ${escapeHtml(item.role)}</td>
       <td>
@@ -336,27 +388,58 @@ function renderMJDashboard() {
 
   tbody.innerHTML = html;
   document.getElementById('mj-dashboard').style.display = 'block';
+  renderAutomation();
 }
 
+// Amoureux : cochés automatiquement par Cupidon (téléphone), corrigeables à la main
 function togglePlayerLove(index) {
-  players[index].inLove = !players[index].inLove;
+  const p = players[index];
+  if (!p.inLove && players.filter((x) => x.inLove).length >= 2) {
+    showToast("Cupidon ne désigne que 2 amoureux : décochez-en un d'abord.", 'info');
+    renderMJDashboard();
+    return;
+  }
+  p.inLove = !p.inLove;
+  notifyLovers();
   renderMJDashboard();
 }
 
+function notifyLovers() {
+  const pair = players.filter((p) => p.inLove);
+  players.forEach((p) => {
+    const partner = p.inLove && pair.length === 2 ? pair.find((x) => x !== p) : null;
+    sendTo(p, { type: 'lover', partner: partner ? partner.name : null });
+  });
+}
+
+// Mort manuelle (bouton du tableau) : annonce plein écran avec griffures
 function togglePlayerStatus(index) {
   const p = players[index];
-  p.alive = !p.alive;
-
-  // Si le joueur vient de mourir et fait partie des amoureux de Cupidon, l'autre meurt de chagrin
-  if (!p.alive && p.inLove) {
-    const partner = players.find((pl, i) => i !== index && pl.inLove && pl.alive);
-    if (partner) {
-      partner.alive = false;
-      showToast(`💘 ${partner.name} meurt immédiatement de chagrin pour avoir perdu son amour (${p.name}) !`, 'info');
+  if (p.alive) {
+    const deaths = killPlayers([p.name]);
+    renderMJDashboard();
+    announceDeaths(deaths);
+  } else {
+    setAlive(p, true);
+    p.diedOfLove = false;
+    // correction d'erreur : l'amoureux mort uniquement de chagrin revient aussi
+    const partner = p.inLove ? players.find((x) => x !== p && x.inLove) : null;
+    if (partner && !partner.alive && partner.diedOfLove) {
+      setAlive(partner, true);
+      partner.diedOfLove = false;
+      showToast(`💘 ${partner.name} revient à la vie avec ${p.name}.`, 'info');
     }
+    renderMJDashboard();
   }
+}
 
-  renderMJDashboard();
+function announceDeaths(deaths) {
+  if (!deaths.length) return;
+  sendToProjector({ action: 'announceDeath', deaths });
+  const text = deaths
+    .map((d) => (d.love ? `💔 ${d.name} meurt de chagrin` : `💀 ${d.name} est mort`))
+    .join(' — ');
+  showToast(text, 'info');
 }
 
 // --- MÉDIAS ---
@@ -377,7 +460,7 @@ function stopRoleVideo() {
 }
 
 function isCenteredVideo(fileName) {
-  return overlayMode === 'center' && currentOverlayFile === fileName;
+  return (overlayMode === 'center' || overlayMode === 'full') && currentOverlayFile === fileName;
 }
 
 function playScene(videoId, loop = true) {
@@ -390,12 +473,14 @@ function playScene(videoId, loop = true) {
 }
 
 function playNightPhase() {
+  closeVillageVote(true);
   playScene(YT_ID_NUIT);
   playAudioFile("Appel nuit V2.mp3");
 }
 
 function playDayPhase() {
   playScene(YT_ID_JOUR);
+  openVillageVote();
   playAudioFile("Appel jour V2.mp3");
 }
 
@@ -414,10 +499,11 @@ function playCommand(cmd) {
   if (cmd === 'fermer_yeux') {
     playAudioFile("Fermer les yeux.mp3");
   } else if (cmd === 'voter_maire') {
-    // Affiche la vidéo du Maire centrée en grand format sans diffuser l'audio Maire.mp3
-    playRoleVideo("Maire.mp4", 'center');
+    // Vidéo du Maire en plein écran (sans recadrage), sans diffuser l'audio Maire.mp3
+    playRoleVideo("Maire.mp4", 'full');
   } else if (cmd === 'voter') {
     playAudioFile("Voter.mp3");
+    if (!villageVote.open) openVillageVote();
   }
 }
 
@@ -600,13 +686,16 @@ function playRole(role) {
   if (calledOnce.has(role)) return;
 
   playAudioFile(item.audio);
-  if (item.video) playRoleVideo(item.video, 'center');
+  if (item.video) playRoleVideo(item.video, role === 'chasseur' ? 'full' : 'center');
 
   if (role === 'voleur' || role === 'cupidon') {
     calledOnce.add(role);
     updateCallButtons();
   }
   if (role === 'voleur') startThiefTurn();
+  if (role === 'cupidon') startCupidTurn();
+  if (role === 'loups') startWolfTurn();
+  if (role === 'sorciere') startWitchTurn();
 }
 
 // --- VOL DE RÔLE ---
@@ -708,6 +797,396 @@ function playEffect(effect) {
     playAudioFile("Effet sorciere.mp3");
   }
 }
+
+// =====================================================================
+//  PARTIE AUTOMATISÉE : Cupidon, loups, sorcière, vote, annonces vidéo
+// =====================================================================
+const UNIQUE_ROLES = ['Voyante', 'Sorcière', 'Chasseur', 'Cupidon', 'Voleur', 'Renard', 'Petite Fille'];
+
+let cupidWaiting = new Set();                         // Cupidon qui doivent encore choisir
+let witchState = { lifeUsed: false, deathUsed: false };
+let witchWaiting = new Set();
+let night = newNight();
+let wolvesOpen = false;
+let villageVote = { open: false, votes: new Map() };
+let selection = { wolves: new Set(), poison: new Set(), vote: new Set() };
+
+function newNight() {
+  return { wolfVotes: new Map(), wolfFinal: new Set(), wolfVictim: null, saved: false, poisoned: null };
+}
+
+function resetGameAutomation() {
+  cupidWaiting = new Set();
+  witchState = { lifeUsed: false, deathUsed: false };
+  witchWaiting = new Set();
+  night = newNight();
+  wolvesOpen = false;
+  villageVote = { open: false, votes: new Map() };
+  selection = { wolves: new Set(), poison: new Set(), vote: new Set() };
+}
+
+// --- outils ---
+function findPlayer(name) { return players.find((p) => p.name === name) || null; }
+function alivePlayers() { return players.filter((p) => p.alive); }
+function senderOf(conn) { return players.find((p) => p.conn === conn) || null; }
+function sendTo(p, msg) {
+  if (p && p.conn && p.conn.open) { p.conn.send(msg); return true; }
+  return false;
+}
+// décompte des votes : on ignore les votants et les cibles déjà morts
+function aliveTally(votesMap) {
+  const counts = {};
+  votesMap.forEach((target, voter) => {
+    const v = findPlayer(voter), t = findPlayer(target);
+    if (v && v.alive && t && t.alive) counts[target] = (counts[target] || 0) + 1;
+  });
+  return counts;
+}
+function topOf(counts) {
+  let max = 0;
+  Object.values(counts).forEach((n) => { if (n > max) max = n; });
+  return { max, names: max ? Object.keys(counts).filter((n) => counts[n] === max) : [] };
+}
+
+function setAlive(p, alive) {
+  p.alive = alive;
+  sendTo(p, { type: 'status', alive });
+}
+
+// Tue les joueurs donnés ; l'amoureux d'un mort meurt automatiquement de chagrin
+function killPlayers(names) {
+  const deaths = [];
+  names.forEach((n) => {
+    const p = findPlayer(n);
+    if (!p || !p.alive) return;
+    setAlive(p, false);
+    p.diedOfLove = false;
+    deaths.push({ name: p.name });
+    if (p.inLove) {
+      const partner = players.find((x) => x !== p && x.inLove);
+      if (partner && partner.alive) {
+        setAlive(partner, false);
+        partner.diedOfLove = true;
+        deaths.push({ name: partner.name, love: true });
+      }
+    }
+  });
+  return deaths;
+}
+
+// Renvoie à un joueur qui (re)vient l'état courant de la partie
+function resyncPlayer(p) {
+  if (!distributed) return;
+  sendTo(p, { type: 'status', alive: p.alive });
+  if (p.inLove) {
+    const partner = players.find((x) => x !== p && x.inLove);
+    sendTo(p, { type: 'lover', partner: partner ? partner.name : null });
+  }
+  if (!p.alive) return;
+  if (thiefOffers.has(p.name)) sendThiefTurn(p);
+  if (cupidWaiting.has(p.name)) sendCupidTurn(p);
+  if (witchWaiting.has(p.name)) sendWitchTurn(p);
+  if (wolvesOpen && p.role === 'Loup-Garou' && !night.wolfFinal.has(p.name)) sendWolfTurn(p);
+  if (villageVote.open) sendVoteTurn(p);
+}
+
+// ------------------------------- CUPIDON -------------------------------
+function sendCupidTurn(c) {
+  sendTo(c, { type: 'cupidTurn', names: alivePlayers().map((p) => p.name) });
+}
+
+function startCupidTurn() {
+  const cupids = alivePlayers().filter((p) => p.role === 'Cupidon');
+  if (!cupids.length) { showToast("Aucun Cupidon en vie dans la partie.", 'info'); return; }
+  cupids.forEach((c) => {
+    cupidWaiting.add(c.name);
+    if (c.connected) sendCupidTurn(c);
+    else showToast(`Cupidon (${c.name}) est déconnecté : le choix lui sera proposé à sa reconnexion.`, 'info');
+  });
+}
+
+function handleCupidChoice(conn, data) {
+  const cupid = senderOf(conn);
+  if (!cupid || cupid.role !== 'Cupidon' || !cupidWaiting.has(cupid.name)) return;
+  const names = Array.isArray(data.names) ? [...new Set(data.names.map(String))] : [];
+  const pair = names.map(findPlayer);
+  if (names.length !== 2 || pair.some((p) => !p || !p.alive)) { sendCupidTurn(cupid); return; }
+
+  players.forEach((p) => { p.inLove = false; p.diedOfLove = false; });
+  pair.forEach((p) => { p.inLove = true; });
+  cupidWaiting.delete(cupid.name);
+  sendTo(cupid, { type: 'cupidDone' });
+  notifyLovers();
+  renderMJDashboard();
+  showToast(`💘 Cupidon (${cupid.name}) a uni ${pair[0].name} et ${pair[1].name}.`, 'info');
+}
+
+// ---------------------------- LOUPS-GAROUS ----------------------------
+function wolvesAlive() { return alivePlayers().filter((p) => p.role === 'Loup-Garou'); }
+
+function sendWolfTurn(w) {
+  sendTo(w, {
+    type: 'wolfTurn',
+    targets: alivePlayers().filter((p) => p !== w).map((p) => p.name),
+    votes: aliveTally(night.wolfVotes),
+    myVote: night.wolfVotes.get(w.name) || null,
+    final: night.wolfFinal.has(w.name)
+  });
+}
+
+function startWolfTurn() {
+  night = newNight();
+  selection.wolves = new Set();
+  const wolves = wolvesAlive();
+  if (!wolves.length) {
+    wolvesOpen = false;
+    showToast("Aucun Loup-Garou en vie.", 'info');
+    renderMJDashboard();
+    return;
+  }
+  wolvesOpen = true;
+  wolves.forEach(sendWolfTurn);
+  renderMJDashboard();
+}
+
+function broadcastWolfVotes() {
+  const votes = aliveTally(night.wolfVotes);
+  wolvesAlive().forEach((w) => sendTo(w, { type: 'wolfVotes', votes }));
+}
+
+function handleWolfVote(conn, data) {
+  const w = senderOf(conn);
+  if (!w || !w.alive || w.role !== 'Loup-Garou' || !wolvesOpen || night.wolfFinal.has(w.name)) return;
+  const t = findPlayer(String(data.target || ''));
+  if (!t || !t.alive || t === w) return;
+  night.wolfVotes.set(w.name, t.name);
+  broadcastWolfVotes();
+  renderMJDashboard();
+}
+
+function handleWolfFinal(conn) {
+  const w = senderOf(conn);
+  if (!w || !w.alive || !wolvesOpen || !night.wolfVotes.has(w.name)) return;
+  night.wolfFinal.add(w.name);
+  sendTo(w, { type: 'wolfLocked' });
+  if (wolvesAlive().every((x) => night.wolfFinal.has(x.name))) closeWolfVote();
+  else renderMJDashboard();
+}
+
+function closeWolfVote() {
+  if (!wolvesOpen) return;
+  wolvesOpen = false;
+  wolvesAlive().forEach((w) => sendTo(w, { type: 'wolfDone' }));
+  const { names } = topOf(aliveTally(night.wolfVotes));
+  if (names.length === 1) {
+    night.wolfVictim = names[0];
+    selection.wolves = new Set([names[0]]);
+    showToast(`🐺 Les loups ont désigné ${names[0]}.`, 'info');
+  } else if (names.length > 1) {
+    night.wolfVictim = null;
+    showToast(`🐺 Égalité entre ${names.join(', ')} : sélectionnez la victime à la main.`, 'info');
+  } else {
+    showToast("🐺 Aucun vote des loups cette nuit.", 'info');
+  }
+  renderMJDashboard();
+}
+
+// ------------------------------ SORCIÈRE ------------------------------
+function sendWitchTurn(w) {
+  const canSave = !witchState.lifeUsed && !!night.wolfVictim && !night.saved;
+  sendTo(w, {
+    type: 'witchTurn',
+    victim: canSave ? night.wolfVictim : null,
+    noVictim: !witchState.lifeUsed && !night.wolfVictim,
+    canSave,
+    canPoison: !witchState.deathUsed,
+    targets: alivePlayers().map((p) => p.name)
+  });
+}
+
+function startWitchTurn() {
+  const witches = alivePlayers().filter((p) => p.role === 'Sorcière');
+  if (!witches.length) { showToast("Aucune Sorcière en vie dans la partie.", 'info'); return; }
+  witches.forEach((w) => {
+    witchWaiting.add(w.name);
+    if (w.connected) sendWitchTurn(w);
+    else showToast(`La Sorcière (${w.name}) est déconnectée : le choix lui sera proposé à sa reconnexion.`, 'info');
+  });
+}
+
+function handleWitchAction(conn, data) {
+  const w = senderOf(conn);
+  if (!w || !w.alive || w.role !== 'Sorcière' || !witchWaiting.has(w.name)) return;
+  witchWaiting.delete(w.name);
+  const done = [];
+
+  if (data.save && !witchState.lifeUsed && night.wolfVictim && !night.saved) {
+    night.saved = true;
+    witchState.lifeUsed = true;
+    selection.wolves.delete(night.wolfVictim);
+    done.push(`a sauvé ${night.wolfVictim}`);
+  }
+  const target = data.poison ? findPlayer(String(data.poison)) : null;
+  if (target && target.alive && !witchState.deathUsed) {
+    night.poisoned = target.name;
+    witchState.deathUsed = true;
+    selection.poison.add(target.name);
+    done.push(`a empoisonné ${target.name}`);
+  }
+  sendTo(w, { type: 'witchDone' });
+  showToast(done.length ? `🧪 La Sorcière ${done.join(' et ')}.` : "🧪 La Sorcière ne fait rien cette nuit.", 'info');
+  renderMJDashboard();
+}
+
+// --------------------------- VOTE DU VILLAGE ---------------------------
+function sendVoteTurn(p) {
+  if (!villageVote.open || !p.alive) return;
+  sendTo(p, {
+    type: 'voteTurn',
+    targets: alivePlayers().filter((x) => x !== p).map((x) => x.name),
+    myVote: villageVote.votes.get(p.name) || null
+  });
+}
+
+function openVillageVote() {
+  villageVote = { open: true, votes: new Map() };
+  selection.vote = new Set();
+  alivePlayers().forEach(sendVoteTurn);
+  renderMJDashboard();
+}
+
+function handleVillageVote(conn, data) {
+  const v = senderOf(conn);
+  if (!v || !v.alive || !villageVote.open) return;
+  const t = findPlayer(String(data.target || ''));
+  if (!t || !t.alive || t === v) return;
+  villageVote.votes.set(v.name, t.name);
+  sendTo(v, { type: 'voteAck', target: t.name });
+  renderMJDashboard();
+}
+
+function closeVillageVote(silent = false) {
+  if (!villageVote.open) return;
+  villageVote.open = false;
+  players.forEach((p) => sendTo(p, { type: 'voteClose' }));
+  if (!silent) {
+    const { names, max } = topOf(aliveTally(villageVote.votes));
+    if (names.length === 1) {
+      selection.vote = new Set([names[0]]);
+      showToast(`🗳️ ${names[0]} a le plus de votes (${max}).`, 'info');
+    } else if (names.length > 1) {
+      selection.vote = new Set();
+      showToast(`🗳️ Égalité entre ${names.join(', ')} : sélectionnez à la main qui est éliminé.`, 'info');
+    } else {
+      showToast("🗳️ Aucun vote exprimé.", 'info');
+    }
+  }
+  renderMJDashboard();
+}
+
+// --------------------- ANNONCES VIDÉO (écran secondaire) ---------------------
+// namesAt : 'start' = noms par-dessus la vidéo dès le début ; 'end' = noms affichés à la fin de la vidéo
+const EVENTS = {
+  wolves: { video: 'Mort Loup.mp4',     namesAt: 'start', title: '🐺 Mort par les loups-garous', button: '🐺 Annoncer la mort (loups)' },
+  poison: { video: 'Empoisoner.mp4',    namesAt: 'end',   title: '☠️ Mort par empoisonnement',   button: '☠️ Annoncer l\'empoisonnement' },
+  vote:   { video: 'Elimination 2.mp4', namesAt: 'end',   title: '🗳️ Élimination par le village', button: '🗳️ Annoncer l\'élimination' }
+};
+
+function announceKillEvent(kind) {
+  const cfg = EVENTS[kind];
+  if (!cfg) return;
+  const names = [...selection[kind]].filter((n) => { const p = findPlayer(n); return p && p.alive; });
+  if (!names.length) { showToast("Sélectionnez d'abord au moins un joueur à annoncer.", 'info'); return; }
+  if (!projectorOpen()) { alert("Veuillez d'abord cliquer sur 'Ouvrir l'Écran Secondaire' !"); return; }
+
+  const deaths = killPlayers(names);
+  selection[kind] = new Set();
+  if (kind === 'wolves') night.wolfVictim = null;
+  if (kind === 'poison') night.poisoned = null;
+
+  // on coupe la voix du MJ et les incrustations pendant la vidéo d'annonce
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+  window.speechSynthesis.cancel();
+  overlayMode = null;
+  currentOverlayFile = null;
+
+  sendToProjector({ action: 'eventVideo', url: mediaUrl('video', cfg.video), deaths, namesAt: cfg.namesAt });
+  renderMJDashboard();
+  showToast(deaths.map((d) => (d.love ? `💔 ${d.name} meurt de chagrin` : `💀 ${d.name}`)).join(' — '), 'info');
+}
+
+// ---------------------- PANNEAU D'AUTOMATISATION ----------------------
+function chipsHtml(kind) {
+  const list = alivePlayers();
+  if (!list.length) return '<span class="hint">Aucun joueur en vie</span>';
+  return list.map((p) =>
+    `<button type="button" class="chip ${selection[kind].has(p.name) ? 'on' : ''}" data-kind="${kind}" data-name="${escapeHtml(p.name)}">${escapeHtml(p.name)}</button>`
+  ).join('');
+}
+
+function countsText(counts) {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  return entries.length ? entries.map(([n, c]) => `${escapeHtml(n)} (${c})`).join(' · ') : 'aucun vote';
+}
+
+function renderAutomation() {
+  const el = document.getElementById('automation-panel');
+  if (!el || !distributed) return;
+
+  const wolves = wolvesAlive();
+  const wolfCounts = aliveTally(night.wolfVotes);
+  const voteCounts = aliveTally(villageVote.votes);
+  const lovers = players.filter((p) => p.inLove);
+
+  const wolfStatus = wolvesOpen
+    ? `🟢 vote ouvert — ${night.wolfFinal.size}/${wolves.length} validé(s) — ${countsText(wolfCounts)} <button type="button" class="auto-btn" data-act="closeWolves">Clore le vote</button>`
+    : (night.wolfVictim ? `🔒 victime désignée : <strong>${escapeHtml(night.wolfVictim)}</strong>${night.saved ? ' (sauvée par la Sorcière)' : ''}` : '⚪ en attente de l\'appel des loups');
+
+  const voteStatus = villageVote.open
+    ? `🟢 vote ouvert — ${villageVote.votes.size}/${alivePlayers().length} ont voté — ${countsText(voteCounts)} <button type="button" class="auto-btn" data-act="closeVote">Clore le vote</button>`
+    : '⚪ ouvert automatiquement quand le jour se lève';
+
+  const witchStatus = `Potion de vie : ${witchState.lifeUsed ? '❌ utilisée' : '✅ disponible'} · Potion de mort : ${witchState.deathUsed ? '❌ utilisée' : '✅ disponible'}`
+    + (night.poisoned ? ` — empoisonné cette nuit : <strong>${escapeHtml(night.poisoned)}</strong>` : '');
+
+  el.innerHTML = `
+    <h3 class="auto-title">⚙️ Automatisation de la partie</h3>
+
+    <div class="auto-block">
+      <p><strong>💘 Amoureux :</strong> ${lovers.length === 2 ? lovers.map((l) => escapeHtml(l.name)).join(' & ') + ' — si l\'un meurt, l\'autre meurt aussi.' : 'pas encore désignés (appel de Cupidon).'}</p>
+      <p><strong>🐺 Loups :</strong> ${wolfStatus}</p>
+      <p><strong>🧪 Sorcière :</strong> ${witchStatus}</p>
+      <p><strong>🗳️ Vote du village :</strong> ${voteStatus}</p>
+    </div>
+
+    ${['wolves', 'poison', 'vote'].map((kind) => `
+    <div class="auto-block">
+      <p class="auto-label">${EVENTS[kind].title}</p>
+      <div class="chips">${chipsHtml(kind)}</div>
+      <button type="button" class="btn btn-danger auto-announce" data-act="announce" data-kind="${kind}">${EVENTS[kind].button}</button>
+    </div>`).join('')}
+  `;
+}
+
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('automation-panel');
+  if (!panel || !panel.contains(e.target)) return;
+
+  const chip = e.target.closest('.chip');
+  if (chip) {
+    const { kind, name } = chip.dataset;
+    if (selection[kind].has(name)) selection[kind].delete(name);
+    else selection[kind].add(name);
+    if (kind === 'wolves' && selection.wolves.size === 1) night.wolfVictim = [...selection.wolves][0];
+    renderAutomation();
+    return;
+  }
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  if (btn.dataset.act === 'announce') announceKillEvent(btn.dataset.kind);
+  else if (btn.dataset.act === 'closeWolves') closeWolfVote();
+  else if (btn.dataset.act === 'closeVote') closeVillageVote(false);
+});
 
 // --- RACCOURCIS CLAVIER ---
 document.addEventListener('keydown', (e) => {

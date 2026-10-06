@@ -187,6 +187,35 @@ function connect(room, name, token, isAuto) {
         showThiefPanel(data.options || []);
       } else if (data.type === 'thiefDone') {
         hideThiefPanel();
+      } else if (data.type === 'status') {
+        setAliveUI(data.alive);
+      } else if (data.type === 'lover') {
+        setLoverUI(data.partner);
+      } else if (data.type === 'cupidTurn') {
+        showCupidPanel(data.names || []);
+      } else if (data.type === 'cupidDone') {
+        hidePanel('cupid-panel');
+      } else if (data.type === 'wolfTurn') {
+        showWolfPanel(data);
+      } else if (data.type === 'wolfVotes') {
+        wolfState.votes = data.votes || {};
+        renderWolfList();
+      } else if (data.type === 'wolfLocked') {
+        wolfState.final = true;
+        renderWolfList();
+      } else if (data.type === 'wolfDone') {
+        hidePanel('wolf-panel');
+      } else if (data.type === 'witchTurn') {
+        showWitchPanel(data);
+      } else if (data.type === 'witchDone') {
+        hidePanel('witch-panel');
+      } else if (data.type === 'voteTurn') {
+        showVotePanel(data);
+      } else if (data.type === 'voteAck') {
+        voteState.my = data.target;
+        renderVoteList();
+      } else if (data.type === 'voteClose') {
+        hidePanel('vote-panel');
       }
     });
 
@@ -305,7 +334,6 @@ function showThiefPanel(options) {
   document.getElementById('thief-skip').disabled = false;
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 }
 
 function lockThiefPanel() {
@@ -329,4 +357,213 @@ function thiefSkip() {
 function hideThiefPanel() {
   const panel = document.getElementById('thief-panel');
   if (panel) panel.style.display = 'none';
+}
+
+// =====================================================================
+//  ACTIONS DE JEU SUR TÉLÉPHONE (noms des joueurs uniquement, jamais les rôles)
+// =====================================================================
+function hidePanel(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+function showPanel(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// bouton-nom réutilisable
+function pickButton(label, { selected = false, disabled = false, extra = '', onClick }) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn pick-btn nom-joueur' + (selected ? ' selected' : '');
+  b.disabled = disabled;
+  const name = document.createElement('span');
+  name.textContent = label;
+  b.appendChild(name);
+  if (extra) {
+    const x = document.createElement('small');
+    x.className = 'pick-extra';
+    x.textContent = extra;
+    b.appendChild(x);
+  }
+  b.onclick = onClick;
+  return b;
+}
+
+// --- joueur éliminé / amoureux ---
+function setAliveUI(alive) {
+  const banner = document.getElementById('dead-banner');
+  if (banner) banner.style.display = alive ? 'none' : 'block';
+  if (!alive) {
+    ['cupid-panel', 'wolf-panel', 'witch-panel', 'vote-panel', 'thief-panel'].forEach(hidePanel);
+  }
+}
+
+function setLoverUI(partner) {
+  const el = document.getElementById('lover-line');
+  if (!el) return;
+  if (partner) {
+    el.textContent = `💘 Tu es amoureux(se) de ${partner}. Si l'un de vous meurt, l'autre mourra de chagrin.`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// --- Cupidon ---
+let cupidState = { names: [], picked: [] };
+
+function showCupidPanel(names) {
+  cupidState = { names, picked: [] };
+  renderCupidList();
+  showPanel('cupid-panel');
+}
+
+function renderCupidList() {
+  const list = document.getElementById('cupid-list');
+  list.innerHTML = '';
+  cupidState.names.forEach((name) => {
+    const on = cupidState.picked.includes(name);
+    list.appendChild(pickButton(name, {
+      selected: on,
+      onClick: () => {
+        if (on) cupidState.picked = cupidState.picked.filter((n) => n !== name);
+        else if (cupidState.picked.length < 2) cupidState.picked.push(name);
+        renderCupidList();
+      }
+    }));
+  });
+  document.getElementById('cupid-confirm').disabled = cupidState.picked.length !== 2;
+}
+
+function cupidConfirm() {
+  if (!conn || !conn.open || cupidState.picked.length !== 2) return;
+  if (!confirm(`Unir ${cupidState.picked[0]} et ${cupidState.picked[1]} ?`)) return;
+  document.querySelectorAll('#cupid-panel button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'cupidChoice', names: cupidState.picked });
+}
+
+// --- Loups-Garous ---
+let wolfState = { targets: [], votes: {}, my: null, final: false };
+
+function showWolfPanel(data) {
+  wolfState = { targets: data.targets || [], votes: data.votes || {}, my: data.myVote || null, final: !!data.final };
+  renderWolfList();
+  showPanel('wolf-panel');
+}
+
+function renderWolfList() {
+  const list = document.getElementById('wolf-list');
+  list.innerHTML = '';
+  wolfState.targets.forEach((name) => {
+    const n = wolfState.votes[name] || 0;
+    list.appendChild(pickButton(name, {
+      selected: wolfState.my === name,
+      disabled: wolfState.final,
+      extra: n ? `${n} vote${n > 1 ? 's' : ''}` : '',
+      onClick: () => {
+        if (!conn || !conn.open || wolfState.final) return;
+        wolfState.my = name;
+        conn.send({ type: 'wolfVote', target: name });
+        renderWolfList();
+      }
+    }));
+  });
+  document.getElementById('wolf-confirm').disabled = wolfState.final || !wolfState.my;
+  document.getElementById('wolf-info').textContent = wolfState.final
+    ? "Vote validé. En attente des autres loups…"
+    : "Touche un nom pour voter. Le nombre de votes s'affiche à côté.";
+}
+
+function wolfConfirm() {
+  if (!conn || !conn.open || !wolfState.my) return;
+  conn.send({ type: 'wolfFinal' });
+}
+
+// --- Sorcière ---
+let witchState = { save: false, poison: null, victim: null, canSave: false, canPoison: false, targets: [] };
+
+function showWitchPanel(data) {
+  witchState = { save: false, poison: null, victim: data.victim || null, canSave: !!data.canSave, canPoison: !!data.canPoison, targets: data.targets || [] };
+
+  const saveBox = document.getElementById('witch-save');
+  saveBox.style.display = witchState.canSave ? 'block' : 'none';
+  if (witchState.canSave) {
+    document.getElementById('witch-victim-text').textContent = `Cette nuit, les loups ont attaqué : ${witchState.victim}.`;
+  }
+  document.getElementById('witch-novictim').style.display = (!witchState.canSave && data.noVictim) ? 'block' : 'none';
+  document.getElementById('witch-poison').style.display = witchState.canPoison ? 'block' : 'none';
+  document.getElementById('witch-empty').style.display = (!witchState.canSave && !witchState.canPoison) ? 'block' : 'none';
+
+  renderWitch();
+  showPanel('witch-panel');
+}
+
+function renderWitch() {
+  const saveBtn = document.getElementById('witch-save-btn');
+  saveBtn.textContent = witchState.save
+    ? `✅ Potion de vie sur ${witchState.victim} (toucher pour annuler)`
+    : `🧪💚 Sauver ${witchState.victim || ''}`;
+
+  const list = document.getElementById('witch-poison-list');
+  list.innerHTML = '';
+  if (witchState.canPoison) {
+    witchState.targets.forEach((name) => {
+      list.appendChild(pickButton(name, {
+        selected: witchState.poison === name,
+        onClick: () => {
+          witchState.poison = witchState.poison === name ? null : name;
+          renderWitch();
+        }
+      }));
+    });
+  }
+  document.getElementById('witch-confirm').textContent =
+    (witchState.save || witchState.poison) ? 'Valider' : 'Ne rien faire';
+}
+
+function witchToggleSave() {
+  witchState.save = !witchState.save;
+  renderWitch();
+}
+
+function witchConfirm() {
+  if (!conn || !conn.open) return;
+  const parts = [];
+  if (witchState.save) parts.push(`sauver ${witchState.victim}`);
+  if (witchState.poison) parts.push(`empoisonner ${witchState.poison}`);
+  if (!confirm(parts.length ? `Confirmer : ${parts.join(' et ')} ?` : "Ne rien faire cette nuit ?")) return;
+  document.querySelectorAll('#witch-panel button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'witchAction', save: witchState.save, poison: witchState.poison });
+}
+
+// --- Vote du village ---
+let voteState = { targets: [], my: null };
+
+function showVotePanel(data) {
+  voteState = { targets: data.targets || [], my: data.myVote || null };
+  renderVoteList();
+  showPanel('vote-panel');
+}
+
+function renderVoteList() {
+  const list = document.getElementById('vote-list');
+  list.innerHTML = '';
+  voteState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: voteState.my === name,
+      onClick: () => {
+        if (!conn || !conn.open) return;
+        voteState.my = name;
+        conn.send({ type: 'villageVote', target: name });
+        renderVoteList();
+      }
+    }));
+  });
+  document.getElementById('vote-info').textContent = voteState.my
+    ? `Ton vote : ${voteState.my}. Tu peux le changer tant que le vote est ouvert.`
+    : "Qui veux-tu éliminer ? Tu peux changer ton vote tant qu'il est ouvert.";
 }

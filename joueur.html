@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Loup-Garou - Espace Joueur</title>
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=25">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
@@ -28,6 +28,8 @@
     <section class="card" id="game-card" style="display: none; text-align: center;">
       <h2 id="welcome-title" class="nom-joueur">Bienvenue !</h2>
       <p id="status-text">En attente de la distribution par le Maître du Jeu...</p>
+      <p id="lover-line" class="lover-line" style="display: none;"></p>
+      <div id="dead-banner" class="dead-banner" style="display: none;">💀 Tu as été éliminé(e). Tu ne peux plus voter ni agir, mais tu peux suivre la partie.</div>
 
       <!-- Tour du Voleur : choisir l'un des 2 rôles proposés -->
       <div id="thief-panel" class="thief-panel" style="display: none;">
@@ -35,6 +37,46 @@
         <p>Choisis l'un de ces deux rôles. Tu l'obtiens à la place de ta carte, et le joueur qui le possède devient simple Villageois.</p>
         <div id="thief-cards" class="thief-cards"></div>
         <button class="btn btn-effect" id="thief-skip" onclick="thiefSkip()">Garder mon rôle</button>
+      </div>
+
+
+      <!-- Cupidon : désigner les 2 amoureux -->
+      <div id="cupid-panel" class="action-panel" style="display: none;">
+        <h3>💘 Cupidon, désigne les amoureux</h3>
+        <p>Choisis 2 joueurs. Si l'un meurt, l'autre mourra de chagrin.</p>
+        <div id="cupid-list" class="pick-list"></div>
+        <button class="btn btn-night" id="cupid-confirm" onclick="cupidConfirm()" disabled>Valider ce couple</button>
+      </div>
+
+      <!-- Loups-Garous : voter pour la victime -->
+      <div id="wolf-panel" class="action-panel" style="display: none;">
+        <h3>🐺 Loups-Garous, choisissez votre victime</h3>
+        <p id="wolf-info">Touche un nom pour voter. Le nombre de votes s'affiche à côté.</p>
+        <div id="wolf-list" class="pick-list"></div>
+        <button class="btn btn-danger" id="wolf-confirm" onclick="wolfConfirm()" disabled>Valider mon vote</button>
+      </div>
+
+      <!-- Sorcière : potions -->
+      <div id="witch-panel" class="action-panel" style="display: none;">
+        <h3>🧪 Sorcière, c'est ton tour</h3>
+        <div id="witch-save" style="display: none;">
+          <p id="witch-victim-text"></p>
+          <button class="btn btn-vert pick-btn" id="witch-save-btn" onclick="witchToggleSave()"></button>
+        </div>
+        <p id="witch-novictim" style="display: none;">Les loups n'ont tué personne cette nuit.</p>
+        <div id="witch-poison" style="display: none;">
+          <p>☠️ Potion de mort : choisis un joueur à empoisonner (ou personne).</p>
+          <div id="witch-poison-list" class="pick-list"></div>
+        </div>
+        <p id="witch-empty" style="display: none;">Tu n'as plus aucune potion.</p>
+        <button class="btn btn-night" id="witch-confirm" onclick="witchConfirm()">Ne rien faire</button>
+      </div>
+
+      <!-- Vote du village (de jour) -->
+      <div id="vote-panel" class="action-panel" style="display: none;">
+        <h3>🗳️ Vote du village</h3>
+        <p id="vote-info">Qui veux-tu éliminer ? Tu peux changer ton vote tant qu'il est ouvert.</p>
+        <div id="vote-list" class="pick-list"></div>
       </div>
 
       <div id="card-area" style="display: none;">
@@ -52,7 +94,7 @@
       </div>
     </section>
   </main>
-  <p class="hint" style="text-align:center;">Version 23</p>
+  <p class="hint" style="text-align:center;">Version 25</p>
 
   <script>
     (function () {
@@ -81,6 +123,6 @@
       });
     })();
   </script>
-  <script src="player.js?v=23"></script>
+  <script src="player.js?v=25"></script>
 </body>
 </html>

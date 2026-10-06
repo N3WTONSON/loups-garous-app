@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
   <title>Loup-Garou - Régie Maître du Jeu</title>
-  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="style.css?v=25">
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
@@ -71,45 +71,46 @@
               <h3>🎭 Rôles en jeu (<span id="role-count">0</span>)</h3>
               
               <div class="role-selector-grid role-grid">
-                <button class="btn-role-card" onclick="addRole('Loup-Garou')">
+                <button class="btn-role-card" data-pick="Loup-Garou" onclick="addRole('Loup-Garou')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png" alt="Loup-Garou">
                   <span>Loup-Garou</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Villageois')">
+                <button class="btn-role-card" data-pick="Villageois" onclick="addRole('Villageois')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois.png" alt="Villageois">
                   <span>Villageois</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Voyante')">
+                <button class="btn-role-card" data-pick="Voyante" onclick="addRole('Voyante')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante.png" alt="Voyante">
                   <span>Voyante</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Sorcière')">
+                <button class="btn-role-card" data-pick="Sorcière" onclick="addRole('Sorcière')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Sorciere.png" alt="Sorcière">
                   <span>Sorcière</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Chasseur')">
+                <button class="btn-role-card" data-pick="Chasseur" onclick="addRole('Chasseur')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png" alt="Chasseur">
                   <span>Chasseur</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Cupidon')">
+                <button class="btn-role-card" data-pick="Cupidon" onclick="addRole('Cupidon')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png" alt="Cupidon">
                   <span>Cupidon</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Voleur')">
+                <button class="btn-role-card" data-pick="Voleur" onclick="addRole('Voleur')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png" alt="Voleur">
                   <span>Voleur</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Renard')">
+                <button class="btn-role-card" data-pick="Renard" onclick="addRole('Renard')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg" alt="Renard">
                   <span>Renard</span>
                 </button>
-                <button class="btn-role-card" onclick="addRole('Petite Fille')">
+                <button class="btn-role-card" data-pick="Petite Fille" onclick="addRole('Petite Fille')">
                   <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png" alt="Petite Fille">
                   <span>Petite Fille</span>
                 </button>
               </div>
 
               <ul id="role-list" class="tag-list" style="margin-top: 15px;"></ul>
+              <p id="role-ratio" class="hint role-ratio" style="margin-top: 10px;"></p>
             </div>
           </div>
 
@@ -139,6 +140,8 @@
             </thead>
             <tbody id="mj-table-body"></tbody>
           </table>
+
+          <div id="automation-panel" class="automation"></div>
         </section>
 
       </div>
@@ -245,7 +248,7 @@
         </section>
 
   </main>
-  <p id="app-version" class="hint" style="text-align:center;">Version 23</p>
+  <p id="app-version" class="hint" style="text-align:center;">Version 25</p>
 
   <script>
     (function () {
@@ -276,6 +279,6 @@
       });
     })();
   </script>
-  <script src="script.js?v=23"></script>
+  <script src="script.js?v=25"></script>
 </body>
 </html>

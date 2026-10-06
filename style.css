@@ -567,3 +567,96 @@ input[type="text"]:focus { outline-color: #dc2626; }
   color: #f4dcdc;
 }
 .thief-card p { margin: 0; font-size: 0.8rem; line-height: 1.35; color: #cbd5e1; }
+
+/* =====================================================================
+   AJOUTS v25 : rôles uniques, actions sur téléphone, automatisation
+   ===================================================================== */
+
+/* ratio Villageois / Loups-Garous */
+.role-ratio.ok  { color: #86efac; }
+.role-ratio.bad { color: #fca5a5; }
+
+/* Récapitulatif : joueurs morts */
+.mj-table tr.dead .nom-joueur {
+  text-decoration: line-through;
+  text-decoration-color: #b91c1c;
+  text-decoration-thickness: 2px;
+  opacity: 0.55;
+}
+.mj-table tr.dead td:nth-child(2) { opacity: 0.55; }
+
+/* Panneau d'automatisation du MJ */
+.automation { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(185, 28, 28, 0.5); }
+.auto-title { margin: 0 0 10px; font-size: 1.1rem; color: #f4dcdc; }
+.auto-block {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: rgba(60, 8, 12, 0.45);
+  border: 1px solid rgba(153, 27, 27, 0.55);
+  border-radius: 6px;
+}
+.auto-block p { margin: 4px 0; font-size: 0.9rem; line-height: 1.45; }
+.auto-label { font-weight: 700; color: #f4dcdc; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 10px; }
+.chip {
+  padding: 5px 12px;
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+}
+.chip:hover { border-color: #ef4444; }
+.chip.on { background: #991b1b; border-color: #ef4444; color: #fff; font-weight: 700; }
+.auto-btn {
+  margin-left: 6px;
+  padding: 3px 10px;
+  color: #fff;
+  background: #475569;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+.auto-btn:hover { background: #64748b; }
+.auto-announce { width: 100%; padding: 12px 16px; font-size: 0.95rem; }
+
+/* Téléphone du joueur : panneaux d'action (même habillage que le tour du Voleur) */
+.action-panel {
+  margin: 16px auto 0;
+  padding: 16px;
+  max-width: 420px;
+  border: 2px solid rgba(185, 28, 28, 0.8);
+  border-radius: 6px;
+  background: rgba(40, 8, 12, 0.85);
+  box-shadow: inset 0 0 30px rgba(120, 0, 0, 0.35);
+}
+.action-panel h3 { margin: 0 0 8px; font-size: 1.3rem; color: #f4dcdc; }
+.action-panel p { margin: 0 0 12px; color: #cbd5e1; line-height: 1.4; }
+.pick-list { display: grid; gap: 8px; margin-bottom: 12px; }
+.pick-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  background-color: #334155;
+}
+.pick-btn.selected { background-color: #b91c1c; box-shadow: inset 0 0 0 3px #fecaca; }
+.pick-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pick-extra { font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; background: rgba(0, 0, 0, 0.45); padding: 2px 8px; border-radius: 999px; }
+.dead-banner {
+  margin: 12px auto 0;
+  max-width: 420px;
+  padding: 12px 14px;
+  color: #fecaca;
+  background: rgba(60, 8, 12, 0.85);
+  border: 2px solid #b91c1c;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.lover-line { margin: 10px 0 0; color: #fda4af; font-weight: 600; }
