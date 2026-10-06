@@ -1,5 +1,8 @@
-const VERSION_APP = "25";
+const VERSION_APP = "26";
 console.info("Loup-Garou régie - version " + VERSION_APP);
+
+// Mode test (page test.html uniquement) : rôles uniques et ratio non contrôlés
+const TEST_MODE = !!window.LG_TEST_MODE;
 
 const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
 
@@ -124,7 +127,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=25', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=26', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -167,24 +170,8 @@ function initHost(attempt = 0) {
   });
 
   peer.on('connection', (conn) => {
-    conn.on('data', (data) => {
-      if (!data) return;
-      if (data.type === 'join') handleJoin(conn, data);
-      else if (data.type === 'thiefSteal') handleThiefSteal(conn, data);
-      else if (data.type === 'cupidChoice') handleCupidChoice(conn, data);
-      else if (data.type === 'wolfVote') handleWolfVote(conn, data);
-      else if (data.type === 'wolfFinal') handleWolfFinal(conn);
-      else if (data.type === 'witchAction') handleWitchAction(conn, data);
-      else if (data.type === 'villageVote') handleVillageVote(conn, data);
-    });
-
-    conn.on('close', () => {
-      const p = players.find((pl) => pl.conn === conn);
-      if (p) {
-        p.connected = false;
-        refreshPlayerViews();
-      }
-    });
+    conn.on('data', (data) => routePlayerMessage(conn, data));
+    conn.on('close', () => handlePlayerConnClose(conn));
   });
 
   peer.on('error', (err) => {
@@ -198,6 +185,26 @@ function initHost(attempt = 0) {
       console.warn("Erreur PeerJS :", err);
     }
   });
+}
+
+// Message reçu d'un téléphone (PeerJS ou téléphone simulé de la page test)
+function routePlayerMessage(conn, data) {
+  if (!data) return;
+  if (data.type === 'join') handleJoin(conn, data);
+  else if (data.type === 'thiefSteal') handleThiefSteal(conn, data);
+  else if (data.type === 'cupidChoice') handleCupidChoice(conn, data);
+  else if (data.type === 'wolfVote') handleWolfVote(conn, data);
+  else if (data.type === 'wolfFinal') handleWolfFinal(conn);
+  else if (data.type === 'witchAction') handleWitchAction(conn, data);
+  else if (data.type === 'villageVote') handleVillageVote(conn, data);
+}
+
+function handlePlayerConnClose(conn) {
+  const p = players.find((pl) => pl.conn === conn);
+  if (p) {
+    p.connected = false;
+    refreshPlayerViews();
+  }
 }
 
 function handleJoin(conn, data) {
@@ -244,7 +251,7 @@ function refreshPlayerViews() {
 }
 
 function addRole(roleName) {
-  if (UNIQUE_ROLES.includes(roleName) && roles.includes(roleName)) {
+  if (!TEST_MODE && UNIQUE_ROLES.includes(roleName) && roles.includes(roleName)) {
     showToast(`« ${roleName} » ne peut être présent qu'une seule fois dans la partie.`, 'info');
     return;
   }
@@ -272,7 +279,7 @@ function updateMJRoleList() {
 
   // rôles à exemplaire unique : le bouton se grise une fois ajouté
   document.querySelectorAll('[data-pick]').forEach((btn) => {
-    const taken = UNIQUE_ROLES.includes(btn.dataset.pick) && roles.includes(btn.dataset.pick);
+    const taken = !TEST_MODE && UNIQUE_ROLES.includes(btn.dataset.pick) && roles.includes(btn.dataset.pick);
     btn.disabled = taken;
     btn.classList.toggle('used', taken);
   });
@@ -283,8 +290,10 @@ function updateMJRoleList() {
     const v = roles.filter((r) => r === 'Villageois').length;
     const w = roles.filter((r) => r === 'Loup-Garou').length;
     const ok = w >= 1 && v > w;
-    ratio.className = 'hint role-ratio ' + (ok ? 'ok' : (roles.length ? 'bad' : ''));
-    ratio.textContent = roles.length
+    ratio.className = 'hint role-ratio ' + (TEST_MODE ? 'ok' : (ok ? 'ok' : (roles.length ? 'bad' : '')));
+    ratio.textContent = TEST_MODE
+      ? `🧪 Mode test : rôles uniques et ratio non contrôlés — Villageois : ${v} · Loups-Garous : ${w}`
+      : roles.length
       ? `Villageois : ${v} · Loups-Garous : ${w} — ${ok ? '✅ ratio valide' : '⚠️ il faut au moins 1 Loup-Garou et plus de Villageois que de Loups-Garous'}`
       : "Rôle unique : Voyante, Sorcière, Chasseur, Cupidon, Voleur, Renard, Petite Fille. Ratio : plus de Villageois que de Loups-Garous.";
   }
@@ -295,20 +304,22 @@ function distributeRolesNetwork() {
     alert("Vérifiez que le nombre de joueurs équivaut au nombre de rôles.");
     return;
   }
-  const dup = UNIQUE_ROLES.find((r) => roles.filter((x) => x === r).length > 1);
-  if (dup) {
-    alert(`Le rôle « ${dup} » ne peut être présent qu'une seule fois.`);
-    return;
-  }
-  const nbWolves = roles.filter((r) => r === 'Loup-Garou').length;
-  const nbVillagers = roles.filter((r) => r === 'Villageois').length;
-  if (nbWolves < 1) {
-    alert("Ajoutez au moins un Loup-Garou.");
-    return;
-  }
-  if (nbVillagers <= nbWolves) {
-    alert(`Il faut plus de Villageois que de Loups-Garous (actuellement ${nbVillagers} Villageois pour ${nbWolves} Loup(s)-Garou(s)).`);
-    return;
+  if (!TEST_MODE) {
+    const dup = UNIQUE_ROLES.find((r) => roles.filter((x) => x === r).length > 1);
+    if (dup) {
+      alert(`Le rôle « ${dup} » ne peut être présent qu'une seule fois.`);
+      return;
+    }
+    const nbWolves = roles.filter((r) => r === 'Loup-Garou').length;
+    const nbVillagers = roles.filter((r) => r === 'Villageois').length;
+    if (nbWolves < 1) {
+      alert("Ajoutez au moins un Loup-Garou.");
+      return;
+    }
+    if (nbVillagers <= nbWolves) {
+      alert(`Il faut plus de Villageois que de Loups-Garous (actuellement ${nbVillagers} Villageois pour ${nbWolves} Loup(s)-Garou(s)).`);
+      return;
+    }
   }
 
   const shuffled = [...roles];
