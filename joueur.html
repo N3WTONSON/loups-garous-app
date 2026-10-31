@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loup-Garou - Espace Joueur</title>
-  <link rel="stylesheet" href="style.css?v=26">
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <title>Les Loups-Garous : Le Carnage - Espace Joueur</title>
+  <link rel="stylesheet" href="style.css?v=94">
+  <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://0.peerjs.com">
+  <script src="boot.js?v=94"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
 </head>
 <body>
+  <script src="bg.js?v=94"></script>
 
   <header>
-    <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Titre.png" alt="Les Loups-garous de Thiercelieux" class="site-title-img">
+    <img src="logo-carnage.png?v=94" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
   </header>
 
   <main class="container">
@@ -26,9 +31,14 @@
     </section>
 
     <section class="card" id="game-card" style="display: none; text-align: center;">
+      <!-- Carte du rôle en petit, en haut à droite (visible dès que la partie a commencé) -->
+      <button type="button" id="mini-card" class="mini-card" style="display: none;" onclick="toggleRoleReveal()" aria-label="Voir mon rôle">
+        <img id="mini-card-img" alt="Ma carte de rôle">
+      </button>
       <h2 id="welcome-title" class="nom-joueur">Bienvenue !</h2>
       <p id="status-text">En attente de la distribution par le Maître du Jeu...</p>
       <p id="lover-line" class="lover-line" style="display: none;"></p>
+      <div id="gameover-banner" class="gameover-banner" style="display: none;"></div>
       <div id="dead-banner" class="dead-banner" style="display: none;">💀 Tu as été éliminé(e). Tu ne peux plus voter ni agir, mais tu peux suivre la partie.</div>
 
       <!-- Tour du Voleur : choisir l'un des 2 rôles proposés -->
@@ -36,9 +46,17 @@
         <h3>🕵️ Voleur, c'est ton tour !</h3>
         <p>Choisis l'un de ces deux rôles. Tu l'obtiens à la place de ta carte, et le joueur qui le possède devient simple Villageois.</p>
         <div id="thief-cards" class="thief-cards"></div>
-        <button class="btn btn-effect" id="thief-skip" onclick="thiefSkip()">Garder mon rôle</button>
+        <button class="btn btn-night" id="thief-confirm" onclick="thiefConfirm()" disabled>🕵️ Voler ce rôle</button>
       </div>
 
+
+      <!-- Chasseur mort : dernière cible -->
+      <div id="hunter-panel" class="action-panel" style="display: none;">
+        <h3>🏹 Chasseur, ta dernière cible !</h3>
+        <p>Tu viens de mourir. Avant de partir, choisis le joueur que tu emportes avec toi.</p>
+        <div id="hunter-list" class="pick-list"></div>
+        <button class="btn btn-danger" id="hunter-confirm" onclick="hunterConfirm()" disabled>🏹 Tirer</button>
+      </div>
 
       <!-- Cupidon : désigner les 2 amoureux -->
       <div id="cupid-panel" class="action-panel" style="display: none;">
@@ -59,6 +77,8 @@
       <!-- Sorcière : potions -->
       <div id="witch-panel" class="action-panel" style="display: none;">
         <h3>🧪 Sorcière, c'est ton tour</h3>
+        <p id="witch-error" class="error-message" style="display: none;"></p>
+        <p id="witch-hint" class="hint" style="display: none;">Une seule potion par tour : sauver OU empoisonner. Tu peux aussi ne rien faire.</p>
         <div id="witch-save" style="display: none;">
           <p id="witch-victim-text"></p>
           <button class="btn btn-vert pick-btn" id="witch-save-btn" onclick="witchToggleSave()"></button>
@@ -72,17 +92,94 @@
         <button class="btn btn-night" id="witch-confirm" onclick="witchConfirm()">Ne rien faire</button>
       </div>
 
+      <!-- Renard : désigner un joueur, puis lire la réponse du Maître du Jeu -->
+      <div id="fox-panel" class="action-panel" style="display: none;">
+        <h3>🦊 Renard, qui veux-tu sonder ?</h3>
+        <div id="fox-choose">
+          <p>Choisis un joueur. Le Maître du Jeu te répondra : OUI (un Loup-Garou est détecté) ou NON.</p>
+          <div id="fox-list" class="pick-list"></div>
+          <button class="btn btn-night" id="fox-confirm" onclick="foxConfirm()" disabled>Désigner ce joueur</button>
+        </div>
+        <div id="fox-wait" style="display: none;">
+          <p id="fox-wait-text"></p>
+        </div>
+        <div id="fox-result" style="display: none;">
+          <p id="fox-result-target"></p>
+          <div id="fox-answer" class="fox-answer"></div>
+          <p class="hint">Cette fenêtre se refermera toute seule à la fin de la réponse.</p>
+        </div>
+      </div>
+
+      <!-- Voyante : découvrir le rôle d'un joueur -->
+      <div id="seer-panel" class="action-panel" style="display: none;">
+        <h3>🔮 Voyante, qui veux-tu observer ?</h3>
+        <div id="seer-choose">
+          <p>Choisis un joueur : son rôle te sera révélé. Un seul choix par tour.</p>
+          <div id="seer-list" class="pick-list"></div>
+          <button class="btn btn-night" id="seer-confirm" onclick="seerConfirm()" disabled>Découvrir son rôle</button>
+        </div>
+        <div id="seer-result" style="display: none;">
+          <p id="seer-result-text"></p>
+          <div class="seer-card">
+            <img id="seer-result-img" alt="">
+            <h4 id="seer-result-role"></h4>
+            <p id="seer-result-desc"></p>
+          </div>
+          <button class="btn btn-effect" onclick="seerClose()">J'ai vu, fermer</button>
+        </div>
+      </div>
+
+      <!-- Le Maire est mort : il désigne son successeur -->
+      <div id="succession-panel" class="action-panel" style="display: none;">
+        <h3>👑 Tu étais le Maire…</h3>
+        <p>Choisis le joueur à qui tu transmets le rôle de Maire. Sa voix comptera double lors des votes du village.</p>
+        <div id="succession-list" class="pick-list"></div>
+        <button class="btn btn-day" id="succession-confirm" onclick="successionConfirm()" disabled>👑 Désigner mon successeur</button>
+      </div>
+
+      <!-- Égalité à l'élection du Maire : Pierre, feuille, ciseaux -->
+      <div id="rps-panel" class="action-panel" style="display: none;">
+        <h3>✊ ✋ ✌️ Pierre, feuille, ciseaux</h3>
+        <p id="rps-info"></p>
+        <div id="rps-buttons" class="rps-buttons">
+          <button class="btn btn-night rps-btn" data-pick="pierre" onclick="rpsPlay('pierre')">✊<span>Pierre</span></button>
+          <button class="btn btn-night rps-btn" data-pick="feuille" onclick="rpsPlay('feuille')">✋<span>Feuille</span></button>
+          <button class="btn btn-night rps-btn" data-pick="ciseaux" onclick="rpsPlay('ciseaux')">✌️<span>Ciseaux</span></button>
+        </div>
+        <p id="rps-result" class="rps-result"></p>
+      </div>
+
+      <!-- Candidature à l'élection du Maire -->
+      <div id="candidacy-panel" class="action-panel" style="display: none;">
+        <h3>👑 Élection du Maire</h3>
+        <p id="candidacy-info">Veux-tu te présenter comme Maire ?</p>
+        <div id="candidacy-buttons" class="candidacy-buttons">
+          <button class="btn btn-day" id="candidacy-yes" onclick="candidacyAnswer(true)">🙋 Je me présente</button>
+          <button class="btn btn-effect" id="candidacy-no" onclick="candidacyAnswer(false)">🙅 Je ne me présente pas</button>
+        </div>
+        <ul id="candidacy-list" class="pick-list"></ul>
+      </div>
+
+      <!-- Élection du Maire -->
+      <div id="mayor-panel" class="action-panel" style="display: none;">
+        <h3>👑 Élection du Maire</h3>
+        <p id="mayor-info">Choisis le joueur que tu veux comme Maire, puis appuie sur « Voter ».</p>
+        <div id="mayor-list" class="pick-list"></div>
+        <button class="btn btn-day" id="mayor-confirm" onclick="mayorConfirm()" disabled>👑 Voter</button>
+      </div>
+
       <!-- Vote du village (de jour) -->
       <div id="vote-panel" class="action-panel" style="display: none;">
         <h3>🗳️ Vote du village</h3>
         <p id="vote-info">Qui veux-tu éliminer ? Tu peux changer ton vote tant qu'il est ouvert.</p>
         <div id="vote-list" class="pick-list"></div>
+        <button class="btn btn-danger" id="vote-confirm" onclick="voteConfirm()" disabled>🗳️ Voter</button>
       </div>
 
       <div id="card-area" style="display: none;">
         <!-- Dos de carte cliquable avec image Verso.png -->
         <div id="secret-card" class="card-back" role="button" tabindex="0" onclick="toggleRoleReveal()">
-          <img id="verso-image" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso.png" alt="Verso de carte" class="verso-img">
+          <img id="verso-image" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso%202.png" alt="Verso de carte" class="verso-img">
           <span>👁️ Toucher pour révéler</span>
         </div>
 
@@ -94,7 +191,6 @@
       </div>
     </section>
   </main>
-  <p class="hint" style="text-align:center;">Version 26</p>
 
   <script>
     (function () {
@@ -111,19 +207,9 @@
           im.src = urls[i];
         })(0);
       }
-      find(["Titre.png", "titre.png"], function (url) {
-        var img = document.querySelector(".site-title-img");
-        if (url && img) { img.src = url; }
-      });
-      find(["fond-village.jpg", "fond-village.jpeg", "fond-village.png"], function (url) {
-        if (url) {
-          document.body.style.backgroundImage =
-            "radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%), url(\"" + url + "\")";
-        }
-      });
     })();
   </script>
-  <script src="sim-peer.js?v=26"></script>
-  <script src="player.js?v=26"></script>
+  <script src="sim-peer.js?v=94"></script>
+  <script src="player.js?v=94"></script>
 </body>
 </html>

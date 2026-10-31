@@ -3,18 +3,17 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Verso.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso.png",
-    "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png",
-    "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png",
-    "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png",
-    "Maire.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire.png",
-    "Voyante.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante.png",
-    "Voleur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png",
-    "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois.png",
-    "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg",
-    "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png",
-    "Sorcière.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorci%C3%A8re.png",
-    "fond-village.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg",
+    "Verso.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso%202.png",
+    "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur%201.png",
+    "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon%201.png",
+    "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou%201.png",
+    "Maire.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire%201.png",
+    "Voyante.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante%201.png",
+    "Voleur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur%201.png",
+    "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois%201.png",
+    "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard%201.png",
+    "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png?v=2",
+    "Sorciere.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere%201.png",
   }
 };
 
@@ -32,6 +31,7 @@ let peer = null;
 let conn = null;
 let myRole = "";
 let isRevealed = false;
+let gameStartedUI = false;   // vrai après le premier appel du Maire : la carte passe en petit en haut à droite
 let joined = false;
 let session = null;
 let retryTimer = null;
@@ -53,7 +53,7 @@ const roleData = {
     description: "🔮 <strong>La Voyante :</strong> Chaque nuit, vous pouvez observer la véritable identité d'un joueur de votre choix avant que le village ne se réveille."
   },
   "Sorcière": {
-    image: "Sorcière.png",
+    image: "Sorciere.png",
     description: "🧪 <strong>La Sorcière :</strong> Vous possédez deux potions à usage unique : une potion de vie pour sauver la victime des loups, et une potion de mort pour éliminer un joueur."
   },
   "Chasseur": {
@@ -111,7 +111,7 @@ function showJoinForm() {
 function showGame(name) {
   document.getElementById('join-card').style.display = 'none';
   document.getElementById('game-card').style.display = 'block';
-  document.getElementById('welcome-title').textContent = `Joueur : ${name}`;
+  document.getElementById('welcome-title').textContent = name;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function joinRoom() {
-  const name = document.getElementById('player-name').value.trim();
+  const name = String(document.getElementById('player-name').value || '').trim().toLowerCase().replace(/(^|[\s'’-])(\p{L})/gu, (m, sep, ch) => sep + ch.toUpperCase());
   const room = document.getElementById('room-code').value.trim().toUpperCase();
 
   if (!name || !room) {
@@ -155,15 +155,17 @@ function connect(room, name, token, isAuto) {
   showError("");
   setBusy(true);
   if (peer && !peer.destroyed) peer.destroy();
+  lastHostMsg = Date.now();
 
-  peer = new Peer();
+  peer = new Peer(undefined, (window.LG && LG.peerOptions) || {});
 
   peer.on('open', () => {
     conn = peer.connect("LG-" + room, { reliable: true });
 
     const timeout = setTimeout(() => {
-      if (!conn.open) failJoin("Salon introuvable. Vérifiez le code ou réessayez.", isAuto);
-    }, 10000);
+      if (conn.open) return;
+      if (isAuto) retryAuto(); else failJoin("Salon introuvable. Vérifiez le code ou réessayez.", false);
+    }, 20000);
 
     conn.on('open', () => {
       clearTimeout(timeout);
@@ -172,8 +174,12 @@ function connect(room, name, token, isAuto) {
 
     conn.on('data', (data) => {
       if (!data) return;
+      lastHostMsg = Date.now();
+      if (data.type === 'ping') { try { conn.send({ type: 'pong' }); } catch (e) {} return; }
       if (data.type === 'joined') {
         joined = true;
+        autoTries = 0;
+        prefetchRoleImages();
         saveSession(session);
         setBusy(false);
         showGame(name);
@@ -213,9 +219,59 @@ function connect(room, name, token, isAuto) {
         showVotePanel(data);
       } else if (data.type === 'voteAck') {
         voteState.my = data.target;
+        voteState.picked = data.target;
         renderVoteList();
       } else if (data.type === 'voteClose') {
         hidePanel('vote-panel');
+      } else if (data.type === 'mayorTurn') {
+        showMayorPanel(data);
+      } else if (data.type === 'rpsTurn') {
+        showRpsTurn(data);
+      } else if (data.type === 'rpsAck') {
+        showRpsAck(data.pick);
+      } else if (data.type === 'rpsResult') {
+        showRpsResult(data);
+      } else if (data.type === 'candidacyTurn') {
+        showCandidacyAsk(data.answer);
+      } else if (data.type === 'candidacyAck') {
+        showCandidacyAsk(data.answer);
+      } else if (data.type === 'candidacySpeech') {
+        showCandidacySpeech(data);
+      } else if (data.type === 'mayorAck') {
+        mayorState.my = data.target;
+        mayorState.picked = data.target;
+        renderMayorList();
+      } else if (data.type === 'mayorSuccessionTurn') {
+        showSuccessionPanel(data.targets || []);
+      } else if (data.type === 'mayorSuccessionDone') {
+        hidePanel('succession-panel');
+      } else if (data.type === 'mayorClose') {
+        hidePanel('mayor-panel');
+        hidePanel('candidacy-panel');
+      } else if (data.type === 'phase') {
+        if (window.setBgPhase) window.setBgPhase(data.phase);
+      } else if (data.type === 'roleReview') {
+        setRoleReview(data.on !== false);
+      } else if (data.type === 'gameStarted') {
+        applyGameStarted(data.started !== false);
+      } else if (data.type === 'hunterTurn') {
+        showHunterPanel(data.targets || []);
+      } else if (data.type === 'hunterDone') {
+        showHunterDone();
+      } else if (data.type === 'gameOver') {
+        showGameOver(data.winner);
+      } else if (data.type === 'foxTurn') {
+        showFoxPanel(data);
+      } else if (data.type === 'foxAck') {
+        showFoxWaiting(data.target);
+      } else if (data.type === 'foxDone') {
+        foxClose(true);
+      } else if (data.type === 'foxAnswer') {
+        showFoxAnswer(data.target, data.answer);
+      } else if (data.type === 'seerTurn') {
+        showSeerPanel(data.targets || []);
+      } else if (data.type === 'seerResult') {
+        showSeerResult(data.name, data.role);
       }
     });
 
@@ -227,6 +283,8 @@ function connect(room, name, token, isAuto) {
   peer.on('error', (err) => {
     if (joined) {
       scheduleReconnect();
+    } else if (isAuto) {
+      retryAuto();   // la régie est peut-être en train de reprendre la partie : on garde la session et on réessaie
     } else if (err.type === 'peer-unavailable') {
       failJoin("Salon introuvable. Vérifiez le code fourni par le MJ.", isAuto);
     } else {
@@ -240,6 +298,26 @@ function failJoin(message, clear) {
   if (clear) clearSession();
   showJoinForm();
   showError(message);
+}
+
+let lastHostMsg = Date.now();
+// Connexion « fantôme » (réseau mobile qui décroche sans prévenir) : sans nouvelles de la régie depuis 30 s, on se reconnecte
+setInterval(function () {
+  if (joined && session && Date.now() - lastHostMsg > 30000) {
+    lastHostMsg = Date.now();
+    try { if (conn) conn.close(); } catch (e) {}
+    scheduleReconnect();
+  }
+}, 5000);
+if (window.LG) LG.onOnline = function () { if (session && joined) { lastHostMsg = 0; } };
+
+let autoTries = 0;
+function retryAuto() {
+  autoTries++;
+  if (autoTries > 100) { autoTries = 0; failJoin("Salon introuvable. Vérifiez le code fourni par le MJ.", true); return; }
+  const st = document.getElementById('status-text'); if (st) st.textContent = "Connexion à la régie en cours… (la partie reprend dès que le MJ est de retour)";
+  clearTimeout(retryTimer);
+  retryTimer = setTimeout(() => { if (session) connect(session.room, session.name, session.token, true); }, 3000);
 }
 
 function scheduleReconnect() {
@@ -288,6 +366,8 @@ function toggleRoleReveal() {
   isRevealed = !isRevealed;
 
   if (isRevealed) {
+    try { if (conn && conn.open) conn.send({ type: 'roleSeen' }); } catch (e) { /* ignoré */ }
+    { const rb = document.getElementById('review-banner'); if (rb) rb.textContent = '✅ Rôle vu. Mémorise-le, puis attends les autres joueurs…'; }
     cardBack.classList.add('revealed');
     cardBack.querySelector('span').textContent = "🔒 Toucher pour masquer";
     if (versoImg) versoImg.style.display = 'none';
@@ -298,9 +378,26 @@ function toggleRoleReveal() {
     if (versoImg) versoImg.style.display = 'block';
     roleDetails.style.display = 'none';
   }
+  updateMiniCard();
 }
 
 // --- Tour du Voleur : choisir l'un des 2 rôles proposés (cartes, sans nom de joueur) ---
+let thiefState = { picked: null, role: null };
+
+function renderThiefSelection() {
+  document.querySelectorAll('#thief-cards .thief-card').forEach((c, i) => c.classList.toggle('selected', thiefState.picked === i));
+  const btn = document.getElementById('thief-confirm');
+  if (btn) {
+    btn.disabled = thiefState.picked === null;
+    btn.textContent = thiefState.picked === null ? '🕵️ Voler ce rôle' : `🕵️ Voler « ${thiefState.role} »`;
+  }
+}
+
+function thiefConfirm() {
+  if (thiefState.picked === null) return;
+  thiefChoose(thiefState.picked, thiefState.role);
+}
+
 function showThiefPanel(options) {
   const panel = document.getElementById('thief-panel');
   const list = document.getElementById('thief-cards');
@@ -327,11 +424,12 @@ function showThiefPanel(options) {
     desc.innerHTML = data.description;
     card.appendChild(desc);
 
-    card.onclick = () => thiefChoose(index, role);
+    card.onclick = () => { thiefState.picked = index; thiefState.role = role; renderThiefSelection(); };
     list.appendChild(card);
   });
 
-  document.getElementById('thief-skip').disabled = false;
+  thiefState = { picked: null, role: null };
+  renderThiefSelection();
   panel.style.display = 'block';
   panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -342,17 +440,10 @@ function lockThiefPanel() {
 
 function thiefChoose(index, role) {
   if (!conn || !conn.open) return;
-  if (!confirm(`Voler le rôle « ${role} » ?`)) return;
   lockThiefPanel();
   conn.send({ type: 'thiefSteal', choice: index });
 }
 
-function thiefSkip() {
-  if (!conn || !conn.open) return;
-  if (!confirm("Garder ton rôle de Voleur ?")) return;
-  lockThiefPanel();
-  conn.send({ type: 'thiefSteal', skip: true });
-}
 
 function hideThiefPanel() {
   const panel = document.getElementById('thief-panel');
@@ -398,7 +489,7 @@ function setAliveUI(alive) {
   const banner = document.getElementById('dead-banner');
   if (banner) banner.style.display = alive ? 'none' : 'block';
   if (!alive) {
-    ['cupid-panel', 'wolf-panel', 'witch-panel', 'vote-panel', 'thief-panel'].forEach(hidePanel);
+    ['cupid-panel', 'wolf-panel', 'witch-panel', 'vote-panel', 'thief-panel', 'seer-panel', 'mayor-panel', 'candidacy-panel', 'rps-panel', 'fox-panel'].forEach(hidePanel);
   }
 }
 
@@ -441,7 +532,6 @@ function renderCupidList() {
 
 function cupidConfirm() {
   if (!conn || !conn.open || cupidState.picked.length !== 2) return;
-  if (!confirm(`Unir ${cupidState.picked[0]} et ${cupidState.picked[1]} ?`)) return;
   document.querySelectorAll('#cupid-panel button').forEach((b) => { b.disabled = true; });
   conn.send({ type: 'cupidChoice', names: cupidState.picked });
 }
@@ -492,21 +582,30 @@ function showWitchPanel(data) {
   const saveBox = document.getElementById('witch-save');
   saveBox.style.display = witchState.canSave ? 'block' : 'none';
   if (witchState.canSave) {
-    document.getElementById('witch-victim-text').textContent = `Cette nuit, les loups ont attaqué : ${witchState.victim}.`;
+    const me = session && session.name;
+    document.getElementById('witch-victim-text').textContent = witchState.victim === me
+      ? "Cette nuit, les loups t'ont attaquée : tu peux te sauver toi-même avec ta potion de vie."
+      : `Cette nuit, les loups ont attaqué : ${witchState.victim}.`;
   }
   document.getElementById('witch-novictim').style.display = (!witchState.canSave && data.noVictim) ? 'block' : 'none';
   document.getElementById('witch-poison').style.display = witchState.canPoison ? 'block' : 'none';
   document.getElementById('witch-empty').style.display = (!witchState.canSave && !witchState.canPoison) ? 'block' : 'none';
 
+  const err = document.getElementById('witch-error');
+  err.textContent = data.error || '';
+  err.style.display = data.error ? 'block' : 'none';
+
   renderWitch();
   showPanel('witch-panel');
 }
 
+// Une seule potion par tour : choisir l'une désactive l'autre
 function renderWitch() {
   const saveBtn = document.getElementById('witch-save-btn');
+  saveBtn.disabled = !!witchState.poison;
   saveBtn.textContent = witchState.save
     ? `✅ Potion de vie sur ${witchState.victim} (toucher pour annuler)`
-    : `🧪💚 Sauver ${witchState.victim || ''}`;
+    : (witchState.victim === (session && session.name) ? '🧪💚 Me sauver moi-même' : `🧪💚 Sauver ${witchState.victim || ''}`);
 
   const list = document.getElementById('witch-poison-list');
   list.innerHTML = '';
@@ -514,56 +613,447 @@ function renderWitch() {
     witchState.targets.forEach((name) => {
       list.appendChild(pickButton(name, {
         selected: witchState.poison === name,
+        disabled: witchState.save,
         onClick: () => {
+          if (witchState.save) return;
           witchState.poison = witchState.poison === name ? null : name;
           renderWitch();
         }
       }));
     });
   }
-  document.getElementById('witch-confirm').textContent =
-    (witchState.save || witchState.poison) ? 'Valider' : 'Ne rien faire';
+
+  document.getElementById('witch-hint').style.display = (witchState.canSave && witchState.canPoison) ? 'block' : 'none';
+  const confirmBtn = document.getElementById('witch-confirm');
+  confirmBtn.disabled = false;     // réactivé à chaque tour (il est verrouillé après l'envoi)
+  confirmBtn.textContent = (witchState.save || witchState.poison)
+    ? 'Valider'
+    : ((!witchState.canSave && !witchState.canPoison) ? 'Fermer' : 'Ne rien faire');
 }
 
 function witchToggleSave() {
+  if (witchState.poison) return;
   witchState.save = !witchState.save;
   renderWitch();
 }
 
 function witchConfirm() {
   if (!conn || !conn.open) return;
-  const parts = [];
-  if (witchState.save) parts.push(`sauver ${witchState.victim}`);
-  if (witchState.poison) parts.push(`empoisonner ${witchState.poison}`);
-  if (!confirm(parts.length ? `Confirmer : ${parts.join(' et ')} ?` : "Ne rien faire cette nuit ?")) return;
+  if (witchState.save && witchState.poison) return;   // jamais les deux potions en même temps
   document.querySelectorAll('#witch-panel button').forEach((b) => { b.disabled = true; });
   conn.send({ type: 'witchAction', save: witchState.save, poison: witchState.poison });
 }
 
 // --- Vote du village ---
-let voteState = { targets: [], my: null };
+let voteState = { targets: [], my: null, picked: null };
 
 function showVotePanel(data) {
-  voteState = { targets: data.targets || [], my: data.myVote || null };
+  hidePanel('seer-panel');   // au lever du jour, l'écran de la Voyante se ferme
+  hidePanel('fox-panel');    // … et celui du Renard
+  voteState = { targets: data.targets || [], my: data.myVote || null, picked: data.myVote || null };
   renderVoteList();
   showPanel('vote-panel');
 }
 
+// On choisit un nom, puis on appuie sur « Voter ». Le vote reste modifiable tant qu'il est ouvert.
 function renderVoteList() {
   const list = document.getElementById('vote-list');
   list.innerHTML = '';
   voteState.targets.forEach((name) => {
     list.appendChild(pickButton(name, {
-      selected: voteState.my === name,
-      onClick: () => {
-        if (!conn || !conn.open) return;
-        voteState.my = name;
-        conn.send({ type: 'villageVote', target: name });
-        renderVoteList();
-      }
+      selected: voteState.picked === name,
+      onClick: () => { voteState.picked = name; renderVoteList(); }
     }));
   });
+
+  const btn = document.getElementById('vote-confirm');
+  if (!voteState.picked) {
+    btn.disabled = true;
+    btn.textContent = '🗳️ Voter';
+  } else if (voteState.my && voteState.picked === voteState.my) {
+    btn.disabled = true;
+    btn.textContent = `✅ Vote enregistré : ${voteState.my}`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = voteState.my ? `🗳️ Changer mon vote pour ${voteState.picked}` : `🗳️ Voter pour ${voteState.picked}`;
+  }
   document.getElementById('vote-info').textContent = voteState.my
     ? `Ton vote : ${voteState.my}. Tu peux le changer tant que le vote est ouvert.`
-    : "Qui veux-tu éliminer ? Tu peux changer ton vote tant qu'il est ouvert.";
+    : "Choisis le joueur à éliminer, puis appuie sur « Voter ».";
+}
+
+function voteConfirm() {
+  if (!conn || !conn.open || !voteState.picked) return;
+  conn.send({ type: 'villageVote', target: voteState.picked });
+}
+
+// --- Voyante : choisir UN joueur (noms uniquement), puis découvrir son rôle ---
+let seerState = { targets: [], picked: null };
+
+function showSeerPanel(targets) {
+  seerState = { targets, picked: null, resultShown: false };
+  document.getElementById('seer-choose').style.display = 'block';
+  document.getElementById('seer-result').style.display = 'none';
+  renderSeerList();
+  showPanel('seer-panel');
+}
+
+function renderSeerList() {
+  const list = document.getElementById('seer-list');
+  list.innerHTML = '';
+  seerState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: seerState.picked === name,
+      onClick: () => { seerState.picked = name; renderSeerList(); }
+    }));
+  });
+  document.getElementById('seer-confirm').disabled = !seerState.picked;
+}
+
+function seerConfirm() {
+  if (!conn || !conn.open || !seerState.picked) return;
+  document.querySelectorAll('#seer-choose button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'seerChoice', target: seerState.picked });
+}
+
+function showSeerResult(name, role) {
+  seerState.resultShown = true;
+  const data = roleData[role] || { image: null, description: `🎭 <strong>${escapeText(role)}</strong>` };
+  document.getElementById('seer-choose').style.display = 'none';
+  document.getElementById('seer-result').style.display = 'block';
+  document.getElementById('seer-result-text').textContent = `${name} est…`;
+  document.getElementById('seer-result-role').textContent = role;
+  document.getElementById('seer-result-desc').innerHTML = data.description;
+  const img = document.getElementById('seer-result-img');
+  if (data.image) {
+    img.style.display = '';
+    img.onerror = () => { img.style.display = 'none'; };
+    img.src = mediaUrl('images', data.image);
+    img.alt = role;
+  } else {
+    img.style.display = 'none';
+  }
+  showPanel('seer-panel');
+}
+
+// --- Égalité à l'élection du Maire : Pierre, feuille, ciseaux ---
+const RPS_ICON = { pierre: '✊', feuille: '✋', ciseaux: '✌️' };
+let rpsHideTimer = null;
+
+function rpsEnable(on) {
+  document.querySelectorAll('#rps-buttons button').forEach((b) => { b.disabled = !on; });
+}
+
+function showRpsTurn(data) {
+  clearTimeout(rpsHideTimer);
+  const me = session && session.name;
+  const others = (data.names || []).filter((n) => n !== me);
+  document.getElementById('rps-info').textContent = (data.purpose === 'vote' ? `Égalité au vote du village ! Le perdant est éliminé. Tu affrontes` : `Égalité pour la mairie ! Tu affrontes`)+` ${others.join(' et ')}. Manche ${data.round || 1} : choisis ton signe.`;
+  document.getElementById('rps-result').textContent = '';
+  rpsEnable(!data.myPick);
+  if (data.myPick) showRpsAck(data.myPick);
+  showPanel('rps-panel');
+}
+
+function rpsPlay(pick) {
+  if (!conn || !conn.open) return;
+  rpsEnable(false);
+  conn.send({ type: 'rpsPick', pick });
+}
+
+function showRpsAck(pick) {
+  rpsEnable(false);
+  document.getElementById('rps-result').textContent = `Tu as joué ${RPS_ICON[pick] || ''} ${pick}. En attente de l'adversaire…`;
+}
+
+function showRpsResult(data) {
+  const el = document.getElementById('rps-result');
+  const me = session && session.name;
+  if (data.cancel) {
+    el.textContent = 'Le Maître du Jeu a annulé le duel.';
+  } else {
+    const lines = Object.entries(data.picks || {}).map(([n, p]) => `${n} : ${RPS_ICON[p] || ''} ${p}`).join('  —  ');
+    let verdict;
+    if (data.loser) verdict = data.loser === me ? '💀 Tu perds : tu es éliminé par le village.' : `${data.loser} perd et est éliminé par le village.`;
+    else if (data.winner) verdict = data.winner === me ? '🏆 Tu gagnes : tu deviens Maire !' : `${data.winner} gagne et devient Maire.`;
+    else if (data.draw) verdict = 'Égalité, on recommence…';
+    else verdict = (data.next || []).includes(me) ? 'Tu passes à la manche suivante…' : 'Tu es éliminé du duel.';
+    el.textContent = lines + '\n' + verdict;
+  }
+  rpsEnable(false);
+  showPanel('rps-panel');
+  clearTimeout(rpsHideTimer);
+  if (data.winner || data.loser || data.cancel) rpsHideTimer = setTimeout(() => hidePanel('rps-panel'), 6000);
+}
+
+// --- Candidatures du Maire : « Je me présente » / « Je ne me présente pas », puis discours oraux ---
+function showCandidacyAsk(answer) {
+  const asked = answer === true || answer === false;
+  document.getElementById('candidacy-info').textContent = asked
+    ? (answer ? '✅ Tu te présentes. Prépare ton discours : tu le feras à l\'oral devant le village.' : '🙅 Tu ne te présentes pas. Tu peux changer d\'avis tant que les candidatures sont ouvertes.')
+    : 'Veux-tu te présenter comme Maire ? Si oui, tu feras un discours à l\'oral devant le village.';
+  document.getElementById('candidacy-buttons').style.display = '';
+  document.getElementById('candidacy-yes').disabled = answer === true;
+  document.getElementById('candidacy-no').disabled = answer === false;
+  document.getElementById('candidacy-list').innerHTML = '';
+  showPanel('candidacy-panel');
+}
+
+function showCandidacySpeech(data) {
+  const list = document.getElementById('candidacy-list');
+  document.getElementById('candidacy-buttons').style.display = 'none';
+  document.getElementById('candidacy-info').textContent = data.speaker
+    ? (data.speaker === (session && session.name) ? '🎤 C\'est à toi de faire ton discours !' : `🎤 Discours de ${data.speaker}… Écoute-le avant de voter.`)
+    : (data.me ? '🙋 Tu es candidat. Attends que le Maître du Jeu te donne la parole.' : 'Les candidats vont faire leur discours, puis le vote s\'ouvrira.');
+  list.innerHTML = '';
+  (data.candidates || []).forEach((name) => {
+    const li = document.createElement('li');
+    li.className = 'candidate-line' + (name === data.speaker ? ' speaking' : '');
+    li.textContent = (name === data.speaker ? '🎤 ' : '👑 ') + name;
+    list.appendChild(li);
+  });
+  showPanel('candidacy-panel');
+}
+
+function candidacyAnswer(run) {
+  if (!conn || !conn.open) return;
+  conn.send({ type: 'mayorCandidacy', run: !!run });
+}
+
+// --- Élection du Maire : on choisit un nom, puis on appuie sur « Voter » (modifiable tant que l'élection est ouverte) ---
+let mayorState = { targets: [], my: null, picked: null };
+
+function showMayorPanel(data) {
+  hidePanel('candidacy-panel');
+  mayorState = { targets: data.targets || [], my: data.myVote || null, picked: data.myVote || null };
+  renderMayorList();
+  showPanel('mayor-panel');
+}
+
+function renderMayorList() {
+  const list = document.getElementById('mayor-list');
+  list.innerHTML = '';
+  mayorState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: mayorState.picked === name,
+      onClick: () => { mayorState.picked = name; renderMayorList(); }
+    }));
+  });
+
+  const btn = document.getElementById('mayor-confirm');
+  if (!mayorState.picked) {
+    btn.disabled = true;
+    btn.textContent = '👑 Voter';
+  } else if (mayorState.my && mayorState.picked === mayorState.my) {
+    btn.disabled = true;
+    btn.textContent = `✅ Vote enregistré : ${mayorState.my}`;
+  } else {
+    btn.disabled = false;
+    btn.textContent = mayorState.my ? `👑 Changer mon vote pour ${mayorState.picked}` : `👑 Voter pour ${mayorState.picked}`;
+  }
+  document.getElementById('mayor-info').textContent = mayorState.my
+    ? `Ton vote : ${mayorState.my}. Tu peux le changer tant que l'élection est ouverte.`
+    : "Choisis le joueur que tu veux comme Maire, puis appuie sur « Voter ».";
+}
+
+function mayorConfirm() {
+  if (!conn || !conn.open || !mayorState.picked) return;
+  conn.send({ type: 'mayorVote', target: mayorState.picked });
+}
+
+// --- Le Maire est mort : il choisit son successeur (noms des joueurs en vie, sans rôles) ---
+let successionState = { targets: [], picked: null };
+
+function showSuccessionPanel(targets) {
+  successionState = { targets, picked: null };
+  renderSuccessionList();
+  showPanel('succession-panel');
+}
+
+function renderSuccessionList() {
+  const list = document.getElementById('succession-list');
+  list.innerHTML = '';
+  successionState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: successionState.picked === name,
+      onClick: () => { successionState.picked = name; renderSuccessionList(); }
+    }));
+  });
+  const btn = document.getElementById('succession-confirm');
+  btn.disabled = !successionState.picked;
+  btn.textContent = successionState.picked ? `👑 Désigner ${successionState.picked}` : '👑 Désigner mon successeur';
+}
+
+function successionConfirm() {
+  if (!conn || !conn.open || !successionState.picked) return;
+  document.querySelectorAll('#succession-panel button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'mayorSuccessor', target: successionState.picked });
+}
+
+// La Voyante referme son résultat : le tour est fini, la régie lance « Fermez les yeux »
+function seerClose() {
+  const wasShown = seerState.resultShown;
+  seerState.resultShown = false;
+  hidePanel('seer-panel');
+  if (wasShown && conn && conn.open) conn.send({ type: 'seerClosed' });
+}
+
+// Fin de partie : tous les Loups-Garous sont morts
+function showGameOver(winner) {
+  const el = document.getElementById('gameover-banner');
+  if (!el) return;
+  if (!winner) { el.style.display = 'none'; return; }   // la partie reprend
+  el.textContent = winner === 'village' ? '🏆 Victoire du village ! Tous les Loups-Garous sont morts.' : (winner === 'wolves' ? '🐺 Victoire des Loups-Garous ! Les villageois ont tous été éliminés.' : '🏁 Partie terminée.');
+  el.style.display = 'block';
+  ['cupid-panel', 'wolf-panel', 'witch-panel', 'vote-panel', 'thief-panel', 'seer-panel', 'mayor-panel', 'candidacy-panel', 'rps-panel', 'fox-panel'].forEach(hidePanel);
+}
+
+// --- Renard : il désigne UN joueur (noms uniquement) puis lit la réponse OUI / NON du Maître du Jeu ---
+let foxState = { targets: [], picked: null, answerShown: false };
+
+function showFoxPanel(data) {
+  foxState = { targets: data.targets || [], picked: null, answerShown: false };
+  document.getElementById('fox-result').style.display = 'none';
+  if (data.chosen) {                       // reconnexion : il avait déjà choisi
+    showFoxWaiting(data.chosen);
+  } else {
+    document.getElementById('fox-choose').style.display = 'block';
+    document.getElementById('fox-wait').style.display = 'none';
+    renderFoxList();
+  }
+  showPanel('fox-panel');
+}
+
+function renderFoxList() {
+  const list = document.getElementById('fox-list');
+  list.innerHTML = '';
+  foxState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: foxState.picked === name,
+      onClick: () => { foxState.picked = name; renderFoxList(); }
+    }));
+  });
+  const btn = document.getElementById('fox-confirm');
+  btn.disabled = !foxState.picked;
+  btn.textContent = foxState.picked ? `Désigner ${foxState.picked}` : 'Désigner ce joueur';
+}
+
+function foxConfirm() {
+  if (!conn || !conn.open || !foxState.picked) return;
+  document.querySelectorAll('#fox-choose button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'foxChoice', target: foxState.picked });
+}
+
+function showFoxWaiting(name) {
+  document.getElementById('fox-choose').style.display = 'none';
+  document.getElementById('fox-result').style.display = 'none';
+  document.getElementById('fox-wait').style.display = 'block';
+  document.getElementById('fox-wait-text').textContent = `Tu as désigné ${name}. Attends la réponse du Maître du Jeu…`;
+  showPanel('fox-panel');
+}
+
+function showFoxAnswer(name, answer) {
+  foxState.answerShown = true;
+  document.getElementById('fox-choose').style.display = 'none';
+  document.getElementById('fox-wait').style.display = 'none';
+  document.getElementById('fox-result').style.display = 'block';
+  document.getElementById('fox-result-target').textContent = `Ta réponse pour ${name} :`;
+  const el = document.getElementById('fox-answer');
+  el.className = 'fox-answer ' + (answer ? 'yes' : 'no');
+  el.textContent = answer ? '🐺 OUI — un Loup-Garou est détecté' : '🌿 NON — aucun Loup-Garou. Tu as innocenté ces trois joueurs, mais tu perds ton pouvoir pour le reste de la partie.';
+  showPanel('fox-panel');
+}
+
+// Le Renard referme la réponse : son tour est fini, la régie lance « Fermez les yeux »
+function foxClose(auto) {
+  const wasShown = foxState.answerShown;
+  foxState.answerShown = false;
+  hidePanel('fox-panel');
+  if (!auto && wasShown && conn && conn.open) conn.send({ type: 'foxClosed' });
+}
+
+// --- Carte de rôle en petit, en haut à droite, à côté du nom (dès que la partie a commencé) ---
+// Après le vol du Voleur : phase de jour, le joueur reprend connaissance de son rôle
+let roleReviewOn = false;
+function setRoleReview(on) {
+  roleReviewOn = on;
+  let b = document.getElementById('review-banner');
+  if (!on) { if (b) b.remove(); return; }
+  if (isRevealed) toggleRoleReveal();       // on repart d'une carte cachée
+  applyGameStarted(false);                   // la grande carte revient
+  const card = document.getElementById('game-card');
+  if (!b && card) {
+    b = document.createElement('div');
+    b.id = 'review-banner';
+    b.style.cssText = 'margin:0 0 12px;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:rgba(252,211,77,0.14);color:#fde68a;font-weight:600;';
+    card.insertBefore(b, card.firstChild);
+  }
+  if (b) b.textContent = '🌞 Le Voleur a agi : reprends connaissance de ton rôle (touche la carte pour la révéler).';
+}
+
+function applyGameStarted(started) {
+  const wasStarted = gameStartedUI;
+  gameStartedUI = !!started;
+  // la partie commence (appel du Maire) : le rôle se masque automatiquement, on peut le rouvrir en touchant la petite carte
+  if (gameStartedUI && !wasStarted && isRevealed) toggleRoleReveal();
+  const big = document.getElementById('secret-card');
+  const card = document.getElementById('game-card');
+  if (big) big.style.display = gameStartedUI ? 'none' : '';
+  if (card) card.classList.toggle('has-mini', gameStartedUI && !!myRole);
+  updateMiniCard();
+}
+
+function updateMiniCard() {
+  const mini = document.getElementById('mini-card');
+  const img = document.getElementById('mini-card-img');
+  const card = document.getElementById('game-card');
+  if (!mini || !img) return;
+  const show = gameStartedUI && !!myRole;
+  mini.style.display = show ? 'block' : 'none';
+  if (card) card.classList.toggle('has-mini', show);
+  if (!show) return;
+  const data = roleData[myRole];
+  img.src = (isRevealed && data && data.image) ? mediaUrl('images', data.image) : mediaUrl('images', 'Verso.png');
+  mini.title = isRevealed ? 'Toucher pour masquer mon rôle' : 'Toucher pour voir mon rôle';
+}
+
+// --- Chasseur mort : il choisit sa dernière cible (noms uniquement) ---
+let hunterState = { targets: [], picked: null };
+
+function showHunterPanel(targets) {
+  hunterState = { targets, picked: null };
+  renderHunterList();
+  showPanel('hunter-panel');
+}
+
+function renderHunterList() {
+  const list = document.getElementById('hunter-list');
+  list.innerHTML = '';
+  hunterState.targets.forEach((name) => {
+    list.appendChild(pickButton(name, {
+      selected: hunterState.picked === name,
+      onClick: () => { hunterState.picked = name; renderHunterList(); }
+    }));
+  });
+  const btn = document.getElementById('hunter-confirm');
+  btn.disabled = !hunterState.picked;
+  btn.textContent = hunterState.picked ? `🏹 Tirer sur ${hunterState.picked}` : '🏹 Tirer';
+}
+
+function hunterConfirm() {
+  if (!conn || !conn.open || !hunterState.picked) return;
+  document.querySelectorAll('#hunter-panel button').forEach((b) => { b.disabled = true; });
+  conn.send({ type: 'hunterShoot', target: hunterState.picked });
+}
+
+function showHunterDone() {
+  hidePanel('hunter-panel');
+}
+
+
+// Images des rôles : préchargées en arrière-plan dès l'entrée dans la partie (affichage instantané à la distribution)
+function prefetchRoleImages() {
+  if (!window.LG || !LG.prefetch) return;
+  const urls = Object.keys(roleData).map((r) => roleData[r].image).filter(Boolean).map((f) => mediaUrl('images', f));
+  LG.prefetch(urls, { concurrency: 2, delay: 3000 });
 }

@@ -1,10 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <link rel="icon" href="data:,">
-  <title>Loup-Garou - Écran Projecteur</title>
+  <title>Les Loups-Garous : Le Carnage - Écran Projecteur</title>
   <style>
+    /* Police Angel Wish : noms des joueurs */
+    @font-face {
+      font-family: 'Angel Wish';
+      src: url(data:font/woff;base64,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) format('woff'),
+           url('Angel_wish.ttf') format('truetype'),
+           url('Angel_Wish.ttf') format('truetype'),
+           url('angel_wish.ttf') format('truetype'),
+           url('angel-wish.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
     /* Police Wolf Brothers */
     @font-face {
       font-family: 'Wolf Brothers';
@@ -14,25 +28,27 @@
       font-display: swap;
     }
 
+    html { background-color: #0b0d14; }
+    body { background-color: transparent !important; }   /* sinon le fond opaque du body masque la vidéo de fond */
     body, html {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       background-color: #0b0d14;
-      background-image: radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%),
-                        url('https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/fond-village.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #e2e8f0;
       overflow: hidden;
       position: relative;
     }
 
+    /* Le lecteur dépasse de l'écran en haut et en bas : le titre et les barres de YouTube restent hors champ.
+       La vidéo (16:9) reste centrée et occupe exactement l'écran. */
     #player {
+      position: fixed;
+      top: -12vh; left: 0;
       width: 100%;
-      height: 100%;
+      height: 124vh;
       pointer-events: none;
+      border: 0;
     }
 
     #overlay-video {
@@ -48,15 +64,13 @@
       object-fit: cover;
     }
 
-    /* Appel de personnage : vidéo centrée au format 1728x918p, 50 % de la largeur */
+    /* Appel de personnage : vidéo centrée, 50 % de la largeur, cadrage automatique selon le format de la vidéo */
     #overlay-video.center {
       top: 50%; left: 50%; right: auto;
       transform: translate(-50%, -50%);
-      width: 50%; height: auto;
-      aspect-ratio: 1728 / 918;
+      width: 50%; height: auto;        /* cadrage automatique : la taille s'ajuste au format de chaque vidéo */
       max-height: 90%;
       box-sizing: border-box;
-      background: #000;
       object-fit: contain;
     }
 
@@ -77,9 +91,9 @@
 
     .projector-title {
       font-family: 'Wolf Brothers', sans-serif;
-      font-size: 3rem;
+      font-size: 10vh;
       color: #f4dcdc;
-      margin-bottom: 30px;
+      margin-bottom: 4vh;
       text-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 16px rgba(185, 28, 28, 0.5);
       letter-spacing: 2px;
       text-align: center;
@@ -87,10 +101,11 @@
 
     .lobby-container {
       display: flex;
-      gap: 50px;
+      gap: 3vw;
       align-items: stretch;
-      max-width: 1100px;
-      width: 90%;
+      justify-content: center;
+      max-width: 96vw;
+      width: 96vw;
     }
 
     /* CARTE DU THÈME GRIFFURE & SANG */
@@ -123,7 +138,8 @@
     }
 
     .qr-box {
-      flex: 1;
+      flex: 0 0 auto;           /* le cadre épouse la taille du QR code et du code */
+      width: fit-content;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -133,35 +149,37 @@
 
     .qr-code-img {
       background: #ffffff;
-      padding: 14px;
+      padding: 1.6vh;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-      margin-bottom: 15px;
+      margin-bottom: 2vh;
+      line-height: 0;
     }
 
     .qr-box p {
       margin: 6px 0;
       color: #cbd5e1;
-      font-size: 1.1rem;
+      font-size: 3.2vh;
     }
 
     .room-code-badge {
       font-family: 'Wolf Brothers', sans-serif;
-      font-size: 2.2rem;
+      font-size: 7vh;
       color: #ef4444;
       letter-spacing: 3px;
     }
 
     .players-box {
-      flex: 1.2;
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
     }
 
     .players-box h3 {
       font-family: 'Wolf Brothers', sans-serif;
-      font-size: 1.8rem;
-      margin: 0 0 15px 0;
+      font-size: 6vh;
+      margin: 0 0 2.5vh 0;
       color: #f4dcdc;
       letter-spacing: 1px;
       border-bottom: 2px solid #7f1d1d;
@@ -173,9 +191,9 @@
       margin: 0;
       padding: 0;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-      max-height: 280px;
+      grid-template-columns: repeat(auto-fill, minmax(16vw, 1fr));
+      gap: 2vh 1.2vw;
+      max-height: 56vh;
       overflow-y: auto;
     }
 
@@ -183,9 +201,9 @@
       background: rgba(80, 10, 14, 0.7);
       border: 1px solid rgba(185, 28, 28, 0.6);
       border-radius: 4px;
-      padding: 8px 12px;
-      font-family: 'Wolf Brothers', sans-serif;
-      font-size: 1.2rem;
+      padding: 1.4vh 1vw;
+      font-family: 'Angel Wish', 'Wolf Brothers', sans-serif;
+      font-size: 5vh;
       letter-spacing: 1px;
       color: #fca5a5;
       display: flex;
@@ -196,13 +214,13 @@
     /* Le lecteur YouTube reste invisible tant qu'aucune scène n'est lancée (création de la partie) */
     #player { visibility: hidden; }
 
-    /* Logo VB : toujours affiché en haut à gauche, en petit (au-dessus des vidéos, sous les annonces de mort) */
-    #logo-vb {
+    /* Logo : toujours affiché en haut à gauche, en petit (au-dessus des vidéos, sous les annonces de mort) */
+    #logo-jeu {
       position: fixed;
       top: 2vmin; left: 2vmin;
       z-index: 35;
-      height: 9vmin;
-      max-width: 22vw;
+      height: 12vmin;
+      max-width: 26vw;
       object-fit: contain;
       pointer-events: none;
       filter: drop-shadow(0 0.4vmin 0.9vmin rgba(0, 0, 0, 0.85));
@@ -214,23 +232,13 @@
       right: 2vmin; bottom: 2vmin;
       z-index: 25;
       display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.8vmin;
-      padding: 1vmin;
+      padding: 0.6vmin;
       background: rgba(255, 255, 255, 0.96);
-      border: 0.4vmin solid #7f1d1d;
-      border-radius: 1vmin;
-      box-shadow: 0 0.6vmin 2vmin rgba(0, 0, 0, 0.8);
+      border: 0.3vmin solid #7f1d1d;
+      border-radius: 0.8vmin;
+      box-shadow: 0 0.5vmin 1.5vmin rgba(0, 0, 0, 0.8);
     }
     #mini-qr .mini-qr-code { line-height: 0; }
-    #mini-qr .mini-qr-label {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      font-size: 1.5vmin;
-      font-weight: 700;
-      color: #450a0a;
-      text-align: center;
-    }
 
     /* Vidéos d'annonce (loups, poison, vote) : plein écran, sans recadrage */
     #event-video {
@@ -258,49 +266,174 @@
     }
     #death-overlay.over-video { background: radial-gradient(circle at center, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.55) 100%); }
     #death-overlay.out { opacity: 0; }
-    #death-list { display: flex; flex-direction: column; align-items: center; gap: 5vh; max-width: 92vw; }
-    .death-item { position: relative; padding: 2vh 5vw; text-align: center; }
+    #death-list { --n: 1; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 3vh 4vw; max-width: 94vw; }
+    .death-item { position: relative; padding: 1vh 2vw; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.6vh; }
     .death-name {
       --len: 8;
-      font-family: 'Wolf Brothers', 'Segoe UI', sans-serif;
-      font-size: min(16vh, calc(170vw / var(--len)));
+      font-family: 'Angel Wish', 'Wolf Brothers', 'Segoe UI', sans-serif;
+      font-size: min(13vh, calc(150vw / (var(--len) * var(--n))));
       line-height: 1;
-      letter-spacing: 0.5vh;
+      letter-spacing: 0.4vh;
       white-space: nowrap;
       color: #f4dcdc;
       text-shadow: 0 0 3vh rgba(220, 38, 38, 0.75), 0 0.6vh 1.4vh #000;
       animation: deathNameIn 0.45s ease-out both;
     }
-    .death-sub { margin-top: 1.5vh; font-size: 3.4vh; color: #fca5a5; text-shadow: 0 0.3vh 0.8vh #000; }
-    .death-claws {
-      position: absolute;
-      left: -2%; top: -12%;
-      width: 104%; height: 124%;
-      pointer-events: none;
-      overflow: visible;
-      filter: drop-shadow(0 0.5vh 1vh rgba(0, 0, 0, 0.9));
+    .death-sub { font-size: 3vh; color: #fca5a5; text-shadow: 0 0.3vh 0.8vh #000; }
+    .death-cause { font-size: 2.8vh; color: #fcd34d; letter-spacing: 0.2vh; text-shadow: 0 0.3vh 0.8vh #000; }
+
+    /* Carte du rôle du joueur mort : on voit d'abord le verso, puis la carte se retourne sur le recto */
+    .death-card { width: 26vh; height: 26vh; perspective: 120vh; }
+    .death-role { font-family: 'Wolf Brothers', sans-serif; font-size: 5vh; color: #fde68a; letter-spacing: 0.3vh; text-shadow: 0 0.4vh 1vh #000; opacity: 0; animation: roleLabelIn 0.5s ease-out 1.7s both; }
+    @keyframes roleLabelIn { from { opacity: 0; transform: translateY(1vh); } to { opacity: 1; transform: none; } }
+    .death-card-inner {
+      position: relative;
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      animation: cardFlip 1.1s ease-in-out 1.1s forwards;
     }
-    .claw {
-      transform-box: fill-box;
-      transform-origin: 50% 0;
-      transform: scaleY(0);
-      animation: clawIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    .card-face {
+      position: absolute; inset: 0;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      border-radius: 1.4vh;
+      overflow: hidden;
+      box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.85);
+      border: 0.3vh solid rgba(254, 202, 202, 0.5);
+      background: #1a0b10;
+      display: flex; align-items: center; justify-content: center;
     }
-    .claw.c1 { animation-delay: 0.35s; }
-    .claw.c2 { animation-delay: 0.50s; }
-    .claw.c3 { animation-delay: 0.65s; }
-    @keyframes clawIn { to { transform: scaleY(1); } }
+    .card-face img { width: 100%; height: 100%; object-fit: cover; object-position: center 25%; display: block; }
+    .card-front { transform: rotateY(180deg); color: #fde68a; font-family: 'Wolf Brothers', sans-serif; font-size: 4vh; text-align: center; padding: 1vh; }
+    @keyframes cardFlip { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
     @keyframes deathNameIn {
       from { opacity: 0; transform: scale(1.15); filter: blur(1vh); }
       to   { opacity: 1; transform: none; filter: none; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .claw { animation: none; transform: scaleY(1); }
       .death-name { animation: none; }
+      .death-card-inner { animation-duration: 0.01s; animation-delay: 0s; }
     }
+
+
+    /* ATTENTE DU TIR DU CHASSEUR : sa carte (carrée) pendant qu'il choisit sa cible */
+    #hunter-wait-overlay {
+      position: fixed; inset: 0; z-index: 36; display: none;
+      flex-direction: column; align-items: center; justify-content: center; gap: 2.4vh;
+      background: radial-gradient(circle at center, rgba(40, 20, 4, 0.12) 0%, rgba(0, 0, 0, 0.4) 100%);
+    }
+    #hunter-wait-overlay .hw-card { width: 34vh; height: 34vh; position: relative; }
+    #hunter-wait-overlay .hw-card .card-face { transform: none; }
+    #hunter-wait-overlay .hw-role { font-family: 'Wolf Brothers', sans-serif; font-size: 7vh; color: #fde68a; text-shadow: 0 0.4vh 1vh #000; letter-spacing: 0.3vh; }
+    #hunter-wait-overlay .hw-name { font-family: 'Angel Wish', 'Wolf Brothers', 'Segoe UI', sans-serif; font-size: 12vh; line-height: 1; color: #f4dcdc; text-shadow: 0 0 3vh rgba(220, 38, 38, 0.75), 0 0.6vh 1.4vh #000; }
+    #hunter-wait-overlay .hw-sub { font-size: 4vh; color: #fcd34d; text-shadow: 0 0.3vh 0.8vh #000; }
+
+    /* ÉLECTION DU MAIRE : candidats et discours */
+    #dayvote-overlay {
+      position: fixed; inset: 0; z-index: 30; display: none;
+      flex-direction: column; align-items: center; justify-content: center; gap: 4vh;
+      background: radial-gradient(circle at center, rgba(40, 26, 4, 0.12) 0%, rgba(0, 0, 0, 0.4) 100%);
+    }
+    .dv-title-img { max-height: 34vh; max-width: 80vw; object-fit: contain; filter: drop-shadow(0 0 3vh rgba(252, 211, 77, 0.45)); }
+    .dv-title-img.missing { display: none; }
+    .dv-title { font-family: 'Wolf Brothers', sans-serif; font-size: 11vh; color: #fcd34d; text-shadow: 0 0.5vh 1.2vh #000; letter-spacing: 0.4vh; text-align: center; }
+    .dv-sub { font-size: 5vh; color: #f4dcdc; text-shadow: 0 0.3vh 0.8vh #000; text-align: center; }
+    #candidates-overlay {
+      position: fixed; inset: 0; z-index: 35; display: none;
+      flex-direction: column; align-items: center; justify-content: center; gap: 4vh;
+      background: radial-gradient(circle at center, rgba(40, 26, 4, 0.45) 0%, rgba(0, 0, 0, 0.7) 100%);
+    }
+    .cand-title { font-family: 'Wolf Brothers', sans-serif; font-size: 7vh; color: #fcd34d; text-shadow: 0 0.4vh 1vh #000; letter-spacing: 0.3vh; }
+    .cand-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 3vh 3vw; max-width: 90vw; }
+    .cand-item {
+      font-family: 'Angel Wish', 'Wolf Brothers', 'Segoe UI', sans-serif;
+      font-size: 7vh; color: #fca5a5; padding: 1.5vh 3vw;
+      background: rgba(80, 10, 14, 0.75); border: 0.3vh solid rgba(185, 28, 28, 0.7); border-radius: 1vh;
+      opacity: 0.55; transition: all 0.4s ease;
+    }
+    .cand-item.speaking { opacity: 1; color: #fff7d6; background: rgba(120, 80, 4, 0.85); border-color: #fcd34d; transform: scale(1.18); box-shadow: 0 0 4vh rgba(252, 211, 77, 0.6); }
+    .cand-item.idle { opacity: 1; }
+    .cand-sub { font-size: 3.6vh; color: #e2e8f0; text-shadow: 0 0.3vh 0.8vh #000; min-height: 4vh; }
+
+    /* ÉLECTION DU MAIRE : nom doré + couronne */
+    #mayor-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2vh;
+      background: radial-gradient(circle at center, rgba(70, 48, 4, 0.25) 0%, rgba(0, 0, 0, 0.55) 100%);
+      opacity: 1;
+      transition: opacity 0.6s ease;
+      cursor: pointer;
+    }
+    #mayor-overlay.out { opacity: 0; }
+    .mayor-crown {
+      font-size: 22vh;
+      line-height: 1;
+      filter: drop-shadow(0 0 3vh rgba(250, 204, 21, 0.85));
+      animation: crownDrop 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+    }
+    .mayor-name {
+      --len: 8;
+      font-family: 'Angel Wish', 'Wolf Brothers', 'Segoe UI', sans-serif;
+      font-size: min(21vh, calc(190vw / var(--len)));
+      line-height: 1;
+      letter-spacing: 0.6vh;
+      white-space: nowrap;
+      color: #fde68a;
+      text-shadow: 0 0 4vh rgba(250, 204, 21, 0.75), 0 0.6vh 1.4vh #000;
+      animation: mayorNameIn 0.7s 0.4s ease-out both;
+    }
+    .mayor-sub {
+      font-size: 4vh;
+      color: #fcd34d;
+      letter-spacing: 0.4vh;
+      text-shadow: 0 0.3vh 0.8vh #000;
+      animation: mayorNameIn 0.7s 0.7s ease-out both;
+    }
+    @keyframes crownDrop {
+      from { opacity: 0; transform: translateY(-30vh) rotate(-18deg) scale(1.4); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes mayorNameIn {
+      from { opacity: 0; transform: scale(1.15); filter: blur(1vh); }
+      to   { opacity: 1; transform: none; filter: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .mayor-crown, .mayor-name, .mayor-sub { animation: none; }
+    }
+
+    /* VICTOIRE DU VILLAGE */
+    #victory-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 45;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3vh;
+      text-align: center;
+      background: radial-gradient(circle at center, rgba(70, 48, 4, 0.88) 0%, rgba(0, 0, 0, 0.96) 100%);
+      cursor: pointer;
+    }
+    .victory-trophy { font-size: 24vh; line-height: 1; filter: drop-shadow(0 0 3vh rgba(250, 204, 21, 0.85)); animation: crownDrop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+    .victory-title {
+      font-family: 'Wolf Brothers', 'Segoe UI', sans-serif;
+      font-size: 14vh;
+      line-height: 1.05;
+      color: #fde68a;
+      text-shadow: 0 0 4vh rgba(250, 204, 21, 0.75), 0 0.6vh 1.4vh #000;
+      animation: mayorNameIn 0.8s 0.4s ease-out both;
+    }
+    .victory-sub { font-size: 4.6vh; color: #fcd34d; text-shadow: 0 0.3vh 0.8vh #000; animation: mayorNameIn 0.8s 0.8s ease-out both; }
   </style>
 </head>
 <body>
+  <script src="bg.js?v=94"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
@@ -318,7 +451,7 @@
       <div class="blood-card players-box">
         <h3>👥 Joueurs présents (<span id="player-count">0</span>)</h3>
         <ul id="player-list-target" class="players-list">
-          <li style="color: #94a3b8; font-family: sans-serif; font-size: 0.9rem;">En attente de joueurs...</li>
+          <li style="color: #94a3b8; font-family: sans-serif; font-size: 3.4vh;">En attente de joueurs...</li>
         </ul>
       </div>
 
@@ -328,42 +461,101 @@
   <div id="player"></div>
   <video id="overlay-video" playsinline></video>
 
-  <!-- Logo VB (haut à gauche) -->
-  <img id="logo-vb" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/logo%20vb.png" alt="Logo VB" onerror="this.style.display='none'">
+  <!-- Logo (haut à gauche) -->
+  <img id="logo-jeu" src="logo-carnage.png?v=94" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
 
   <!-- QR code permanent (reconnexion en cours de partie) -->
   <div id="mini-qr">
     <div id="mini-qr-code" class="mini-qr-code"></div>
-    <div class="mini-qr-label">Retrouve ta place<br>en scannant</div>
   </div>
 
   <!-- Vidéos d'annonce + noms des joueurs -->
+  <div id="sound-unlock" style="display:none;position:fixed;top:1.2vh;right:1.2vw;z-index:99;padding:1vh 1.4vw;border-radius:1vh;background:rgba(252,211,77,0.95);color:#1a1d2b;font:600 2.4vh 'Segoe UI',sans-serif;cursor:pointer;">🔊 Cliquez sur cet écran pour activer le son</div>
   <video id="event-video" playsinline></video>
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <defs>
-      <linearGradient id="deathClaw" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#ef4444"/>
-        <stop offset="1" stop-color="#7f1d1d"/>
-      </linearGradient>
-    </defs>
-  </svg>
   <div id="death-overlay"><div id="death-list"></div></div>
+  <div id="victory-overlay">
+    <div id="victory-trophy" class="victory-trophy">🏆</div>
+    <div id="victory-title" class="victory-title">Victoire du village !</div>
+    <div id="victory-sub" class="victory-sub">Tous les Loups-Garous ont été éliminés</div>
+  </div>
+  <div id="hunter-wait-overlay">
+    <div id="hw-role" class="hw-role">Chasseur</div>
+    <div class="hw-card"><div class="card-face" id="hw-face"></div></div>
+    <div id="hw-name" class="hw-name"></div>
+    <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
+  </div>
+  <div id="dayvote-overlay">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=94" alt="Les Loups-Garous : Le Carnage">
+    <div class="dv-title">Le village débat</div>
+    <div class="dv-sub">🗳️ En attente du vote du village…</div>
+  </div>
+  <div id="candidates-overlay">
+    <div id="cand-title" class="cand-title">👑 Candidats à la mairie</div>
+    <div id="cand-list" class="cand-list"></div>
+    <div id="cand-sub" class="cand-sub"></div>
+  </div>
+  <div id="mayor-overlay">
+    <div class="mayor-crown">👑</div>
+    <div id="mayor-name" class="mayor-name"></div>
+    <div class="mayor-sub">Maire du village</div>
+  </div>
 
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://0.peerjs.com">
+  <script src="boot.js?v=94"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
-    console.info('Projecteur - version 32');
+    console.info('Projecteur - version 80');
     let ytPlayer = null;
     let ytReady = false;
     let pendingVideoId = null;
     let pendingLoop = true;
     let loopScene = true;       // false pour la vidéo de présentation
-    let targetVolume = 100;
+    // ---- Limite du niveau audio : aucun son ne dépasse ces plafonds, et tout démarre en fondu (jamais « d'un seul coup ») ----
+    const MAX_VOLUME = 0.8;              // plafond des vidéos MP4 (1 = maximum)
+    const MAX_YT_VOLUME = 80;            // plafond de la scène YouTube (0 à 100)
+    const FADE_IN_MS = 500;
+    // --- Liaison avec la régie : fenêtre ouverte par la régie (window.opener) OU connexion distante (?room=CODE : TV, vidéoprojecteur, cast) ---
+    const REMOTE_ROOM = new URLSearchParams(location.search).get('room');
+    let hostConn = null;
+    function toHost(msg) {
+      if (window.opener) { try { window.opener.postMessage(msg, '*'); } catch (e) {} }
+      if (hostConn && hostConn.open) { try { hostConn.send({ type: 'projMsg', msg }); } catch (e) {} }
+    }
+    function connectToHost() {
+      if (!REMOTE_ROOM || typeof Peer === 'undefined') return;
+      const pr = new Peer(undefined, (window.LG && LG.peerOptions) || {});
+      pr.on('open', () => {
+        const c = pr.connect('LG-' + REMOTE_ROOM, { reliable: true });
+        hostConn = c;
+        c.on('open', () => { c.send({ type: 'projectorHello' }); toHost({ action: 'projectorReady' }); });
+        c.on('data', (d) => { if (d && d.type === 'projector') handleHostMessage(d.msg); });
+        c.on('close', () => { hostConn = null; try { pr.destroy(); } catch (e) {} setTimeout(connectToHost, 3000); });
+        c.on('error', () => {});
+      });
+      pr.on('error', () => { try { pr.destroy(); } catch (e) {} setTimeout(connectToHost, 4000); });
+    }
+    let targetVolume = MAX_YT_VOLUME;
+    let sceneMix = 1, videoMix = 1, lastRel = 1;   // curseurs de la régie (0 à 1)
     let fadeInterval = null;
     const overlayVideo = document.getElementById('overlay-video');
     const waitingScreen = document.getElementById('waiting-screen');
+    function lobbyQrSize() { return Math.round(Math.max(160, Math.min(window.innerHeight * 0.46, window.innerWidth * 0.28))); }
+    function renderLobbyQr(url) {
+      const qrTarget = document.getElementById('qr-code-target');
+      qrTarget.innerHTML = '';
+      const size = lobbyQrSize();
+      new QRCode(qrTarget, { text: url, width: size, height: size });
+    }
+    let lobbyQrTimer = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(lobbyQrTimer);
+      lobbyQrTimer = setTimeout(() => { if (currentQrUrl) renderLobbyQr(currentQrUrl); }, 250);
+    });
     let currentQrUrl = null;
 
     function hideWaitingScreen() {
@@ -384,10 +576,9 @@
       if (mode === 'center') {
         imp('top', '50%'); imp('left', '50%'); imp('right', 'auto');
         imp('transform', 'translate(-50%, -50%)');
-        imp('width', '50%'); imp('height', 'auto');
-        imp('aspect-ratio', '1728 / 918');
+        imp('width', '50%'); imp('height', 'auto');      // ajusté précisément dès que le format de la vidéo est connu
         imp('max-height', '90%'); imp('box-sizing', 'border-box');
-        imp('background', '#000'); imp('object-fit', 'contain');
+        imp('object-fit', 'contain');
       } else if (mode === 'full') {
         imp('top', '0'); imp('left', '0'); imp('right', '0'); imp('bottom', '0');
         imp('transform', 'none');
@@ -402,16 +593,59 @@
       if (overlayVideo.loop || !overlayVideo.hasAttribute('src')) return;
       const url = overlayVideo.getAttribute('src');
       hideOverlay();
-      if (window.opener) window.opener.postMessage({ action: 'overlayEnded', url }, '*');
+      toHost({ action: 'overlayEnded', url });
     });
 
+    // Cadrage automatique : 50 % de la largeur de l'écran, hauteur déduite du format de la vidéo (jamais de bandes
+    // noires ni de déformation) ; si la vidéo est trop haute, on la réduit pour qu'elle tienne dans 90 % de la hauteur.
+    let overlayShowTimer = null;
+    function fitCenterOverlay() {
+      if (!overlayVideo.classList.contains('center')) return;
+      const vw = overlayVideo.videoWidth, vh = overlayVideo.videoHeight;
+      if (!vw || !vh) return;
+      const ratio = vw / vh;
+      let w = window.innerWidth * 0.5;
+      let h = w / ratio;
+      const maxH = window.innerHeight * 0.9;
+      if (h > maxH) { h = maxH; w = h * ratio; }
+      overlayVideo.style.setProperty('width', w + 'px', 'important');
+      overlayVideo.style.setProperty('height', h + 'px', 'important');
+    }
+    overlayVideo.addEventListener('loadedmetadata', () => {
+      fitCenterOverlay();
+      overlayVideo.style.visibility = 'visible';
+    });
+    window.addEventListener('resize', fitCenterOverlay);
+
+    // Réseau lent : si une vidéo ne démarre pas (25 s) ou se fige (15 s), on ne bloque pas la partie
+    function watchVideo(video, onStuck) {
+      let t = null;
+      const arm = (ms) => { clearTimeout(t); t = setTimeout(() => { if (video.getAttribute('src') && !video.ended) onStuck(); }, ms); };
+      const disarm = () => clearTimeout(t);
+      video.addEventListener('loadstart', () => arm(25000));
+      video.addEventListener('waiting', () => arm(15000));
+      video.addEventListener('stalled', () => arm(20000));
+      video.addEventListener('playing', disarm);
+      video.addEventListener('ended', disarm);
+      video.addEventListener('emptied', disarm);
+    }
+
     function hideOverlay() {
+      clearTimeout(overlayShowTimer);
+      overlayVideo.style.visibility = '';
       overlayVideo.pause();
       overlayVideo.style.display = 'none';
       setOverlayMode(null);
       overlayVideo.removeAttribute('src');
       overlayVideo.load();
     }
+
+    watchVideo(overlayVideo, () => {
+      const loop = overlayVideo.loop;
+      const url = overlayVideo.getAttribute('src');
+      hideOverlay();
+      if (!loop) toHost({ action: 'overlayEnded', url });
+    });
 
     function onYouTubeIframeAPIReady() {
       ytPlayer = new YT.Player('player', {
@@ -423,7 +657,7 @@
           onReady: () => {
             ytReady = true;
             if (pendingVideoId) { playScene(pendingVideoId, pendingLoop); pendingVideoId = null; }
-            if (window.opener) window.opener.postMessage({ action: 'projectorReady' }, '*');
+            toHost({ action: 'projectorReady' });
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.ENDED) {
@@ -440,49 +674,110 @@
       });
     }
 
+    function fadeInVideo(video, ms = FADE_IN_MS, max = MAX_VOLUME) {
+      const steps = 10;
+      let i = 0;
+      video.volume = 0;
+      const tick = () => {
+        i++;
+        video.volume = Math.min(max * videoMix, max * videoMix * i / steps);
+        if (i < steps) setTimeout(tick, ms / steps);
+      };
+      setTimeout(tick, ms / steps);
+    }
+
     function playScene(videoId, loop = true) {
       loopScene = loop;
       document.getElementById('player').style.visibility = 'visible';
       hideWaitingScreen();
       hideOverlay();
       ytPlayer.loadVideoById(videoId);
-      ytPlayer.setVolume(targetVolume);
+      ytPlayer.setVolume(0);
       ytPlayer.playVideo();
+      rampYT(targetVolume, 900);               // fondu d'entrée jusqu'au plafond
     }
 
-    function fadeVolumeTo(target01, durationMs = 600) {
-      targetVolume = Math.max(0, Math.min(100, target01 * 100));
+    // rampe du volume YouTube vers un niveau absolu (0-100, jamais au-dessus du plafond)
+    function rampYT(toPct, durationMs = 600) {
+      toPct = Math.max(0, Math.min(MAX_YT_VOLUME, toPct));
       if (!ytReady) return;
       clearInterval(fadeInterval);
-
       const startVolume = ytPlayer.getVolume();
-      const distance = targetVolume - startVolume;
+      const distance = toPct - startVolume;
       const steps = 30;
       const stepTime = durationMs / steps;
       let currentStep = 0;
-
       fadeInterval = setInterval(() => {
         currentStep++;
-        ytPlayer.setVolume(Math.max(0, Math.min(100, startVolume + distance * (currentStep / steps))));
+        ytPlayer.setVolume(Math.max(0, Math.min(MAX_YT_VOLUME, startVolume + distance * (currentStep / steps))));
         if (currentStep >= steps) {
-          ytPlayer.setVolume(targetVolume);
+          ytPlayer.setVolume(toPct);
           clearInterval(fadeInterval);
         }
       }, stepTime);
     }
 
+    // volume relatif demandé par la régie (1 = niveau normal = plafond, 0.25 = voix du MJ par-dessus)
+    function fadeVolumeTo(target01, durationMs = 600) {
+      lastRel = target01;
+      targetVolume = Math.max(0, Math.min(MAX_YT_VOLUME, target01 * MAX_YT_VOLUME * sceneMix));
+      rampYT(targetVolume, durationMs);
+    }
 
-    // --- ANNONCE DE MORT (nom en grand + griffures) ---
+
+    // --- ANNONCE DE MORT (nom + carte de rôle qui se retourne) ---
+    const IMG_BASE = 'https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/';
+    const VERSO_URL = IMG_BASE + 'joueur/images/Verso%202.png';
+    const ROLE_IMG = {
+      'Loup-Garou': 'Loup-Garou 1.png', 'Villageois': 'Villageois 1.png', 'Voyante': 'Voyante 1.png', 'Sorcière': 'Sorciere 1.png',
+      'Chasseur': 'Chasseur 1.png', 'Cupidon': 'Cupidon 1.png', 'Voleur': 'Voleur 1.png', 'Maire': 'Maire 1.png', 'Renard': 'Renard 1.png', 'Petite Fille': 'Petite Fille.png'
+    };
+    // comment le joueur est mort (affiché sous son nom)
+    const CAUSE_TEXT = {
+      wolves: '🐺 Dévoré par les loups', poison: '☠️ Empoisonné par la Sorcière',
+      vote: '🗳️ Éliminé par le village', hunter: '🏹 Abattu par le Chasseur'
+    };
+    function roleImgUrl(role) {
+      const f = ROLE_IMG[role];
+      return f ? IMG_BASE + 'images/' + encodeURIComponent(f) : null;
+    }
+    // carte : verso visible d'abord, puis elle se retourne sur le recto (le rôle)
+    function buildRoleCard(role) {
+      const card = document.createElement('div');
+      card.className = 'death-card';
+      const inner = document.createElement('div');
+      inner.className = 'death-card-inner';
+
+      const back = document.createElement('div');
+      back.className = 'card-face card-back';
+      const backImg = document.createElement('img');
+      backImg.alt = '';
+      backImg.src = VERSO_URL;
+      back.appendChild(backImg);
+
+      const front = document.createElement('div');
+      front.className = 'card-face card-front';
+      const url = roleImgUrl(role);
+      if (url) {
+        const img = document.createElement('img');
+        img.alt = role;
+        img.onerror = () => { img.remove(); front.textContent = role; };   // image introuvable : le nom du rôle s'affiche
+        img.src = url;
+        front.appendChild(img);
+      } else {
+        front.textContent = role;
+      }
+      inner.appendChild(back);
+      inner.appendChild(front);
+      card.appendChild(inner);
+      return card;
+    }
+
     let deathTimer = null;
     let eventActive = false;
     let eventTimer = null;
     const eventVideo = document.getElementById('event-video');
-    const CLAWS_SVG =
-      '<svg class="death-claws" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
-      '<polygon class="claw c1" points="12,-8 22,-8 50,108 46,108" fill="url(#deathClaw)"/>' +
-      '<polygon class="claw c2" points="38,-8 48,-8 76,108 72,108" fill="url(#deathClaw)"/>' +
-      '<polygon class="claw c3" points="64,-8 74,-8 102,108 98,108" fill="url(#deathClaw)"/></svg>';
-
+    watchVideo(eventVideo, () => { if (eventActive && eventVideo.onerror) eventVideo.onerror(); });
     function hideDeaths() {
       const overlay = document.getElementById('death-overlay');
       clearTimeout(deathTimer);
@@ -494,9 +789,18 @@
       const overlay = document.getElementById('death-overlay');
       const list = document.getElementById('death-list');
       list.innerHTML = '';
+      list.style.setProperty('--n', Math.max((deaths || []).length, 1));
       (deaths || []).forEach((d) => {
         const item = document.createElement('div');
         item.className = 'death-item';
+
+        if (d.role) {
+          const rl = document.createElement('div');
+          rl.className = 'death-role';
+          rl.textContent = d.role;                  // le nom du rôle est noté au-dessus de la carte
+          item.appendChild(rl);
+          item.appendChild(buildRoleCard(d.role));
+        }
 
         const name = document.createElement('div');
         name.className = 'death-name';
@@ -504,13 +808,20 @@
         name.textContent = d.name;            // textContent : pas d'injection HTML
         item.appendChild(name);
 
+        const causeText = d.love ? null : CAUSE_TEXT[opts.cause];
+        if (causeText) {
+          const cause = document.createElement('div');
+          cause.className = 'death-cause';
+          cause.textContent = causeText;
+          item.appendChild(cause);
+        }
+
         if (d.love) {
           const sub = document.createElement('div');
           sub.className = 'death-sub';
           sub.textContent = '💔 ne survit pas à la perte de son amoureux(se)';
           item.appendChild(sub);
         }
-        item.insertAdjacentHTML('beforeend', CLAWS_SVG);
         list.appendChild(item);
       });
       overlay.classList.toggle('over-video', !!opts.overVideo);
@@ -524,6 +835,95 @@
       if (eventActive) endEvent(); else hideDeaths();
     });
 
+
+    // --- VICTOIRE DU VILLAGE ---
+    function hideVictory() { document.getElementById('victory-overlay').style.display = 'none'; }
+    function showVictory(winner) {
+      const wolves = winner === 'wolves';
+      document.getElementById('victory-trophy').textContent = wolves ? '🐺' : '🏆';
+      document.getElementById('victory-title').textContent = wolves ? 'Victoire des Loups-Garous !' : 'Victoire du village !';
+      document.getElementById('victory-sub').textContent = wolves ? "Les loups-garous ont éliminé l'intégralité du camp des villageois" : 'Tous les Loups-Garous ont été éliminés';
+      document.getElementById('victory-overlay').style.display = 'flex';
+    }
+    document.getElementById('victory-overlay').addEventListener('click', hideVictory);
+
+    // --- ATTENTE DU CHASSEUR : sa carte carrée + son nom ---
+    function showHunterWait(name, role, sub) {
+      if (window.setBgPhase) setBgPhase('day');
+      if (ytReady) ytPlayer.stopVideo();                            // la vidéo YouTube de nuit s'arrête : place à la vidéo de jour
+      document.getElementById('player').style.visibility = 'hidden';
+      hideWaitingScreen();
+      role = role || 'Chasseur';
+      document.getElementById('hw-role').textContent = role;
+      document.getElementById('hw-sub').textContent = sub || '🏹 Il choisit sa cible pour son dernier tir…';
+      const face = document.getElementById('hw-face');
+      face.innerHTML = '';
+      const url = roleImgUrl(role);
+      if (url) {
+        const img = document.createElement('img');
+        img.alt = role;
+        img.onerror = () => { img.remove(); face.textContent = role; };
+        img.src = url;
+        face.appendChild(img);
+      } else { face.textContent = role; }
+      document.getElementById('hw-name').textContent = name || '';
+      document.getElementById('hunter-wait-overlay').style.display = 'flex';
+    }
+    function hideHunterWait() { document.getElementById('hunter-wait-overlay').style.display = 'none'; }
+
+    // --- CANDIDATS AU POSTE DE MAIRE : liste + candidat qui parle ---
+    function showCandidates(names, speaker, sub, title) {
+      if (window.setBgPhase) setBgPhase('day');
+      document.getElementById('cand-title').textContent = title || '👑 Candidats à la mairie';
+      const ov = document.getElementById('candidates-overlay');
+      const list = document.getElementById('cand-list');
+      list.innerHTML = '';
+      (names || []).forEach((n) => {
+        const d = document.createElement('div');
+        d.className = 'cand-item' + (n === speaker ? ' speaking' : (speaker ? '' : ' idle'));
+        d.textContent = (n === speaker ? '🎤 ' : '') + n;
+        list.appendChild(d);
+      });
+      document.getElementById('cand-sub').textContent = sub || (speaker ? 'Discours de ' + speaker : '');
+      ov.style.display = 'flex';
+    }
+    function hideDayVote() { document.getElementById('dayvote-overlay').style.display = 'none'; }
+    function showDayVote(mode) {
+      if (window.setBgPhase) setBgPhase('day');
+      const night = mode === 'night', roles = mode === 'roles';
+      document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
+      document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
+      const ti = document.getElementById('dv-title-img');
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=94';
+      if (ytReady) ytPlayer.stopVideo();
+      document.getElementById('player').style.visibility = 'hidden';
+      hideWaitingScreen();
+      document.getElementById('dayvote-overlay').style.display = 'flex';
+    }
+    function hideCandidates() { document.getElementById('candidates-overlay').style.display = 'none'; }
+
+    // --- ÉLECTION DU MAIRE : couronne + nom ---
+    let mayorTimer = null;
+    function hideMayor() {
+      const overlay = document.getElementById('mayor-overlay');
+      clearTimeout(mayorTimer);
+      overlay.classList.add('out');
+      setTimeout(() => { if (overlay.classList.contains('out')) overlay.style.display = 'none'; }, 600);
+    }
+    function showMayor(name) {
+      const overlay = document.getElementById('mayor-overlay');
+      const el = document.getElementById('mayor-name');
+      el.textContent = name;                                   // textContent : pas d'injection HTML
+      el.style.setProperty('--len', Math.max(String(name).length, 4));
+      overlay.classList.remove('out');
+      overlay.style.display = 'flex';
+      // on relance les animations à chaque annonce
+      overlay.querySelectorAll('.mayor-crown, .mayor-name, .mayor-sub').forEach((n) => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });
+      clearTimeout(mayorTimer);
+      mayorTimer = setTimeout(hideMayor, 9000);
+    }
+    document.getElementById('mayor-overlay').addEventListener('click', hideMayor);
+
     // --- VIDÉOS D'ANNONCE (loups, empoisonnement, vote) : plein écran + noms par-dessus ---
     function endEvent() {
       clearTimeout(eventTimer);
@@ -534,30 +934,95 @@
       eventVideo.removeAttribute('src');
       eventVideo.load();
       hideDeaths();
+      stopSfx(false);                                  // l'effet sonore s'arrête avec la scène d'annonce
       if (ytReady) ytPlayer.setVolume(targetVolume);   // on rend le son à la scène
+      toHost({ action: 'eventEnded' });   // la régie peut enchaîner (ex. lever du jour)
+    }
+
+    // --- Activation du son : le navigateur exige un clic dans cette fenêtre pour autoriser les vidéos avec son ---
+    let soundBlocked = false;
+    function showSoundUnlock() { document.getElementById('sound-unlock').style.display = 'block'; }
+    function unlockSound() {
+      soundBlocked = false;
+      document.getElementById('sound-unlock').style.display = 'none';
+      try { eventVideo.muted = false; if (eventActive) eventVideo.volume = MAX_VOLUME * videoMix; } catch (e) {}
+      try { overlayVideo.muted = false; } catch (e) {}
+    }
+    try { if (!(navigator.userActivation && navigator.userActivation.hasBeenActive)) showSoundUnlock(); } catch (e) {}
+    window.addEventListener('pointerdown', unlockSound, true);
+    window.addEventListener('keydown', unlockSound, true);
+
+    // effets sonores par-dessus la vidéo d'annonce (Effet sorcière avant la fin ; hurlement à la révélation de la carte)
+    let sfxAudio = null, sfxTimer = null;
+    function startSfx(url) {
+      stopSfx(true);
+      sfxAudio = new Audio(url);
+      sfxAudio.volume = 0.8 * videoMix;
+      sfxAudio.play().catch((e) => console.warn('Effet sonore :', e));
+    }
+    function stopSfx(now) {
+      clearTimeout(sfxTimer);
+      const a = sfxAudio;
+      sfxAudio = null;
+      if (!a) return;
+      if (now) { a.pause(); return; }
+      let i = 0;
+      (function fade() { i++; a.volume = Math.max(0, a.volume * 0.7); if (i < 6) setTimeout(fade, 60); else a.pause(); })();
     }
 
     function playEvent(data) {
+      hideDayVote();
+      if (window.setBgPhase && data.cause === 'vote') setBgPhase('day');   // élimination du village : scène de jour
       endEvent();
+      hideHunterWait();
+      { const mo = document.getElementById('mayor-overlay'); clearTimeout(mayorTimer); mo.style.display = 'none'; hideCandidates(); }   // rien par-dessus la vidéo
+      const sfx = data.sfx || {};
       hideOverlay();
       eventActive = true;
-      if (ytReady) ytPlayer.setVolume(Math.min(targetVolume, 10));   // la scène passe au second plan
+      if (data.stopScene) {
+        // élimination par le village : la scène (jour) s'arrête, le fond du village réapparaît derrière
+        if (ytReady) ytPlayer.stopVideo();
+        document.getElementById('player').style.visibility = 'hidden';
+      } else if (ytReady) {
+        ytPlayer.setVolume(Math.min(targetVolume, 10));   // la scène passe au second plan
+      }
 
-      const showNames = () => showDeaths(data.deaths, { overVideo: true, autoHide: false });
+      const showNames = () => {
+        showDeaths(data.deaths, { overVideo: true, autoHide: false, cause: data.cause });
+        if (sfx.reveal) { clearTimeout(sfxTimer); sfxTimer = setTimeout(() => startSfx(sfx.reveal.url), 1100); }   // au retournement de la carte
+      };
+      let beforeDone = false;
+      eventVideo.ontimeupdate = () => {
+        if (!sfx.before || beforeDone) return;
+        const d = eventVideo.duration;
+        if (isFinite(d) && eventVideo.currentTime >= Math.max(0, d - sfx.before.secs)) { beforeDone = true; startSfx(sfx.before.url); }
+      };
+      const noNames = data.namesAt === 'none' || !(data.deaths && data.deaths.length);
       eventVideo.onended = () => {
         if (data.namesAt === 'end') showNames();
-        eventTimer = setTimeout(endEvent, data.namesAt === 'end' ? 9000 : 6000);
+        eventTimer = setTimeout(endEvent, noNames ? 300 : (data.namesAt === 'end' ? 11000 : 8000));
       };
       eventVideo.onerror = () => {            // vidéo introuvable : on affiche quand même les noms
-        showNames();
-        eventTimer = setTimeout(endEvent, 9000);
+        if (!noNames) showNames();
+        eventTimer = setTimeout(endEvent, noNames ? 300 : 11000);
       };
 
       eventVideo.src = data.url;
       eventVideo.style.display = 'block';
       eventVideo.currentTime = 0;
-      eventVideo.play().catch((err) => console.error('Erreur vidéo d\'annonce :', err));
-      if (data.namesAt === 'start') showNames();
+      fadeInVideo(eventVideo);                 // volume plafonné + fondu d'entrée
+      eventVideo.muted = false;
+      eventVideo.onplaying = () => { eventVideo.muted = false; if (eventVideo.volume < 0.05 && !soundBlocked && videoMix > 0.05) eventVideo.volume = MAX_VOLUME * videoMix; };
+      eventVideo.play().catch((err) => {
+        console.error('Erreur vidéo d\'annonce :', err);
+        if (err && err.name === 'NotAllowedError') {       // le navigateur bloque le son : la vidéo démarre muette, un clic active le son
+          soundBlocked = true;
+          showSoundUnlock();
+          eventVideo.muted = true;
+          eventVideo.play().catch(() => {});
+        }
+      });
+      if (data.namesAt === 'start' && !noNames) showNames();
     }
 
     // --- QR CODE PERMANENT (en bas à droite) ---
@@ -566,34 +1031,39 @@
       if (!url || typeof QRCode === 'undefined') return;
       const box = document.getElementById('mini-qr');
       const target = document.getElementById('mini-qr-code');
-      const size = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.12);
+      // petit QR code (8 % de la plus petite dimension de l'écran) ; correction d'erreur « L » = modules plus gros, donc lisible malgré la petite taille
+      const size = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.08);
       target.innerHTML = '';
-      new QRCode(target, { text: url, width: size, height: size });
+      const level = (QRCode.CorrectLevel && QRCode.CorrectLevel.L !== undefined) ? QRCode.CorrectLevel.L : undefined;
+      new QRCode(target, { text: url, width: size, height: size, correctLevel: level });
       box.style.display = 'flex';
       miniQrUrl = url;
     }
     window.addEventListener('resize', () => { if (miniQrUrl) renderMiniQr(miniQrUrl); });
 
     // le projecteur prévient la régie dès qu'il est chargé (affichage immédiat du salon)
-    if (window.opener) window.opener.postMessage({ action: 'projectorReady' }, '*');
+    toHost({ action: 'projectorReady' });
 
     // Pas de bouton : un simple clic dans cette fenêtre lève un éventuel blocage du son
     window.addEventListener('click', () => {
       if (ytReady) { ytPlayer.unMute(); ytPlayer.setVolume(targetVolume); }
     });
 
+    connectToHost();
+
     window.addEventListener('message', (event) => {
       if (event.source !== window.opener) return;
-      const data = event.data;
+      handleHostMessage(event.data);
+    });
+
+    function handleHostMessage(data) {
       if (!data || !data.action) return;
 
       switch (data.action) {
         case 'updateLobby':
           document.getElementById('room-code-text').textContent = data.roomCode || '----';
           if (data.joinUrl && data.joinUrl !== currentQrUrl) {
-            const qrTarget = document.getElementById('qr-code-target');
-            qrTarget.innerHTML = '';
-            new QRCode(qrTarget, { text: data.joinUrl, width: 160, height: 160 });
+            renderLobbyQr(data.joinUrl);
             currentQrUrl = data.joinUrl;
           }
           if (data.joinUrl && data.joinUrl !== miniQrUrl) renderMiniQr(data.joinUrl);
@@ -607,8 +1077,46 @@
               pList.appendChild(li);
             });
           } else {
-            pList.innerHTML = '<li style="color: #94a3b8; font-family: sans-serif; font-size: 0.9rem;">En attente de joueurs...</li>';
+            pList.innerHTML = '<li style="color: #94a3b8; font-family: sans-serif; font-size: 3.4vh;">En attente de joueurs...</li>';
           }
+          break;
+
+        case 'victory':
+          showVictory(data.winner);
+          break;
+
+        case 'victoryCancel':
+          hideVictory();
+          break;
+
+        case 'bgPhase':
+          if (window.setBgPhase) setBgPhase(data.phase);
+          if (data.phase === 'day') {              // scène de jour : la vidéo de fond « jour » est visible (rien d'autre derrière)
+            if (ytReady) ytPlayer.stopVideo();
+            document.getElementById('player').style.visibility = 'hidden';
+            hideWaitingScreen();
+          }
+          break;
+
+        case 'dayVote':
+          if (data.show) showDayVote(data.mode); else hideDayVote();
+          break;
+
+        case 'hunterWaiting':
+          if (data.hide) hideHunterWait(); else showHunterWait(data.name, data.role, data.sub);
+          break;
+
+        case 'mayorCandidates':
+          if (data.hide) hideCandidates(); else showCandidates(data.names, data.speaker, data.sub, data.title);
+          break;
+
+        case 'announceMayor':
+          if (window.setBgPhase) setBgPhase('day');
+          if (ytReady) ytPlayer.stopVideo();
+          document.getElementById('player').style.visibility = 'hidden';
+          hideWaitingScreen();
+          hideCandidates();
+          showMayor(data.name);
           break;
 
         case 'announceDeath':
@@ -620,18 +1128,34 @@
           break;
 
         case 'playYTVideo':
+          hideDayVote();
           hideWaitingScreen();
           if (ytReady) playScene(data.videoId, data.loop !== false);
           else { pendingVideoId = data.videoId; pendingLoop = data.loop !== false; }
           break;
 
         case 'playOverlayVideo':
+          hideDayVote();
           hideWaitingScreen();
           setOverlayMode(data.mode);
+          // vidéo centrée : on l'affiche une fois son format connu, pour éviter un saut de taille visible
+          overlayVideo.style.visibility = data.mode === 'center' ? 'hidden' : 'visible';
+          clearTimeout(overlayShowTimer);
+          overlayShowTimer = setTimeout(() => { overlayVideo.style.visibility = 'visible'; }, 1500);
           overlayVideo.src = data.url;
           overlayVideo.loop = data.loop !== false;   // false : lue une seule fois (ex. Maire)
           overlayVideo.style.display = 'block';
-          overlayVideo.play().catch((err) => console.error("Erreur overlay :", err));
+          fadeInVideo(overlayVideo, FADE_IN_MS, String(data.url).includes('Maire.mp4') ? 1.0 : MAX_VOLUME);   // la vidéo du Maire est un peu plus forte
+          overlayVideo.muted = false;
+          overlayVideo.play().catch((err) => {
+            console.error("Erreur overlay :", err);
+            if (err && err.name === 'NotAllowedError') {      // son bloqué par le navigateur : la vidéo démarre quand même, muette (un clic active le son)
+              soundBlocked = true;
+              showSoundUnlock();
+              overlayVideo.muted = true;
+              overlayVideo.play().catch(() => {});
+            }
+          });
           break;
 
         case 'stopOverlayVideo':
@@ -639,10 +1163,15 @@
           break;
 
         case 'stop':
+          hideDayVote();
           if (ytReady) ytPlayer.stopVideo();
           document.getElementById('player').style.visibility = 'hidden';
           hideOverlay();
           endEvent();
+          hideMayor();
+          hideCandidates();
+          hideHunterWait();
+          hideVictory();
           break;
 
         case 'togglePause':
@@ -657,11 +1186,25 @@
           }
           break;
 
+        case 'prefetch':
+          if (window.LG && LG.prefetch && Array.isArray(data.urls)) LG.prefetch(data.urls, { concurrency: 1, delay: 4000 });
+          break;
+
+        case 'setMixer':
+          sceneMix = Math.max(0, Math.min(1, data.scene == null ? 1 : data.scene));
+          videoMix = Math.max(0, Math.min(1, data.videos == null ? 1 : data.videos));
+          targetVolume = Math.max(0, Math.min(MAX_YT_VOLUME, lastRel * MAX_YT_VOLUME * sceneMix));
+          try { if (ytReady) ytPlayer.setVolume(targetVolume); } catch (e) {}
+          try { if (eventActive) eventVideo.volume = Math.min(1, MAX_VOLUME * videoMix); } catch (e) {}
+          try { if (overlayVideo.hasAttribute('src')) overlayVideo.volume = Math.min(1, (String(overlayVideo.src).includes('Maire.mp4') ? 1.0 : MAX_VOLUME) * videoMix); } catch (e) {}
+          try { if (sfxAudio) sfxAudio.volume = 0.8 * videoMix; } catch (e) {}
+          break;
+
         case 'setVolume':
           fadeVolumeTo(data.volume, data.duration || 600);
           break;
       }
-    });
+    }
   </script>
 </body>
 </html>

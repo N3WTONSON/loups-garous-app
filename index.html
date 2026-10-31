@@ -4,15 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" href="data:,">
-  <title>Loup-Garou - Régie Maître du Jeu</title>
-  <link rel="stylesheet" href="style.css?v=26">
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Les Loups-Garous : Le Carnage - Régie Maître du Jeu</title>
+  <link rel="stylesheet" href="style.css?v=94">
+  <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://0.peerjs.com">
+  <script src="boot.js?v=94"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 </head>
 <body>
+  <button id="mixer-btn" class="help-btn" style="right: 92px;" onclick="toggleMixer(document.getElementById('mixer-panel').style.display!=='block')" title="Volumes audio">🔊 Volumes</button>
+  <div id="mixer-panel" class="mixer-panel" style="display:none;">
+    <h3>🔊 Volumes audio</h3>
+    <label>🗣️ Voix & effets (régie) <span id="mix-val-voix">100 %</span><input type="range" id="mix-voix" min="0" max="100" value="100" oninput="setMixer('voix', this.value)"></label>
+    <label>🎵 Musique d'ambiance <span id="mix-val-musique">100 %</span><input type="range" id="mix-musique" min="0" max="100" value="100" oninput="setMixer('musique', this.value)"></label>
+    <label>🎬 Scène YouTube (écran secondaire) <span id="mix-val-scene">100 %</span><input type="range" id="mix-scene" min="0" max="100" value="100" oninput="setMixer('scene', this.value)"></label>
+    <label>📺 Vidéos & effets (écran secondaire) <span id="mix-val-videos">100 %</span><input type="range" id="mix-videos" min="0" max="100" value="100" oninput="setMixer('videos', this.value)"></label>
+    <button class="modal-close" onclick="toggleMixer(false)">Fermer</button>
+  </div>
+  <button id="help-btn" class="help-btn" onclick="toggleHelp(true)" title="Comment utiliser l'application" aria-label="Aide">❓ Aide</button>
+  <script>function toggleHelp(on){document.getElementById('help-modal').style.display=on?'flex':'none';}document.addEventListener('keydown',function(e){if(e.key==='Escape')toggleHelp(false);});</script>
+  <script src="bg.js?v=94"></script>
 
 <header>
-  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Titre.png" alt="Les Loups-garous de Thiercelieux" class="site-title-img">
+  <img src="logo-carnage.png?v=94" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
   <p>Panneau du Maître du Jeu & Contrôle Ambiance</p>
   
   <div style="text-align: center; margin: 15px auto; max-width: 500px;">
@@ -54,12 +70,23 @@
             <div id="qrcode" style="display: inline-block; padding: 10px; background: white; border-radius: 8px; margin: 10px 0;"></div>
             <p style="font-size: 0.9rem; color: #94a3b8; margin: 4px 0;">Scannez pour rejoindre</p>
             <p id="join-url" class="hint"></p>
+            <div id="remote-proj-box" class="remote-proj" style="display:none;">
+              <h3>📺 Écran secondaire sur TV / vidéoprojecteur</h3>
+              <p class="hint">Sur la TV, le vidéoprojecteur ou un autre appareil, ouvrez ce lien (ou scannez le QR code), ou castez directement :</p>
+              <div id="remote-proj-qr" class="remote-qr"></div>
+              <p id="remote-proj-url" class="hint remote-url"></p>
+              <div class="remote-btns">
+                <button class="btn btn-effect" onclick="copyRemoteProjectorUrl()">📋 Copier le lien</button>
+                <button class="btn btn-projector" id="cast-btn" onclick="castProjector()">📡 Caster sur une TV</button>
+              </div>
+              <p id="remote-proj-status" class="hint">Aucun écran distant connecté</p>
+            </div>
           </div>
         </section>
 
         <!-- Configuration des Rôles et Joueurs Connectés (Sous Création de la Partie) -->
         <section class="card" id="mj-setup-card" style="display: none;">
-          <h2>🃏 Rôles & Distribution</h2>
+          <h2 class="collapsible-title" onclick="toggleSetupCard()" title="Plier / déplier">🃏 Rôles & Distribution <span id="setup-arrow" class="setup-arrow">▾</span></h2>
           
           <div class="setup-grid">
             <div class="setup-block">
@@ -72,39 +99,39 @@
               
               <div class="role-selector-grid role-grid">
                 <button class="btn-role-card" data-pick="Loup-Garou" onclick="addRole('Loup-Garou')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png" alt="Loup-Garou">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou%201.png" alt="Loup-Garou">
                   <span>Loup-Garou</span>
                 </button>
                 <button class="btn-role-card" data-pick="Villageois" onclick="addRole('Villageois')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois.png" alt="Villageois">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois%201.png" alt="Villageois">
                   <span>Villageois</span>
                 </button>
                 <button class="btn-role-card" data-pick="Voyante" onclick="addRole('Voyante')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante.png" alt="Voyante">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante%201.png" alt="Voyante">
                   <span>Voyante</span>
                 </button>
                 <button class="btn-role-card" data-pick="Sorcière" onclick="addRole('Sorcière')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Sorciere.png" alt="Sorcière">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere%201.png" alt="Sorcière">
                   <span>Sorcière</span>
                 </button>
                 <button class="btn-role-card" data-pick="Chasseur" onclick="addRole('Chasseur')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png" alt="Chasseur">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur%201.png" alt="Chasseur">
                   <span>Chasseur</span>
                 </button>
                 <button class="btn-role-card" data-pick="Cupidon" onclick="addRole('Cupidon')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png" alt="Cupidon">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon%201.png" alt="Cupidon">
                   <span>Cupidon</span>
                 </button>
                 <button class="btn-role-card" data-pick="Voleur" onclick="addRole('Voleur')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png" alt="Voleur">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur%201.png" alt="Voleur">
                   <span>Voleur</span>
                 </button>
                 <button class="btn-role-card" data-pick="Renard" onclick="addRole('Renard')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg" alt="Renard">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard%201.png" alt="Renard">
                   <span>Renard</span>
                 </button>
                 <button class="btn-role-card" data-pick="Petite Fille" onclick="addRole('Petite Fille')">
-                  <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png" alt="Petite Fille">
+                  <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png?v=2" alt="Petite Fille">
                   <span>Petite Fille</span>
                 </button>
               </div>
@@ -114,15 +141,27 @@
             </div>
           </div>
 
-          <button class="btn btn-night btn-large" onclick="distributeRolesNetwork()">🔀 Distribuer les Rôles aux Joueurs</button>
+          <div class="auto-card" id="auto-card">
+            <h3>🤖 Mode automatique</h3>
+            <label class="auto-toggle"><input type="checkbox" id="auto-on" onchange="AUTO.setOn(this.checked)"> <span>L'application mène la partie toute seule : appel du Maire, du Voleur, nuit, rôles, lever du jour, débat, votes et égalités (tirage ou Pierre-feuille-ciseaux). Il suffit d'ouvrir l'écran secondaire.</span></label>
+            <label class="auto-toggle" id="auto-blind-row" style="display:none;"><input type="checkbox" id="auto-blind" onchange="AUTO.setBlind(this.checked)"> <span>🎮 <b>Le Maître du Jeu participe</b> : il joue depuis son propre téléphone (il scanne le QR code comme les autres joueurs). La régie masque tous les secrets (rôles, tableau, messages) et le <b>Renard est retiré</b> de la partie.</span></label>
+          </div>
+
+          <div class="button-grid" style="margin-bottom: 10px;">
+            <button class="btn btn-day" onclick="autoFillRoles(false)">🎲 Remplir les rôles automatiquement</button>
+            <button class="btn btn-day" onclick="autoFillRoles(true)">⚡ Remplir et distribuer</button>
+          </div>
+          <button class="btn btn-night btn-large" id="distribute-btn" onclick="distributeRolesNetwork()">🔀 Distribuer les Rôles aux Joueurs</button>
         </section>
 
-        <!-- Régie Ambiance : Phases de Jeu -->
-        <section class="card">
-          <h2 class="titre-wolf">🌙 Phases du Jeu</h2>
+
+        <!-- Mode automatique : état de la partie -->
+        <section class="card" id="auto-status-card" style="display: none;">
+          <h2 class="titre-wolf">🤖 Partie automatique</h2>
+          <p id="auto-status-text" class="auto-status-text">…</p>
           <div class="button-grid">
-            <button class="btn btn-night" onclick="playNightPhase()">🌌 Nuit Tombante</button>
-            <button class="btn btn-day" onclick="playDayPhase()">☀️ Le Jour Se Lève</button>
+            <button class="btn btn-effect" id="auto-pause-btn" onclick="AUTO.togglePause()">⏸ Pause</button>
+            <button class="btn btn-day" onclick="AUTO.skip()">⏭ Étape suivante maintenant</button>
           </div>
         </section>
 
@@ -149,106 +188,131 @@
       <!-- COLONNE DROITE : Actions & Interventions en Jeu -->
       <div class="column-right">
 
-        <!-- Consignes & Interventions MJ -->
-        <section class="card">
-          <h2 class="titre-wolf">📢 Consignes & Interventions</h2>
-          <div class="button-grid">
-            <button class="btn btn-night" onclick="playCommand('fermer_yeux')">
-              🙈 Fermez les yeux
-            </button>
-            <button class="btn btn-day" onclick="playCommand('voter')">
-              🗳️ Place au Vote !
-            </button>
-          </div>
 
-          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Réponse pour le Renard :</h3>
-          <div class="button-grid">
-            <button class="btn btn-renard-oui" onclick="playRenardResponse(true)">
-              🦊 Oui (Loup détecté)
-            </button>
-            <button class="btn btn-danger" onclick="playRenardResponse(false)">
-              🦊 Non (Aucun loup)
-            </button>
-          </div>
-
-          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonces Sorcière (Potions) :</h3>
-          <div class="button-grid">
-            <button class="btn btn-sorciere-orange" onclick="playSorcierePotions(2)">
-              🧪🧪 2 Potions
-            </button>
-            <button class="btn btn-sorciere-orange" onclick="playSorcierePotions('vie')">
-              🧪💚 Potion de Vie
-            </button>
-            <button class="btn btn-sorciere-orange" onclick="playSorcierePotions('mort')">
-              🧪💀 Potion de Mort
-            </button>
-          </div>
-
-          <h3 style="font-size: 0.95rem; margin-top: 15px; color: #94a3b8;">Annonce des Morts :</h3>
-          <div class="button-grid">
-            <button class="btn btn-vert" onclick="playDeaths(0)">🕊️ Aucun Mort</button>
-            <button class="btn btn-danger" onclick="playDeaths(1)">💀 1 Mort</button>
-            <button class="btn btn-danger" onclick="playDeaths(2)">💀💀 2 Morts</button>
-            <button class="btn btn-danger" onclick="playDeaths(3)">💀💀💀 3 Morts</button>
-          </div>
-        </section>
-
-        <!-- Appels des Personnages -->
-        <section class="card">
-          <h2 class="titre-wolf">🎭 Appels des Personnages</h2>
+        <!-- Phases du Jeu & Appels des Personnages : une seule catégorie, dans l'ordre de la nuit -->
+        <section class="card" id="calls-card">
+          <h2 class="titre-wolf">🌙 Phases du Jeu / 🎭 Appels des Personnages</h2>
           <p id="calls-hint" class="hint" style="margin: 10px 0 0;"></p>
+          <div id="next-call-banner" class="next-call-banner" style="display: none;"></div>
           <div id="calls-grid" class="button-grid role-grid">
-            <button class="btn-role-card" onclick="playCommand('voter_maire')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/images/Maire.png" alt="Maire">
+            <button class="btn-role-card" id="mayor-call-btn" data-key="maire" onclick="playCommand('voter_maire')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire%201.png" alt="Maire">
               <span>Le Maire</span>
             </button>
-            <button class="btn-role-card" data-role="Voleur" data-call="voleur" onclick="playRole('voleur')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur.png" alt="Voleur">
+            <button class="btn-role-card" data-role="Voleur" data-call="voleur" data-key="voleur" onclick="playRole('voleur')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur%201.png" alt="Voleur">
               <span>Le Voleur</span>
             </button>
-            <button class="btn-role-card" data-role="Cupidon" data-call="cupidon" onclick="playRole('cupidon')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon.png" alt="Cupidon">
+            <button class="btn-role-card" id="night-call-btn" data-key="nuit" data-phase="1" onclick="playNightPhase()">
+              <span class="phase-icon">🌌</span>
+              <span>Nuit Tombante</span>
+            </button>
+            <button class="btn-role-card" data-role="Cupidon" data-call="cupidon" data-key="cupidon" onclick="playRole('cupidon')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon%201.png" alt="Cupidon">
               <span>Cupidon</span>
             </button>
-            <button class="btn-role-card" data-role="Voyante" onclick="playRole('voyante')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante.png" alt="Voyante">
+            <button class="btn-role-card" data-role="Voyante" data-key="voyante" onclick="playRole('voyante')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante%201.png" alt="Voyante">
               <span>La Voyante</span>
             </button>
-            <button class="btn-role-card" data-role="Renard" onclick="playRole('renard')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard.jpg" alt="Renard">
+            <button class="btn-role-card" data-role="Renard" data-key="renard" onclick="playRole('renard')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard%201.png" alt="Renard">
               <span>Le Renard</span>
             </button>
-            <button class="btn-role-card" data-role="Loup-Garou" onclick="playRole('loups')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou.png" alt="Loups-Garous">
+            <button class="btn-role-card" data-role="Loup-Garou" data-key="loups" onclick="playRole('loups')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou%201.png" alt="Loups-Garous">
               <span>Les Loups-Garous</span>
             </button>
-            <button class="btn-role-card" data-role="Sorcière" onclick="playRole('sorciere')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/images/Sorciere.png" alt="Sorcière">
+            <button class="btn-role-card" data-role="Sorcière" data-key="sorciere" onclick="playRole('sorciere')">
+              <img loading="lazy" decoding="async" src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere%201.png" alt="Sorcière">
               <span>La Sorcière</span>
             </button>
-            <button class="btn-role-card" data-role="Chasseur" onclick="playRole('chasseur')">
-              <img src="https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur.png" alt="Chasseur">
-              <span>Le Chasseur</span>
+            <button class="btn-role-card" id="day-call-btn" data-key="jour" data-phase="1" onclick="playDayPhase()">
+              <span class="phase-icon">☀️</span>
+              <span>Le Jour Se Lève</span>
             </button>
           </div>
         </section>
+
+          <!-- Effets Sonores -->
+          <section class="card">
+            <h2 class="titre-wolf">⚡ Effets Sonores</h2>
+            <div class="button-grid">
+              <button class="btn btn-night" onclick="playCommand('fermer_yeux')">🙈 Fermez les yeux</button>
+              <button class="btn btn-day" onclick="playCommand('voter')">🗳️ Place au Vote !</button>
+              <button class="btn btn-effect" onclick="playEffect('hurlement')">🐺 Hurlement</button>
+              <button class="btn btn-effect" onclick="playEffect('sorciere')">🧙‍♀️ Rire de la Sorcière</button>
+            </div>
+          </section>
+
+        <!-- Élection du Maire : commandes du MJ (visible pendant l'élection) -->
+        <section class="card" id="mayor-controls" style="display: none;">
+          <h2 class="titre-wolf">👑 Élection du Maire</h2>
+          <p id="mayor-controls-info" class="hint" style="margin: 10px 0;"></p>
+          <div id="mayor-controls-buttons" class="mayor-controls-buttons"></div>
+        </section>
+
 
       </div>
 
     </div>
 
-    <!-- Effets Sonores : centrés en bas de page -->
-        <!-- Effets Sonores -->
-        <section class="card effects-bottom">
-          <h2 class="titre-wolf">⚡ Effets Sonores</h2>
-          <div class="button-grid">
-            <button class="btn btn-effect" onclick="playEffect('hurlement')">🐺 Hurlement</button>
-            <button class="btn btn-effect" onclick="playEffect('sorciere')">🧙‍♀️ Rire de la Sorcière</button>
-          </div>
-        </section>
-
   </main>
-  <p id="app-version" class="hint" style="text-align:center;">Version 26</p>
+
+  <!-- Fenêtre de réponse pour le Renard (au milieu de l'écran du MJ) -->
+  <div id="fox-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="fox-modal-title">
+    <div class="modal-box">
+      <h2 id="fox-modal-title" class="titre-wolf">🦊 Réponse pour le Renard</h2>
+      <p id="fox-modal-text" class="modal-text"></p>
+      <p id="fox-modal-hint" class="modal-hint"></p>
+      <div class="modal-actions">
+        <button class="btn btn-renard-oui" onclick="foxModalAnswer(true)">🦊 Oui (Loup détecté)</button>
+        <button class="btn btn-danger" onclick="foxModalAnswer(false)">🦊 Non (Aucun loup)</button>
+      </div>
+      <button class="modal-close" onclick="closeFoxModal()">Fermer (je répondrai plus tard)</button>
+    </div>
+  </div>
+
+  <div id="help-modal" class="modal-backdrop" style="display: none;" role="dialog" aria-modal="true" onclick="if(event.target===this)toggleHelp(false)">
+    <div class="modal-box help-box">
+      <h2 class="titre-wolf">❓ Comment utiliser l'application</h2>
+      <div class="help-content">
+        <h3>1. Préparer la partie</h3>
+        <ol>
+          <li>Clique sur <b>Créer le salon</b> : un code et un QR code s'affichent.</li>
+          <li>Ouvre l'<b>écran secondaire (projecteur)</b> avec le bouton dédié et place-le sur la TV / le vidéoprojecteur, ou, après la création du salon, utilise le bloc <b>📺 Écran secondaire sur TV</b> : ouvre le lien (ou le QR code) sur la TV / un autre appareil, ou clique sur <b>📡 Caster</b>. Clique sur l'écran une fois pour activer le son.</li>
+          <li><b>Depuis une tablette</b> : ouvre simplement cette page sur la tablette (l'écran reste allumé pendant la partie) et affiche l'écran secondaire sur la TV avec le lien ci-dessus.</li>
+          <li>Les joueurs scannent le QR code (ou saisissent le code) sur leur téléphone et entrent leur prénom.</li>
+          <li>Choisis les <b>rôles en jeu</b> (le nombre doit correspondre au nombre de joueurs) puis clique sur <b>Distribuer les rôles</b>.</li>
+          <li>Chaque joueur découvre son rôle sur son téléphone. La partie ne peut commencer que lorsque <b>tous ont pris connaissance</b> de leur rôle.</li>
+        </ol>
+        <h3>2. Dérouler la partie</h3>
+        <p>Utilise les boutons <b>🌙 Phases du Jeu / 🎭 Appels des Personnages</b> dans l'ordre : Maire, Nuit tombante, Voleur, Cupidon, Voyante, Renard, Loups-garous, Sorcière, puis Le Jour se lève. Un bandeau t'indique le prochain rôle à appeler.</p>
+        <ul>
+          <li><b>Maire</b> : présentation des candidats, élection, puis passation en cas de mort.</li>
+          <li><b>Voleur</b> : après son choix, tous les joueurs reprennent connaissance de leur rôle.</li>
+          <li><b>Renard</b> : une fenêtre te demande ta réponse (Oui / Non).</li>
+          <li><b>Le Jour se lève</b> : annonce des morts, passation du Maire, chasseur, puis débat et vote du village (égalité = Pierre-feuille-ciseaux).</li>
+        </ul>
+        <h3>3. Autres outils</h3>
+        <ul>
+          <li><b>⚡ Effets Sonores</b> : sons d'ambiance (fermez les yeux, place au vote…).</li>
+          <li>Le tableau des joueurs permet de suivre rôles, morts, couples et maire.</li>
+          <li>Le rôle d'un joueur se masque automatiquement en cours de partie et peut être rouvert à tout moment.</li>
+        </ul>
+        <h3>4. En cas de souci</h3>
+        <ul>
+          <li>Pas de son sur l'écran secondaire : clique une fois dessus.</li>
+          <li>Page rechargée, tablette en veille ou fermée : rouvre la régie, clique sur <b>♻️ Reprendre la partie</b> (même code de salon). Les téléphones se reconnectent seuls ; relance l'étape qui était en cours.</li>
+          <li>Un joueur déconnecté : il recharge sa page et se reconnecte avec le même prénom.</li>
+          <li>Après une mise à jour : Ctrl+F5 et vérifie le numéro de version en bas de page.</li>
+        </ul>
+      </div>
+      <button class="modal-close" onclick="toggleHelp(false)">Fermer</button>
+    </div>
+  </div>
+
+  <p id="app-version" class="hint" style="text-align:center;">Version 94</p>
 
   <script>
     (function () {
@@ -265,20 +329,9 @@
           im.src = urls[i];
         })(0);
       }
-      find(["Titre.png", "titre.png"], function (url) {
-        var img = document.querySelector(".site-title-img");
-        if (url && img) { img.src = url; console.info("Titre chargé depuis :", url); }
-        else console.warn("Titre.png introuvable sur Supabase.");
-      });
-      find(["fond-village.jpg", "fond-village.jpeg", "fond-village.png"], function (url) {
-        if (url) {
-          document.body.style.backgroundImage =
-            "radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, rgba(11, 13, 20, 0.95) 100%), url(\"" + url + "\")";
-          console.info("Fond chargé depuis :", url);
-        } else console.warn("fond-village.jpg introuvable sur Supabase.");
-      });
     })();
   </script>
-  <script src="script.js?v=26"></script>
+  <script src="script.js?v=94"></script>
+  <script src="auto.js?v=94"></script>
 </body>
 </html>
