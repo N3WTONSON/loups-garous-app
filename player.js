@@ -3,17 +3,17 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Verso.png": "cartes/Verso.webp?v=97",
-    "Chasseur.png": "cartes/Chasseur.webp?v=97",
-    "Cupidon.png": "cartes/Cupidon.webp?v=97",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=97",
-    "Maire.png": "cartes/Maire.webp?v=97",
-    "Voyante.png": "cartes/Voyante.webp?v=97",
-    "Voleur.png": "cartes/Voleur.webp?v=97",
-    "Villageois.png": "cartes/Villageois.webp?v=97",
-    "Renard.jpg": "cartes/Renard.webp?v=97",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=97",
-    "Sorciere.png": "cartes/Sorciere.webp?v=97",
+    "Verso.png": "cartes/Verso.webp?v=99",
+    "Chasseur.png": "cartes/Chasseur.webp?v=99",
+    "Cupidon.png": "cartes/Cupidon.webp?v=99",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=99",
+    "Maire.png": "cartes/Maire.webp?v=99",
+    "Voyante.png": "cartes/Voyante.webp?v=99",
+    "Voleur.png": "cartes/Voleur.webp?v=99",
+    "Villageois.png": "cartes/Villageois.webp?v=99",
+    "Renard.jpg": "cartes/Renard.webp?v=99",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=99",
+    "Sorciere.png": "cartes/Sorciere.webp?v=99",
   }
 };
 

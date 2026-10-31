@@ -101,6 +101,7 @@ self.addEventListener('fetch', (event) => {
   if (CDN_HOSTS.includes(url.hostname)) { event.respondWith(cacheFirst(req, LIBS)); return; }
   if (url.origin !== self.location.origin) return;                // YouTube, PeerJS… : on ne touche pas
   if (url.pathname.endsWith('/sw.js')) return;
+  if (url.pathname.includes('/videos/')) return;                  // vidéos du site : lecture directe (Range géré par le serveur / cache HTTP)
 
   if (req.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.endsWith('/')) {
     event.respondWith(networkFirst(req, 4000));
