@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=103&tv=1';
+  frame.src = 'projecteur.html?v=104&tv=1';
   document.body.appendChild(frame);
   projectorWindow = frame.contentWindow;
 
@@ -49,7 +49,29 @@
 
   function nPlayers() { return players.filter(function (p) { return p.connected !== false; }).length; }
 
+  // messages (à la place des fenêtres d'alerte) : affichés dans la barre
+  var msgText = '', msgUntil = 0;
+  window.alert = function (m) { msgText = String(m); msgUntil = Date.now() + 8000; refresh(); };
+
+  // le salon est créé tout seul au lancement (pas de bouton « Créer un salon » ici) ; on réessaie tant que la connexion échoue
+  var hostTries = 0, hostSince = 0;
+  function ensureHost() {
+    if (hostOpened || started) return;
+    if (hostSince && Date.now() - hostSince < 12000) return;
+    hostSince = Date.now(); hostTries++;
+    try { if (typeof Peer === 'undefined') throw new Error('PeerJS indisponible'); initHost(); }
+    catch (e) { console.warn('Création du salon :', e); }
+  }
+  setInterval(ensureHost, 2000);
+  setTimeout(ensureHost, 300);
+
   function refresh() {
+    if (!hostOpened) {
+      $('tv-status').textContent = hostTries > 1 ? '⏳ Création du salon… vérifiez la connexion Internet du projecteur (tentative ' + hostTries + ')' : '⏳ Création du salon…';
+      $('tv-go').disabled = true;
+      SPECIALS.forEach(function (s) { s.el.textContent = s.ico + ' ' + s.r + ' : ' + (s.on ? 'OUI' : 'NON'); s.el.classList.toggle('on', s.on); });
+      return;
+    }
     var n = nPlayers(), enough = n >= 4;
     SPECIALS.forEach(function (s) {
       s.el.textContent = s.ico + ' ' + s.r + ' : ' + (s.on ? 'OUI' : 'NON');
@@ -58,7 +80,8 @@
     var st = $('tv-status'), go = $('tv-go');
     var comp = compose(Math.max(n, 4)), inGame = comp.filter(function (r) { return r !== 'Loup-Garou' && r !== 'Villageois'; }).length;
     var skipped = SPECIALS.filter(function (s) { return s.on; }).length - inGame;
-    st.textContent = n + ' joueur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '') + (enough ? ' · ' + wolvesFor(n) + ' Loup' + (wolvesFor(n) > 1 ? 's' : '') + '-Garou' + (wolvesFor(n) > 1 ? 's' : '') : ' · minimum 4 pour commencer') + (enough && skipped > 0 ? ' · ' + skipped + ' rôle(s) ignoré(s) (pas assez de joueurs)' : '');
+    st.textContent = 'Salon ' + roomCode + ' · ' + n + ' joueur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '') + (enough ? ' · ' + wolvesFor(n) + ' Loup' + (wolvesFor(n) > 1 ? 's' : '') + '-Garou' + (wolvesFor(n) > 1 ? 's' : '') : ' · minimum 4 pour commencer') + (enough && skipped > 0 ? ' · ' + skipped + ' rôle(s) ignoré(s) (pas assez de joueurs)' : '');
+    if (msgText && Date.now() < msgUntil) st.textContent = '⚠️ ' + msgText;
     go.disabled = !enough;
   }
 
