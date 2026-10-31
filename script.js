@@ -1,4 +1,4 @@
-const VERSION_APP = "94";
+const VERSION_APP = "95";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -10,16 +10,16 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur%201.png",
-    "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon%201.png",
-    "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou%201.png",
-    "Maire.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire%201.png",
-    "Voyante.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante%201.png",
-    "Voleur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur%201.png",
-    "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois%201.png",
-    "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard%201.png",
-    "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png?v=2",
-    "Sorciere.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere%201.png",
+    "Chasseur.png": "cartes/Chasseur.webp?v=95",
+    "Cupidon.png": "cartes/Cupidon.webp?v=95",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=95",
+    "Maire.png": "cartes/Maire.webp?v=95",
+    "Voyante.png": "cartes/Voyante.webp?v=95",
+    "Voleur.png": "cartes/Voleur.webp?v=95",
+    "Villageois.png": "cartes/Villageois.webp?v=95",
+    "Renard.jpg": "cartes/Renard.webp?v=95",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=95",
+    "Sorciere.png": "cartes/Sorciere.webp?v=95",
   },
   audio: {
     "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
@@ -226,7 +226,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=94', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=95', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }

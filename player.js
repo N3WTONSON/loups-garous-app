@@ -3,17 +3,17 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Verso.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/joueur/images/Verso%202.png",
-    "Chasseur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Chasseur%201.png",
-    "Cupidon.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Cupidon%201.png",
-    "Loup-Garou.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Loup-Garou%201.png",
-    "Maire.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Maire%201.png",
-    "Voyante.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voyante%201.png",
-    "Voleur.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Voleur%201.png",
-    "Villageois.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Villageois%201.png",
-    "Renard.jpg": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Renard%201.png",
-    "Petite Fille.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Petite%20Fille.png?v=2",
-    "Sorciere.png": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/images/Sorciere%201.png",
+    "Verso.png": "cartes/Verso.webp?v=95",
+    "Chasseur.png": "cartes/Chasseur.webp?v=95",
+    "Cupidon.png": "cartes/Cupidon.webp?v=95",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=95",
+    "Maire.png": "cartes/Maire.webp?v=95",
+    "Voyante.png": "cartes/Voyante.webp?v=95",
+    "Voleur.png": "cartes/Voleur.webp?v=95",
+    "Villageois.png": "cartes/Villageois.webp?v=95",
+    "Renard.jpg": "cartes/Renard.webp?v=95",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=95",
+    "Sorciere.png": "cartes/Sorciere.webp?v=95",
   }
 };
 
