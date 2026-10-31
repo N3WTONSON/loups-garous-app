@@ -908,3 +908,20 @@ body.mj-blind #automation-panel,
 body.mj-blind #calls-card,
 body.mj-blind #next-call-banner,
 body.mj-blind #fox-modal { display: none !important; }
+
+/* ===== Mode vidéoprojecteur autonome (?tv=1) : seul l'écran public + la barre de réglage sont visibles ===== */
+body.tv-mode { background: #000; overflow: hidden; }
+html.tv-mode body > *:not(.tv-keep), body.tv-mode > *:not(.tv-keep) { display: none !important; }
+#tv-proj { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1; background: #000; }
+#tv-ui { position: fixed; left: 0; right: 0; bottom: 0; z-index: 200; padding: 2vh 3vw 2.4vh; display: flex; flex-direction: column; gap: 1.6vh; background: linear-gradient(to top, rgba(8, 10, 18, 0.97) 70%, rgba(8, 10, 18, 0)); color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; }
+#tv-ui .tv-title { font-size: 3.2vh; color: #fcd34d; font-weight: 700; }
+#tv-ui .tv-toggles { display: flex; flex-wrap: wrap; gap: 1.2vh 1.2vw; justify-content: center; }
+#tv-ui .tv-tog { font-size: 2.8vh; padding: 1.1vh 1.6vw; border-radius: 1.4vh; border: 0.5vh solid #3a3f55; background: #1b1f33; color: #cbd5e1; cursor: pointer; }
+#tv-ui .tv-tog.on { background: #14532d; border-color: #22c55e; color: #fff; }
+#tv-ui .tv-row { display: flex; align-items: center; justify-content: center; gap: 2vw; flex-wrap: wrap; }
+#tv-ui .tv-status { font-size: 2.8vh; color: #e2e8f0; }
+.tv-go { font-size: 3.6vh; padding: 1.4vh 3vw; border-radius: 1.6vh; border: 0.5vh solid transparent; background: #b91c1c; color: #fff; cursor: pointer; }
+.tv-go:disabled { background: #4b2a2a; color: #9ca3af; cursor: not-allowed; }
+#tv-ui .tv-help { font-size: 2.1vh; color: #94a3b8; }
+#tv-ui button:focus, #tv-again:focus { outline: none; border-color: #fcd34d; box-shadow: 0 0 3vh rgba(252, 211, 77, 0.7); }
+#tv-again { position: fixed; right: 3vw; bottom: 3vh; z-index: 300; }

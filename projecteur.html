@@ -226,6 +226,17 @@
       filter: drop-shadow(0 0.4vmin 0.9vmin rgba(0, 0, 0, 0.85));
     }
 
+
+    /* Saisie du code du salon (projecteur / TV sans fenêtre régie : application Android, navigateur) */
+    #room-entry { position: fixed; inset: 0; z-index: 120; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; background: rgba(8, 10, 18, 0.97); color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; }
+    #room-entry.show { display: flex; }
+    #room-entry img { max-height: 30vh; max-width: 70vw; object-fit: contain; }
+    #room-entry h2 { margin: 0; font-size: 4vh; color: #fcd34d; }
+    #room-entry p { margin: 0; font-size: 2.6vh; color: #cbd5e1; max-width: 70vw; }
+    #room-entry input { font-size: 7vh; width: 7ch; text-align: center; text-transform: uppercase; letter-spacing: 0.4ch; padding: 1vh 2vw; border-radius: 1.6vh; border: 0.5vh solid #7f1d1d; background: #1b1117; color: #fff; }
+    #room-entry button { font-size: 4vh; padding: 1.4vh 4vw; border-radius: 1.6vh; border: 0.5vh solid transparent; background: #b91c1c; color: #fff; cursor: pointer; }
+    #room-entry input:focus, #room-entry button:focus { outline: none; border-color: #fcd34d; box-shadow: 0 0 3vh rgba(252, 211, 77, 0.6); }
+
     /* QR code permanent en bas à droite : retrouver sa place en cours de partie */
     #mini-qr {
       position: fixed;
@@ -433,7 +444,7 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=99"></script>
+  <script src="bg.js?v=102"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
@@ -462,7 +473,16 @@
   <video id="overlay-video" playsinline></video>
 
   <!-- Logo (haut à gauche) -->
-  <img id="logo-jeu" src="logo-carnage.png?v=99" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+  <img id="logo-jeu" src="logo-carnage.png?v=102" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+
+  <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
+  <div id="room-entry">
+    <img src="logo-carnage.png?v=102" alt="Les Loups-Garous : Le Carnage">
+    <h2>Connexion à la régie</h2>
+    <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
+    <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
+    <button id="room-entry-btn" type="button">Se connecter</button>
+  </div>
 
   <!-- QR code permanent (reconnexion en cours de partie) -->
   <div id="mini-qr">
@@ -485,7 +505,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=99" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=102" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -503,7 +523,7 @@
   <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="dns-prefetch" href="https://0.peerjs.com">
-  <script src="boot.js?v=99"></script>
+  <script src="boot.js?v=102"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
@@ -521,9 +541,28 @@
     const FADE_IN_MS = 500;
     // --- Liaison avec la régie : fenêtre ouverte par la régie (window.opener) OU connexion distante (?room=CODE : TV, vidéoprojecteur, cast) ---
     const REMOTE_ROOM = new URLSearchParams(location.search).get('room');
+    // fenêtre « hôte » : la régie qui nous a ouvert (window.opener) ou la page qui nous intègre (mode vidéoprojecteur autonome : la régie contient cet écran dans un cadre)
+    const HOST_WIN = window.opener || (window.parent !== window ? window.parent : null);
     let hostConn = null;
+    // Écran ouvert seul (ni fenêtre régie, ni ?room=) : on demande le code du salon (dernier code mémorisé)
+    (function roomEntry() {
+      if (HOST_WIN || REMOTE_ROOM) return;
+      const box = document.getElementById('room-entry'), inp = document.getElementById('room-entry-input'), btn = document.getElementById('room-entry-btn');
+      let last = ''; try { last = localStorage.getItem('lg-proj-room') || ''; } catch (e) {}
+      inp.value = last;
+      box.classList.add('show');
+      const go = () => {
+        const code = inp.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!code) { inp.focus(); return; }
+        try { localStorage.setItem('lg-proj-room', code); } catch (e) {}
+        location.href = location.pathname + '?room=' + encodeURIComponent(code);
+      };
+      btn.addEventListener('click', go);
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+      setTimeout(() => inp.focus(), 300);
+    })();
     function toHost(msg) {
-      if (window.opener) { try { window.opener.postMessage(msg, '*'); } catch (e) {} }
+      if (HOST_WIN) { try { HOST_WIN.postMessage(msg, '*'); } catch (e) {} }
       if (hostConn && hostConn.open) { try { hostConn.send({ type: 'projMsg', msg }); } catch (e) {} }
     }
     function connectToHost() {
@@ -727,7 +766,7 @@
 
     // --- ANNONCE DE MORT (nom + carte de rôle qui se retourne) ---
     // (cartes : images locales du dossier cartes/)
-    const VERSO_URL = 'cartes/Verso.webp?v=99';
+    const VERSO_URL = 'cartes/Verso.webp?v=102';
     const ROLE_IMG = {
       'Loup-Garou': 'Loup-Garou', 'Villageois': 'Villageois', 'Voyante': 'Voyante', 'Sorcière': 'Sorciere',
       'Chasseur': 'Chasseur', 'Cupidon': 'Cupidon', 'Voleur': 'Voleur', 'Maire': 'Maire', 'Renard': 'Renard', 'Petite Fille': 'Petite-Fille'
@@ -739,7 +778,7 @@
     };
     function roleImgUrl(role) {
       const f = ROLE_IMG[role];
-      return f ? 'cartes/' + f + '.webp?v=99' : null;
+      return f ? 'cartes/' + f + '.webp?v=102' : null;
     }
     // carte : verso visible d'abord, puis elle se retourne sur le recto (le rôle)
     function buildRoleCard(role) {
@@ -894,7 +933,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=99';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=102';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();
@@ -1052,7 +1091,7 @@
     connectToHost();
 
     window.addEventListener('message', (event) => {
-      if (event.source !== window.opener) return;
+      if (!HOST_WIN || event.source !== HOST_WIN) return;
       handleHostMessage(event.data);
     });
 
