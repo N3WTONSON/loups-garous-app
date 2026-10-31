@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=102&tv=1';
+  frame.src = 'projecteur.html?v=103&tv=1';
   document.body.appendChild(frame);
   projectorWindow = frame.contentWindow;
 
@@ -22,7 +22,7 @@
   var ui = document.createElement('div');
   ui.id = 'tv-ui'; ui.className = 'tv-keep';
   ui.innerHTML =
-    '<div class="tv-title">⚙️ Réglez la partie, puis lancez-la</div>' +
+    
     '<div class="tv-toggles" id="tv-toggles"></div>' +
     '<div class="tv-row"><div id="tv-status" class="tv-status"></div><button type="button" id="tv-go" class="tv-go">▶ Lancer la partie</button></div>' +
     '<div class="tv-help">Flèches : se déplacer · OK : choisir · Les joueurs scannent le QR code avec leur téléphone</div>';

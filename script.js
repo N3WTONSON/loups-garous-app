@@ -1,4 +1,4 @@
-const VERSION_APP = "102";
+const VERSION_APP = "103";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -10,16 +10,16 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Chasseur.png": "cartes/Chasseur.webp?v=102",
-    "Cupidon.png": "cartes/Cupidon.webp?v=102",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=102",
-    "Maire.png": "cartes/Maire.webp?v=102",
-    "Voyante.png": "cartes/Voyante.webp?v=102",
-    "Voleur.png": "cartes/Voleur.webp?v=102",
-    "Villageois.png": "cartes/Villageois.webp?v=102",
-    "Renard.jpg": "cartes/Renard.webp?v=102",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=102",
-    "Sorciere.png": "cartes/Sorciere.webp?v=102",
+    "Chasseur.png": "cartes/Chasseur.webp?v=103",
+    "Cupidon.png": "cartes/Cupidon.webp?v=103",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=103",
+    "Maire.png": "cartes/Maire.webp?v=103",
+    "Voyante.png": "cartes/Voyante.webp?v=103",
+    "Voleur.png": "cartes/Voleur.webp?v=103",
+    "Villageois.png": "cartes/Villageois.webp?v=103",
+    "Renard.jpg": "cartes/Renard.webp?v=103",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=103",
+    "Sorciere.png": "cartes/Sorciere.webp?v=103",
   },
   audio: {
     "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
@@ -57,18 +57,18 @@ const ASSETS = {
     "Tavern at Dusk 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Tavern%20at%20Dusk%202.mp3",
   },
   video: {
-    "Mort Loup.mp4": "videos/Mort-Loups.mp4?v=102",
+    "Mort Loup.mp4": "videos/Mort-Loups.mp4?v=103",
     "Elimination 2.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Elimination%202.mp4",
     "Empoisoner.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Empoisoner.mp4",
     "Mort tire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Mort%20tire.mp4",
     "Chasseur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Chasseur.mp4",
-    "Cupidon.mp4": "videos/Cupidon.mp4?v=102",
-    "La voyante.mp4": "videos/Voyante.mp4?v=102",
-    "Loup-Garou.mp4": "videos/Loup-Garou.mp4?v=102",
+    "Cupidon.mp4": "videos/Cupidon.mp4?v=103",
+    "La voyante.mp4": "videos/Voyante.mp4?v=103",
+    "Loup-Garou.mp4": "videos/Loup-Garou.mp4?v=103",
     "Maire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Maire.mp4",
-    "Renard.mp4": "videos/Renard.mp4?v=102",
-    "Voleur.mp4": "videos/Voleur.mp4?v=102",
-    "Sorciere.mp4": "videos/Sorciere.mp4?v=102",
+    "Renard.mp4": "videos/Renard.mp4?v=103",
+    "Voleur.mp4": "videos/Voleur.mp4?v=103",
+    "Sorciere.mp4": "videos/Sorciere.mp4?v=103",
   }
 };
 
@@ -226,7 +226,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=102', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=103', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
