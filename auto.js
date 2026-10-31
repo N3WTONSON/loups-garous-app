@@ -3,12 +3,13 @@
 (function () {
   var TICK_MS = 1000;
   var IDLE_MS = 3500;             // silence nécessaire avant de lancer l'étape suivante
+  var NIGHT_GAP_MS = 5000;        // battement entre deux scènes de nuit (fin d'un appel → début du suivant)
   var DAY_TO_NIGHT_MS = 9000;     // pause « le village se repose » avant la nuit suivante
   var MODAL_MS = 6000;            // délai avant de valider seul la fenêtre « tous les joueurs sont prêts »
   var REVIEW_MS = 12000;          // temps laissé aux joueurs pour mémoriser leur rôle après le Voleur
   var TURN_FORCE_MS = 75000;      // tour de nuit sans réponse : l'application décide à la place du joueur
   var TURN_ABORT_MS = 150000;     // ... puis passe au tour suivant
-  var SPEECH_MS = 45000;          // durée du discours de chaque candidat au Maire
+  var SPEECH_MS = 180000;         // filet de sécurité : le candidat déclare lui-même la fin de son discours sur son téléphone
   var CANDIDACY_MS = 60000;
   var BALLOT_MS = 60000;
   var VOTE_MS = 180000;           // durée maximale du débat / vote du village
@@ -128,7 +129,8 @@
       if (!mayorVote.speaker) {
         if (next) { setMayorSpeaker(next); A.mayorT.speakerSince = now; }
         else startMayorBallot();
-      } else if (speakerEl > SPEECH_MS) {
+      } else if (speakerEl > SPEECH_MS || A.speechDone === mayorVote.speaker) {
+        A.speechDone = null;
         if (next) { setMayorSpeaker(next); A.mayorT.speakerSince = now; }
         else { endMayorSpeech(); startMayorBallot(); }
       }
@@ -302,7 +304,7 @@
     if (reason) { A.idleSince = 0; setLabel(describe(reason === 'attente' ? '' : '')); return; }
 
     if (!A.idleSince) A.idleSince = Date.now();
-    var need = (gameStarted && currentPhase === 'day' && !nextCallKey) ? DAY_TO_NIGHT_MS : IDLE_MS;
+    var need = (gameStarted && currentPhase === 'day' && !nextCallKey) ? DAY_TO_NIGHT_MS : (currentPhase === 'night' ? NIGHT_GAP_MS : IDLE_MS);
     var left = need - (Date.now() - A.idleSince);
     if (left > 0) { setLabel(describe(A.blind ? '' : (nameOfNext() ? 'Prochaine étape : ' + nameOfNext() : 'Étape suivante dans ' + Math.ceil(left / 1000) + ' s'))); return; }
     A.idleSince = 0;

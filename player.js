@@ -3,17 +3,17 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Verso.png": "cartes/Verso.webp?v=95",
-    "Chasseur.png": "cartes/Chasseur.webp?v=95",
-    "Cupidon.png": "cartes/Cupidon.webp?v=95",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=95",
-    "Maire.png": "cartes/Maire.webp?v=95",
-    "Voyante.png": "cartes/Voyante.webp?v=95",
-    "Voleur.png": "cartes/Voleur.webp?v=95",
-    "Villageois.png": "cartes/Villageois.webp?v=95",
-    "Renard.jpg": "cartes/Renard.webp?v=95",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=95",
-    "Sorciere.png": "cartes/Sorciere.webp?v=95",
+    "Verso.png": "cartes/Verso.webp?v=97",
+    "Chasseur.png": "cartes/Chasseur.webp?v=97",
+    "Cupidon.png": "cartes/Cupidon.webp?v=97",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=97",
+    "Maire.png": "cartes/Maire.webp?v=97",
+    "Voyante.png": "cartes/Voyante.webp?v=97",
+    "Voleur.png": "cartes/Voleur.webp?v=97",
+    "Villageois.png": "cartes/Villageois.webp?v=97",
+    "Renard.jpg": "cartes/Renard.webp?v=97",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=97",
+    "Sorciere.png": "cartes/Sorciere.webp?v=97",
   }
 };
 
@@ -805,6 +805,12 @@ function showCandidacySpeech(data) {
   document.getElementById('candidacy-info').textContent = data.speaker
     ? (data.speaker === (session && session.name) ? '🎤 C\'est à toi de faire ton discours !' : `🎤 Discours de ${data.speaker}… Écoute-le avant de voter.`)
     : (data.me ? '🙋 Tu es candidat. Attends que le Maître du Jeu te donne la parole.' : 'Les candidats vont faire leur discours, puis le vote s\'ouvrira.');
+  const doneBtn = document.getElementById('speech-done');
+  if (doneBtn) {
+    const mine = !!data.canFinish && data.speaker && data.speaker === (session && session.name);
+    doneBtn.style.display = mine ? '' : 'none';
+    doneBtn.disabled = false; doneBtn.textContent = '✅ J\'ai terminé mon discours';
+  }
   list.innerHTML = '';
   (data.candidates || []).forEach((name) => {
     const li = document.createElement('li');
@@ -813,6 +819,13 @@ function showCandidacySpeech(data) {
     list.appendChild(li);
   });
   showPanel('candidacy-panel');
+}
+
+function speechDone() {
+  if (!conn || !conn.open) return;
+  conn.send({ type: 'speechDone' });
+  const b = document.getElementById('speech-done');
+  if (b) { b.disabled = true; b.textContent = '✅ Discours terminé'; }
 }
 
 function candidacyAnswer(run) {

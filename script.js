@@ -1,4 +1,4 @@
-const VERSION_APP = "95";
+const VERSION_APP = "97";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -10,16 +10,16 @@ const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/objec
 
 const ASSETS = {
   images: {
-    "Chasseur.png": "cartes/Chasseur.webp?v=95",
-    "Cupidon.png": "cartes/Cupidon.webp?v=95",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=95",
-    "Maire.png": "cartes/Maire.webp?v=95",
-    "Voyante.png": "cartes/Voyante.webp?v=95",
-    "Voleur.png": "cartes/Voleur.webp?v=95",
-    "Villageois.png": "cartes/Villageois.webp?v=95",
-    "Renard.jpg": "cartes/Renard.webp?v=95",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=95",
-    "Sorciere.png": "cartes/Sorciere.webp?v=95",
+    "Chasseur.png": "cartes/Chasseur.webp?v=97",
+    "Cupidon.png": "cartes/Cupidon.webp?v=97",
+    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=97",
+    "Maire.png": "cartes/Maire.webp?v=97",
+    "Voyante.png": "cartes/Voyante.webp?v=97",
+    "Voleur.png": "cartes/Voleur.webp?v=97",
+    "Villageois.png": "cartes/Villageois.webp?v=97",
+    "Renard.jpg": "cartes/Renard.webp?v=97",
+    "Petite Fille.png": "cartes/Petite-Fille.webp?v=97",
+    "Sorciere.png": "cartes/Sorciere.webp?v=97",
   },
   audio: {
     "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
@@ -226,7 +226,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=95', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=97', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -540,6 +540,7 @@ function routePlayerMessage(conn, data) {
   else if (data.type === 'hunterShoot') handleHunterShot(conn, data);
   else if (data.type === 'mayorVote') handleMayorVote(conn, data);
   else if (data.type === 'mayorCandidacy') handleMayorCandidacy(conn, data);
+  else if (data.type === 'speechDone') { const v = senderOf(conn); if (v && mayorVote.open && mayorVote.phase === 'speech' && mayorVote.speaker === v.name && window.AUTO) AUTO.speechDone = v.name; }
   else if (data.type === 'rpsPick') handleRpsPick(conn, data);
   else if (data.type === 'roleSeen') handleRoleSeen(conn);
   else if (data.type === 'mayorSuccessor') handleMayorSuccessor(conn, data);
@@ -2504,7 +2505,7 @@ function sendMayorTurn(p) {
   if (mayorVote.phase === 'candidacy') {
     sendTo(p, { type: 'candidacyTurn', answer: mayorVote.answers.has(p.name) ? mayorVote.answers.get(p.name) : null });
   } else if (mayorVote.phase === 'speech') {
-    sendTo(p, { type: 'candidacySpeech', candidates: mayorVote.candidates, speaker: mayorVote.speaker, me: mayorVote.candidates.includes(p.name) });
+    sendTo(p, { type: 'candidacySpeech', candidates: mayorVote.candidates, speaker: mayorVote.speaker, me: mayorVote.candidates.includes(p.name), canFinish: !!(window.AUTO && AUTO.on) });
   } else {
     sendTo(p, {
       type: 'mayorTurn',
