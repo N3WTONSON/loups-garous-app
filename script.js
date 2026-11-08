@@ -1,4 +1,4 @@
-const VERSION_APP = "104";
+const VERSION_APP = "111";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -6,86 +6,13 @@ let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqu
 // Mode test (page test.html uniquement) : rôles uniques et ratio non contrôlés
 const TEST_MODE = !!window.LG_TEST_MODE;
 
-const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
-
-const ASSETS = {
-  images: {
-    "Chasseur.png": "cartes/Chasseur.webp?v=104",
-    "Cupidon.png": "cartes/Cupidon.webp?v=104",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=104",
-    "Maire.png": "cartes/Maire.webp?v=104",
-    "Voyante.png": "cartes/Voyante.webp?v=104",
-    "Voleur.png": "cartes/Voleur.webp?v=104",
-    "Villageois.png": "cartes/Villageois.webp?v=104",
-    "Renard.jpg": "cartes/Renard.webp?v=104",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=104",
-    "Sorciere.png": "cartes/Sorciere.webp?v=104",
-  },
-  audio: {
-    "0 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/0%20mort.mp3",
-    "1 mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/1%20mort.mp3",
-    "2 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/2%20morts.mp3",
-    "3 morts.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/3%20morts.mp3",
-    "Appel Cupidon V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Cupidon%20V2.mp3",
-    "Appel jour V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20jour%20V2.mp3",
-    "Appel Loups-Garous V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Loups-Garous%20V2.mp3",
-    "Appel nuit V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20nuit%20V2.mp3",
-    "Appel Renard non.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20non.mp3",
-    "Appel Renard oui.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20Renard%20oui.mp3",
-    "Appel renard V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20renard%20V2.mp3",
-    "Appel voleur V3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voleur%20V3.mp3",
-    "Appel voyante V2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Appel%20voyante%20V2.mp3",
-    "Ouvrez les yeux.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Ouvrez%20les%20yeux.mp3",
-    "Fermer les yeux.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Fermer%20les%20yeux.mp3",
-    "Voter.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Voter.mp3",
-    "Le hurlement du loup 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%201.mp3",
-    "Le hurlement du loup 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%202.mp3",
-    "Le hurlement du loup 3.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Le%20hurlement%20du%20loup%203.mp3",
-    "Applaudissements.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Applaudissements.mp3",
-    "Effet sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Effet%20sorciere.mp3",
-    "Maire.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Maire.mp3",
-    "Sorciere.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere.mp3",
-    "Sorciere 2 potions.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%202%20potions.mp3",
-    "Sorciere potion de vie.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20vie.mp3",
-    "Sorciere potion de mort.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/audio/Sorciere%20potion%20de%20mort.mp3",
-  },
-  music: {
-    "Feast Circle 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Feast%20Circle%201.mp3",
-    "Dusk in the Tavern 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Dusk%20in%20the%20Tavern%201.mp3",
-    "Dusk in the Tavern 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Dusk%20in%20the%20Tavern%202.mp3",
-    "Tavern at Dusk 1.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Tavern%20at%20Dusk%201.mp3",
-    "Tavern at Dusk 2.mp3": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/musique/Tavern%20at%20Dusk%202.mp3",
-  },
-  video: {
-    "Mort Loup.mp4": "videos/Mort-Loups.mp4?v=104",
-    "Elimination 2.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Elimination%202.mp4",
-    "Empoisoner.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Empoisoner.mp4",
-    "Mort tire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Mort%20tire.mp4",
-    "Chasseur.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Chasseur.mp4",
-    "Cupidon.mp4": "videos/Cupidon.mp4?v=104",
-    "La voyante.mp4": "videos/Voyante.mp4?v=104",
-    "Loup-Garou.mp4": "videos/Loup-Garou.mp4?v=104",
-    "Maire.mp4": "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/Maire.mp4",
-    "Renard.mp4": "videos/Renard.mp4?v=104",
-    "Voleur.mp4": "videos/Voleur.mp4?v=104",
-    "Sorciere.mp4": "videos/Sorciere.mp4?v=104",
-  }
-};
-
-const ASSET_FOLDERS = { images: "images", audio: "mj/audio", video: "mj/video", music: "mj/musique" };
-
-function assetUrl(path) {
-  return SUPABASE_BASE + "/" + path.split("/").map(encodeURIComponent).join("/");
-}
-
-function mediaUrl(kind, name) {
-  return (ASSETS[kind] && ASSETS[kind][name]) || assetUrl(ASSET_FOLDERS[kind] + "/" + name);
-}
+// Médias : voir assets.js (assets/images, assets/audio, assets/music, assets/video)
 
 // --- CONFIGURATION ---
-const YT_ID_NUIT = "FDHc4qUNMTQ";
-const YT_ID_JOUR = "bNyXbxpWiok";
-const YT_ID_PRESENTATION = "VSfS9oM630s";
+// scènes plein écran : fichiers locaux (voir assets.js, clés scene-nuit / scene-jour / scene-presentation)
+const YT_ID_NUIT = "nuit";
+const YT_ID_JOUR = "jour";
+const YT_ID_PRESENTATION = "presentation";
 
 let peer = null;
 let roomCode = "";
@@ -226,7 +153,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=104', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=111', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }

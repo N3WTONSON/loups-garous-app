@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=104&tv=1';
+  frame.src = 'projecteur.html?v=111&tv=1';
   document.body.appendChild(frame);
   projectorWindow = frame.contentWindow;
 

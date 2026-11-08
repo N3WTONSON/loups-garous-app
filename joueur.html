@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Les Loups-Garous : Le Carnage - Espace Joueur</title>
-  <link rel="stylesheet" href="style.css?v=104">
-  <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
+  <link rel="stylesheet" href="style.css?v=111">
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="dns-prefetch" href="https://0.peerjs.com">
-  <script src="boot.js?v=104"></script>
+  <script src="assets.js?v=111"></script>
+  <script src="boot.js?v=111"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
 </head>
 <body>
-  <script src="bg.js?v=104"></script>
+  <script src="bg.js?v=111"></script>
 
   <header>
-    <img src="logo-carnage.png?v=104" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
+    <img src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
   </header>
 
   <main class="container">
@@ -180,7 +180,7 @@
       <div id="card-area" style="display: none;">
         <!-- Dos de carte cliquable avec image Verso.png -->
         <div id="secret-card" class="card-back" role="button" tabindex="0" onclick="toggleRoleReveal()">
-          <img id="verso-image" src="cartes/Verso.webp?v=104" alt="Verso de carte" class="verso-img">
+          <img id="verso-image" src="assets/images/Verso.webp?v=111" alt="Verso de carte" class="verso-img">
           <span>👁️ Toucher pour révéler</span>
         </div>
 
@@ -193,24 +193,7 @@
     </section>
   </main>
 
-  <script>
-    (function () {
-      var B = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/";
-      var DIRS = ["assets/images/", "assets/mj/images/", "assets/joueur/images/", "images/", "mj/images/", "joueur/images/"];
-      function find(names, cb) {
-        var urls = [];
-        names.forEach(function (n) { DIRS.forEach(function (d) { urls.push(B + d + encodeURIComponent(n)); }); });
-        (function next(i) {
-          if (i >= urls.length) { cb(null); return; }
-          var im = new Image();
-          im.onload = function () { cb(urls[i]); };
-          im.onerror = function () { next(i + 1); };
-          im.src = urls[i];
-        })(0);
-      }
-    })();
-  </script>
-  <script src="sim-peer.js?v=104"></script>
-  <script src="player.js?v=104"></script>
+  <script src="sim-peer.js?v=111"></script>
+  <script src="player.js?v=111"></script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+V111 — médias 100 % sur le site (plus de Supabase, plus de YouTube)
+Dossiers : assets/images, assets/audio, assets/music, assets/video
+Scènes : nuit = assets/video/fond-village-nuit.mp4 ; jour = fond-village-jour.mp4 ; présentation = (provisoire) fond-village-nuit.mp4
+Pour changer un fichier : remplacer le .mp3/.mp4 en gardant EXACTEMENT le même nom, ou modifier assets.js.

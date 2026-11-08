@@ -40,13 +40,14 @@
       position: relative;
     }
 
-    /* Le lecteur dépasse de l'écran en haut et en bas : le titre et les barres de YouTube restent hors champ.
-       La vidéo (16:9) reste centrée et occupe exactement l'écran. */
+    /* Scène plein écran (vidéo locale) */
     #player {
       position: fixed;
-      top: -12vh; left: 0;
+      top: 0; left: 0;
       width: 100%;
-      height: 124vh;
+      height: 100vh;
+      object-fit: cover;
+      background: #000;
       pointer-events: none;
       border: 0;
     }
@@ -450,7 +451,7 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=104"></script>
+  <script src="bg.js?v=111"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
@@ -475,15 +476,15 @@
     </div>
   </div>
 
-  <div id="player"></div>
+  <video id="player" playsinline preload="auto" muted></video>
   <video id="overlay-video" playsinline></video>
 
   <!-- Logo (haut à gauche) -->
-  <img id="logo-jeu" src="logo-carnage.png?v=104" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+  <img id="logo-jeu" src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=104" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -511,7 +512,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=104" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -526,13 +527,10 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <link rel="preconnect" href="https://ifjiysdhxmidiswcsiuq.supabase.co" crossorigin>
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <link rel="dns-prefetch" href="https://0.peerjs.com">
-  <script src="boot.js?v=104"></script>
+  <script src="assets.js?v=111"></script>
+  <script src="boot.js?v=111"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
     console.info('Projecteur - version 80');
@@ -543,7 +541,7 @@
     let loopScene = true;       // false pour la vidéo de présentation
     // ---- Limite du niveau audio : aucun son ne dépasse ces plafonds, et tout démarre en fondu (jamais « d'un seul coup ») ----
     const MAX_VOLUME = 0.8;              // plafond des vidéos MP4 (1 = maximum)
-    const MAX_YT_VOLUME = 80;            // plafond de la scène YouTube (0 à 100)
+    const MAX_YT_VOLUME = 80;            // plafond de la scène (0 à 100)
     const FADE_IN_MS = 500;
     // --- Liaison avec la régie : fenêtre ouverte par la régie (window.opener) OU connexion distante (?room=CODE : TV, vidéoprojecteur, cast) ---
     const REMOTE_ROOM = new URLSearchParams(location.search).get('room');
@@ -693,32 +691,38 @@
       if (!loop) toHost({ action: 'overlayEnded', url });
     });
 
-    function onYouTubeIframeAPIReady() {
-      ytPlayer = new YT.Player('player', {
-        playerVars: {
-          autoplay: 1, controls: 0, rel: 0, modestbranding: 1,
-          playsinline: 1, disablekb: 1, iv_load_policy: 3
+    // Scène plein écran (nuit / jour / présentation) : vidéo locale assets/video/scene-*.mp4.
+    // Petit adaptateur qui garde l'API utilisée par le reste du code (ancien lecteur YouTube).
+    const YT = { PlayerState: { ENDED: 0, PLAYING: 1, PAUSED: 2 } };
+    function initScenePlayer() {
+      const el = document.getElementById('player');
+      ytPlayer = {
+        loadVideoById(id) {
+          el.src = (window.SCENE_URLS && SCENE_URLS['scene-' + id + '.mp4']) || id;
+          el.load();
         },
-        events: {
-          onReady: () => {
-            ytReady = true;
-            if (pendingVideoId) { playScene(pendingVideoId, pendingLoop); pendingVideoId = null; }
-            toHost({ action: 'projectorReady' });
-          },
-          onStateChange: (event) => {
-            if (event.data === YT.PlayerState.ENDED) {
-              if (loopScene) {
-                ytPlayer.seekTo(0, true);
-                ytPlayer.playVideo();
-              } else {
-                // fin de la présentation : on laisse apparaître le fond du village
-                document.getElementById('player').style.visibility = 'hidden';
-              }
-            }
-          }
-        }
+        setVolume(p) { el.volume = Math.max(0, Math.min(1, p / 100)); },
+        getVolume() { return el.volume * 100; },
+        playVideo() {
+          el.muted = false;
+          const pr = el.play();
+          if (pr && pr.catch) pr.catch(() => { el.muted = true; el.play().catch(() => {}); });   // son bloqué par le navigateur : image d'abord, son au 1er clic
+        },
+        pauseVideo() { el.pause(); },
+        stopVideo() { el.pause(); try { el.currentTime = 0; } catch (e) {} },
+        seekTo(t) { try { el.currentTime = t; } catch (e) {} },
+        unMute() { el.muted = false; },
+        getPlayerState() { return el.paused ? YT.PlayerState.PAUSED : YT.PlayerState.PLAYING; }
+      };
+      el.addEventListener('ended', () => {
+        if (loopScene) { ytPlayer.seekTo(0); ytPlayer.playVideo(); }
+        else el.style.visibility = 'hidden';            // fin de la présentation : on laisse apparaître le fond du village
       });
+      ytReady = true;
+      if (pendingVideoId) { playScene(pendingVideoId, pendingLoop); pendingVideoId = null; }
+      toHost({ action: 'projectorReady' });
     }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initScenePlayer); else initScenePlayer();
 
     function fadeInVideo(video, ms = FADE_IN_MS, max = MAX_VOLUME) {
       const steps = 10;
@@ -772,11 +776,11 @@
 
 
     // --- ANNONCE DE MORT (nom + carte de rôle qui se retourne) ---
-    // (cartes : images locales du dossier cartes/)
-    const VERSO_URL = 'cartes/Verso.webp?v=104';
+    // (cartes : assets/images/, via assets.js)
+    const VERSO_URL = mediaUrl('images', 'Verso.png');
     const ROLE_IMG = {
-      'Loup-Garou': 'Loup-Garou', 'Villageois': 'Villageois', 'Voyante': 'Voyante', 'Sorcière': 'Sorciere',
-      'Chasseur': 'Chasseur', 'Cupidon': 'Cupidon', 'Voleur': 'Voleur', 'Maire': 'Maire', 'Renard': 'Renard', 'Petite Fille': 'Petite-Fille'
+      'Loup-Garou': 'Loup-Garou.png', 'Villageois': 'Villageois.png', 'Voyante': 'Voyante.png', 'Sorcière': 'Sorciere.png',
+      'Chasseur': 'Chasseur.png', 'Cupidon': 'Cupidon.png', 'Voleur': 'Voleur.png', 'Maire': 'Maire.png', 'Renard': 'Renard.jpg', 'Petite Fille': 'Petite Fille.png'
     };
     // comment le joueur est mort (affiché sous son nom)
     const CAUSE_TEXT = {
@@ -785,7 +789,7 @@
     };
     function roleImgUrl(role) {
       const f = ROLE_IMG[role];
-      return f ? 'cartes/' + f + '.webp?v=104' : null;
+      return f ? mediaUrl('images', f) : null;
     }
     // carte : verso visible d'abord, puis elle se retourne sur le recto (le rôle)
     function buildRoleCard(role) {
@@ -940,7 +944,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=104';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=111';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();

@@ -1,8 +1,8 @@
-// Fond animé : vidéo de village (nuit par défaut, jour pour les scènes de jour). Hébergée sur Supabase.
+// Fond animé : vidéo de village (nuit par défaut, jour pour les scènes de jour). Fichiers locaux.
 (function () {
-  var BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets/mj/video/";
-  var FILES = { night: BASE + "fond-village-nuit%20720p.mp4", day: BASE + "fond-village-jour%20720p.mp4" };
-  window.BG_URLS = [FILES.night, FILES.day];
+  // fonds locaux : assets/video/fond-village-nuit.mp4 / fond-village-jour.mp4 (chemins résolus à la demande, assets.js peut être chargé après ce fichier)
+  function files() { return { night: window.mediaUrl("video", "fond-village-nuit.mp4"), day: window.mediaUrl("video", "fond-village-jour.mp4") }; }
+  Object.defineProperty(window, "BG_URLS", { get: function () { var f = files(); return [f.night, f.day]; } });
   var current = null;
   var video = null;
 
@@ -31,7 +31,7 @@
     if (video && current === phase) return;
     current = phase;
     if (!video) return;
-    video.src = FILES[phase];
+    video.src = files()[phase];
     var p = video.play();
     if (p && p.catch) p.catch(function () {});
   };

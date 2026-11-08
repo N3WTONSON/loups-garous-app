@@ -1,31 +1,4 @@
-// ===== LIENS SUPABASE =====
-const SUPABASE_BASE = "https://ifjiysdhxmidiswcsiuq.supabase.co/storage/v1/object/public/assets/assets";
-
-const ASSETS = {
-  images: {
-    "Verso.png": "cartes/Verso.webp?v=104",
-    "Chasseur.png": "cartes/Chasseur.webp?v=104",
-    "Cupidon.png": "cartes/Cupidon.webp?v=104",
-    "Loup-Garou.png": "cartes/Loup-Garou.webp?v=104",
-    "Maire.png": "cartes/Maire.webp?v=104",
-    "Voyante.png": "cartes/Voyante.webp?v=104",
-    "Voleur.png": "cartes/Voleur.webp?v=104",
-    "Villageois.png": "cartes/Villageois.webp?v=104",
-    "Renard.jpg": "cartes/Renard.webp?v=104",
-    "Petite Fille.png": "cartes/Petite-Fille.webp?v=104",
-    "Sorciere.png": "cartes/Sorciere.webp?v=104",
-  }
-};
-
-const ASSET_FOLDERS = { images: "images" };
-
-function assetUrl(path) {
-  return SUPABASE_BASE + "/" + path.split("/").map(encodeURIComponent).join("/");
-}
-
-function mediaUrl(kind, name) {
-  return (ASSETS[kind] && ASSETS[kind][name]) || assetUrl(ASSET_FOLDERS[kind] + "/" + name);
-}
+// Images des cartes : voir assets.js (assets/images/)
 
 let peer = null;
 let conn = null;

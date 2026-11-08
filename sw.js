@@ -1,11 +1,10 @@
 /* Service worker : le site reste utilisable quand le réseau est lent ou coupé.
    - pages : réseau d'abord (4 s max), sinon la copie en mémoire ;
    - scripts / styles / polices / bibliothèques : copie en mémoire d'abord ;
-   - médias Supabase (sons, vidéos, images) : copie en mémoire d'abord (préchargés par boot.js), lecture partielle (Range) comprise. */
+   - médias locaux (sons, vidéos, images) : copie en mémoire d'abord (préchargés par boot.js), lecture partielle (Range) comprise. */
 const SHELL = 'lg-shell-v1';
 const MEDIA = 'lg-media-v1';
 const LIBS = 'lg-libs-v1';
-const SUPABASE = 'ifjiysdhxmidiswcsiuq.supabase.co';
 const CDN_HOSTS = ['unpkg.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
 const MAX_CACHED_BYTES = 120 * 1024 * 1024;
 
@@ -97,7 +96,7 @@ self.addEventListener('fetch', (event) => {
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
 
-  if (url.hostname === SUPABASE) { event.respondWith(media(req)); return; }
+  if (url.origin === location.origin && url.pathname.includes('/assets/') && !url.pathname.endsWith('manifest.js')) { event.respondWith(media(req)); return; }
   if (CDN_HOSTS.includes(url.hostname)) { event.respondWith(cacheFirst(req, LIBS)); return; }
   if (url.origin !== self.location.origin) return;                // YouTube, PeerJS… : on ne touche pas
   if (url.pathname.endsWith('/sw.js')) return;
