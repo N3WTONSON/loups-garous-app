@@ -1,4 +1,6 @@
-V113 — médias 100 % sur le site (plus de Supabase, plus de YouTube)
+V114 — médias 100 % sur le site (plus de Supabase, plus de YouTube)
 Dossiers : assets/images, assets/audio, assets/music, assets/video
 Scènes : nuit = assets/video/fond-village-nuit.mp4 ; jour = fond-village-jour.mp4 ; présentation = (provisoire) fond-village-nuit.mp4
 Pour changer un fichier : remplacer le .mp3/.mp4 en gardant EXACTEMENT le même nom, ou modifier assets.js.
+
+Labo de test sans Maître du Jeu : ouvrir test-auto.html (20 joueurs robots, tout automatique). Options : test-auto.html?n=20&robots=fast|normal|slow&manuel=1

@@ -29,6 +29,15 @@
     }
     .phone.dead iframe { filter: grayscale(0.6); }
     #empty { color: #94a3b8; }
+    /* labo (test-auto.html) : téléphones en vignettes */
+    html.lab body { padding: 8px; }
+    html.lab header { display: none; }
+    html.lab #phones { gap: 8px; }
+    html.lab .phone { width: 190px; }
+    html.lab .phone iframe { width: 372px; height: 660px; zoom: 0.5; border-width: 8px; border-radius: 26px; }
+    html.lab .phone-bar { margin-bottom: 3px; gap: 4px; font-size: 0.75rem; }
+    html.lab .phone-bar button { padding: 1px 5px; font-size: 0.7rem; }
+    html.lab .phone-bar [data-a="remove"], html.lab .phone-bar [data-a="reload"] { display: none; }
     #warn { display: none; width: 100%; padding: 8px 12px; background: #7f1d1d; border: 1px solid #f87171; border-radius: 6px; }
     .phone-problem { color: #fca5a5; font-size: 0.8rem; margin: 0 0 6px; }
   </style>
@@ -50,7 +59,13 @@
     let allAuto = false;
     let packTarget = null;      // victime commune choisie par les loups « auto »
 
-    const test = () => { try { return window.opener && !window.opener.closed ? window.opener.LG_TEST : null; } catch (e) { return null; } };
+    // régie : fenêtre qui a ouvert celle-ci (page test) ou, dans le labo (test-auto.html), l'écran TV voisin
+    const test = () => {
+      try { if (window.opener && !window.opener.closed && window.opener.LG_TEST) return window.opener.LG_TEST; } catch (e) {}
+      try { if (window.parent !== window && window.parent.LG_LAB_REGIE) { const r = window.parent.LG_LAB_REGIE(); return r ? r.LG_TEST : null; } } catch (e) {}
+      return null;
+    };
+    if (new URLSearchParams(location.search).get('lab')) document.documentElement.classList.add('lab');
     const rnd = (a) => a[Math.floor(Math.random() * a.length)];
     const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
     const baseDelay = () => (window.LG_BOT_DELAY !== undefined ? window.LG_BOT_DELAY : 700 + Math.random() * 1300);
@@ -78,7 +93,9 @@
           autoReact(ph, msg);
         }, 0);
       },
-      addPhone, removePhone, setAllAuto, hasPhone: (id) => phones.has(String(id))
+      addPhone, removePhone, setAllAuto, hasPhone: (id) => phones.has(String(id)),
+      setOffline(id, off) { const ph = phones.get(String(id)); if (ph) setOffline(ph, off, ph.el.querySelector('[data-a="offline"]')); },
+      list() { return [...phones.values()].map((ph) => ({ id: ph.id, name: ph.name, offline: ph.offline, frame: ph.iframe })); }
     };
 
     // ----- gestion des téléphones -----
@@ -199,7 +216,14 @@
           if (!msg.myPick) send({ type: 'rpsPick', pick: ['pierre', 'feuille', 'ciseaux'][Math.floor(Math.random() * 3)] }, d);
           break;
         case 'candidacyTurn':
-          if (msg.answer === null || msg.answer === undefined) send({ type: 'mayorCandidacy', run: Math.random() < 0.5 }, d);
+          if (msg.answer === null || msg.answer === undefined) send({ type: 'mayorCandidacy', run: Math.random() < (window.LG_BOT_RUN_P !== undefined ? window.LG_BOT_RUN_P : 0.5) }, d);
+          break;
+        case 'candidacySpeech':
+          // le candidat « parle » puis appuie sur « J'ai terminé mon discours »
+          if (msg.canFinish && msg.speaker === ph.name && ph.spoke !== msg.speaker + (msg.candidates || []).length) {
+            ph.spoke = msg.speaker + (msg.candidates || []).length;
+            send({ type: 'speechDone' }, window.LG_BOT_SPEECH !== undefined ? window.LG_BOT_SPEECH : 4000);
+          }
           break;
         case 'mayorTurn':
           if (!msg.myVote && msg.targets.length) send({ type: 'mayorVote', target: rnd(msg.targets) }, d);

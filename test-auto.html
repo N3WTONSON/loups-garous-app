@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <title>Labo de test – Mode sans Maître du Jeu</title>
+  <style>
+    :root { --bg: #0b0d14; --panel: #131726; --line: #262c44; --txt: #e2e8f0; --muted: #94a3b8; --red: #b91c1c; --ok: #22c55e; --warn: #f59e0b; --bad: #ef4444; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--txt); font: 14px/1.4 'Segoe UI', Roboto, sans-serif; }
+    body { display: grid; grid-template-rows: auto 1fr; }
+    header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 8px 12px; background: #10131f; border-bottom: 2px solid var(--red); }
+    header h1 { margin: 0 8px 0 0; font-size: 16px; }
+    header label { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 4px; }
+    header input, header select { font: inherit; background: #1b1f33; color: var(--txt); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+    header input[type=number] { width: 56px; }
+    button { font: inherit; padding: 5px 11px; color: #fff; background: #334155; border: 0; border-radius: 6px; cursor: pointer; }
+    button:hover:not(:disabled) { filter: brightness(1.2); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button.primary { background: var(--red); }
+    #state { margin-left: auto; color: var(--muted); font-size: 13px; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr) 430px; min-height: 0; }
+    #left { display: flex; flex-direction: column; gap: 8px; padding: 10px; min-height: 0; overflow: auto; }
+    .tvbox { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border: 6px solid #1f2335; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+    .tvbox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 4px; }
+    .tvsize { position: absolute; right: 6px; top: -22px; color: var(--muted); font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+    .card h2 { margin: 0 0 6px; font-size: 13px; color: #fcd34d; text-transform: uppercase; letter-spacing: .04em; }
+    .kv { display: grid; grid-template-columns: 110px 1fr; gap: 2px 8px; font-size: 13px; }
+    .kv b { color: var(--muted); font-weight: 500; }
+    #log, #issues { margin: 0; padding: 0; list-style: none; max-height: 240px; overflow: auto; font: 12px/1.45 Consolas, monospace; }
+    #log li, #issues li { padding: 1px 0; border-bottom: 1px dotted #1e2338; white-space: pre-wrap; word-break: break-word; }
+    .t { color: #64748b; }
+    .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); } .info { color: #93c5fd; }
+    #roles span { display: inline-block; margin: 0 4px 4px 0; padding: 1px 6px; border-radius: 10px; background: #1e2338; font-size: 12px; }
+    #roles span.dead { text-decoration: line-through; opacity: .5; }
+    #phonesCol { border-left: 1px solid var(--line); min-height: 0; display: flex; flex-direction: column; }
+    #phonesCol .bar { padding: 6px 10px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    #phones { flex: 1; width: 100%; border: 0; background: var(--bg); }
+    #help { color: var(--muted); font-size: 12px; }
+    @media (max-width: 1100px) { main { grid-template-columns: 1fr; } #phonesCol { height: 70vh; border-left: 0; border-top: 1px solid var(--line); } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧪 Labo · mode sans Maître du Jeu</h1>
+    <label>Joueurs <input id="n" type="number" min="4" max="40" value="20"></label>
+    <label>Robots
+      <select id="speed">
+        <option value="fast">rapides (0,3 s)</option>
+        <option value="normal" selected>normaux (0,7–2 s)</option>
+        <option value="slow">lents (3–6 s)</option>
+      </select>
+    </label>
+    <label>Écran
+      <select id="screen">
+        <option value="16/9">16:9 (projecteur / TV)</option>
+        <option value="4/3">4:3</option>
+        <option value="21/9">21:9</option>
+      </select>
+    </label>
+    <label title="Prépare et lance la partie tout seul au chargement de la page"><input id="autoRun" type="checkbox" checked> Tout automatique</label>
+    <button id="bStart" class="primary">① Préparer la partie</button>
+    <button id="bGo" disabled>② Lancer (OK télécommande)</button>
+    <button id="bChaos" disabled title="Coupe le réseau de 2 téléphones pendant 20 s">📴 Coupure réseau ×2</button>
+    <button id="bCheck">🔍 Contrôle affichage</button>
+    <button id="bReset">↻ Recommencer</button>
+    <span id="state">En attente</span>
+  </header>
+  <main>
+    <section id="left">
+      <div class="tvbox" id="tvbox"><span class="tvsize" id="tvsize"></span><iframe id="tv" title="Écran TV (régie automatique)" allow="autoplay; fullscreen"></iframe></div>
+      <div class="grid">
+        <div class="card">
+          <h2>Partie</h2>
+          <div class="kv">
+            <b>Version</b><span id="kVer">–</span>
+            <b>Phase</b><span id="kPhase">–</span>
+            <b>Pilote auto</b><span id="kAuto">–</span>
+            <b>Joueurs</b><span id="kPlayers">–</span>
+            <b>Durée</b><span id="kTime">–</span>
+            <b>Nuits / jours</b><span id="kCycles">–</span>
+            <b>Résultat</b><span id="kWin">–</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Médias &amp; performance</h2>
+          <div class="kv">
+            <b>Préchargement</b><span id="kLoad">–</span>
+            <b>Vidéo scène</b><span id="kScene">–</span>
+            <b>Fond</b><span id="kBg">–</span>
+            <b>Musique</b><span id="kMusic">–</span>
+            <b>Mémoire JS</b><span id="kMem">–</span>
+            <b>Images/s</b><span id="kFps">–</span>
+          </div>
+        </div>
+        <div class="card"><h2>Rôles</h2><div id="roles" class="t">Distribués au lancement</div></div>
+      </div>
+      <div class="grid">
+        <div class="card"><h2>Journal</h2><ul id="log"></ul></div>
+        <div class="card"><h2>Anomalies (erreurs JS, médias, affichage)</h2><ul id="issues"><li class="t">Aucune pour l'instant</li></ul></div>
+      </div>
+      <p id="help">« Tout automatique » (coché par défaut) : la page fait ① puis ② toute seule, il suffit de l'ouvrir et de regarder. Paramètres d'adresse : ?n=20&amp;robots=fast|normal|slow&amp;manuel=1. ① charge l'écran TV (préchargement compris) et connecte les téléphones simulés, tous joués par des robots. ② appuie sur « Lancer la partie » comme la télécommande. Ensuite, le pilote automatique et les robots jouent jusqu'à la victoire. Les anomalies relevées en continu : erreurs JavaScript (régie, écran, téléphones), médias en erreur, textes qui débordent ou sortent de l'écran, blocage de plus de 4 min sans changement.</p>
+    </section>
+    <aside id="phonesCol">
+      <div class="bar">📱 <span id="phonesInfo">Téléphones : –</span></div>
+      <iframe id="phones" title="Téléphones simulés"></iframe>
+    </aside>
+  </main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const tv = $('tv'), phonesFrame = $('phones');
+  const V = Date.now().toString(36);   // empêche le cache entre deux essais
+  let T0 = 0, started = false, lastSig = '', lastSigAt = 0, lastPhase = null, nights = 0, days = 0;
+  const seenIssues = new Set(), hooked = new WeakSet();
+
+  // ---- ponts utilisés par test-tools.js (dans l'écran TV) et phones.html ----
+  window.LG_LAB_REGIE = () => { try { return tv.contentWindow; } catch (e) { return null; } };
+  window.LG_LAB_PHONES = () => { try { return phonesFrame.contentWindow && phonesFrame.contentWindow.LG_SIM ? phonesFrame.contentWindow : null; } catch (e) { return null; } };
+  const R = () => window.LG_LAB_REGIE();
+  const P = () => window.LG_LAB_PHONES();
+  const projDoc = () => { try { const f = R().document.getElementById('tv-proj'); return f && f.contentDocument; } catch (e) { return null; } };
+
+  // ---- journal ----
+  const stamp = () => { const s = T0 ? Math.round((Date.now() - T0) / 1000) : 0; return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+  function log(msg, cls) {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="t">' + stamp() + '</span> ';
+    const s = document.createElement('span'); s.className = cls || ''; s.textContent = msg; li.appendChild(s);
+    $('log').appendChild(li); $('log').scrollTop = 1e9;
+  }
+  function issue(key, msg, cls) {
+    if (seenIssues.has(key)) return;
+    seenIssues.add(key);
+    const ul = $('issues');
+    if (seenIssues.size === 1) ul.innerHTML = '';
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="t">' + stamp() + '</span> ';
+    const s = document.createElement('span'); s.className = cls || 'bad'; s.textContent = msg; li.appendChild(s);
+    ul.appendChild(li); ul.scrollTop = 1e9;
+  }
+
+  // ---- capture des erreurs JS de toutes les fenêtres (régie, écran, téléphones) ----
+  function hook(win, label) {
+    try {
+      if (!win || hooked.has(win)) return;
+      hooked.add(win);
+      win.addEventListener('error', (e) => issue(label + ':' + e.message, '❌ ' + label + ' : ' + e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : '')));
+      win.addEventListener('unhandledrejection', (e) => { const m = (e.reason && (e.reason.message || e.reason.name)) || String(e.reason); if (/play\(\)|NotAllowedError|AbortError/.test(m)) return; issue(label + ':rej:' + m, '❌ ' + label + ' (promesse) : ' + m); });
+      const ce = win.console.error.bind(win.console);
+      win.console.error = function () { const m = [].map.call(arguments, String).join(' '); issue(label + ':ce:' + m.slice(0, 80), '❌ ' + label + ' console : ' + m.slice(0, 200)); ce.apply(null, arguments); };
+      const cw = win.console.warn.bind(win.console);
+      win.console.warn = function () { const m = [].map.call(arguments, (a) => a && a.message ? a.message : String(a)).join(' '); if (!/Préchargement|PeerJS indisponible/.test(m)) issue(label + ':cw:' + m.slice(0, 80), '⚠️ ' + label + ' : ' + m.slice(0, 200), 'warn'); cw.apply(null, arguments); };
+    } catch (e) {}
+  }
+
+  // ---- ① préparation ----
+  function speedCfg() {
+    const v = $('speed').value;
+    return v === 'fast' ? { delay: 300, speech: 1500 } : v === 'slow' ? { delay: 3000 + Math.random() * 3000, speech: 8000 } : { delay: undefined, speech: 4000 };
+  }
+  function applyScreen() {
+    $('tvbox').style.aspectRatio = $('screen').value;
+    setTimeout(() => { const r = tv.getBoundingClientRect(); $('tvsize').textContent = Math.round(r.width) + ' × ' + Math.round(r.height) + ' px'; }, 50);
+  }
+  $('screen').addEventListener('change', applyScreen);
+  window.addEventListener('resize', applyScreen);
+  applyScreen();
+
+  $('bStart').addEventListener('click', () => {
+    $('bStart').disabled = true;
+    const n = Math.max(4, Math.min(40, parseInt($('n').value, 10) || 20));
+    $('state').textContent = 'Chargement de l\'écran TV…';
+    log('Préparation : ' + n + ' joueurs, robots ' + $('speed').selectedOptions[0].textContent, 'info');
+    tv.onload = () => {
+      hook(tv.contentWindow, 'Régie');
+      const pf = tv.contentWindow.document.getElementById('tv-proj');
+      if (pf) { const h = () => hook(pf.contentWindow, 'Écran'); pf.addEventListener('load', h); h(); }
+      phonesFrame.onload = () => {
+        const pw = phonesFrame.contentWindow, cfg = speedCfg();
+        if (cfg.delay !== undefined) pw.LG_BOT_DELAY = cfg.delay;
+        pw.LG_BOT_SPEECH = cfg.speech;
+        pw.LG_BOT_RUN_P = n > 10 ? 0.2 : 0.4;   // moins de candidats à la mairie quand on est nombreux
+        R().testAddRandom(n);
+        pw.LG_SIM.setAllAuto(true);
+        log(n + ' téléphones simulés créés, tous en mode robot', 'info');
+        $('state').textContent = 'Préchargement + connexion des téléphones…';
+      };
+      phonesFrame.src = 'phones.html?lab=1&v=' + V;
+    };
+    tv.src = 'test.html?tv=1&lab=1&v=' + V;
+  });
+
+  // ---- ② lancement (même action que la touche OK de la télécommande) ----
+  $('bGo').addEventListener('click', () => {
+    const b = R() && R().document.getElementById('tv-go');
+    if (!b || b.disabled) { log('Bouton « Lancer » pas encore disponible', 'warn'); return; }
+    b.focus(); b.click();
+    T0 = Date.now(); started = true; lastSigAt = Date.now();
+    $('bGo').disabled = true; $('bChaos').disabled = false;
+    log('▶ Partie lancée', 'ok');
+  });
+
+  // ---- coupure réseau de 2 téléphones (reconnexion 20 s plus tard) ----
+  $('bChaos').addEventListener('click', () => {
+    const list = P() ? P().LG_SIM.list().filter((p) => !p.offline) : [];
+    list.sort(() => Math.random() - 0.5).slice(0, 2).forEach((p) => {
+      P().LG_SIM.setOffline(p.id, true);
+      log('📴 ' + p.name + ' perd le réseau', 'warn');
+      setTimeout(() => {
+        P().LG_SIM.setOffline(p.id, false);
+        try { const w = p.frame.contentWindow; w.location.reload(); } catch (e) {}
+        log('🔌 ' + p.name + ' revient (rechargement de la page)', 'info');
+      }, 20000);
+    });
+  });
+  $('bReset').addEventListener('click', () => location.reload());
+
+  // ---- contrôle d'affichage de l'écran (débordements, sorties d'écran, textes trop petits) ----
+  function checkLayout(doc, label, quiet) {
+    if (!doc || !doc.defaultView) return 0;
+    const W = doc.defaultView.innerWidth, H = doc.defaultView.innerHeight;
+    let n = 0;
+    const els = doc.querySelectorAll('body *');
+    for (const el of els) {
+      if (!el.offsetParent && getComputedStyle(el).position !== 'fixed') continue;
+      const cs = doc.defaultView.getComputedStyle(el);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) === 0) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      if (/^(VIDEO|IFRAME|CANVAS|IMG)$/.test(el.tagName) && el.id !== 'logo-jeu') continue;
+      const name = el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/)[0] : '');
+      const txt = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+      const hasText = [].some.call(el.childNodes, (c) => c.nodeType === 3 && c.textContent.trim());
+      if (r.right > W + 2 || r.bottom > H + 2 || r.left < -2 || r.top < -2) {
+        if (hasText || el.id) { n++; issue('out:' + label + name, '📐 ' + label + ' : ' + name + ' sort de l\'écran (' + Math.round(r.left) + ',' + Math.round(r.top) + ' → ' + Math.round(r.right) + ',' + Math.round(r.bottom) + ' / ' + W + '×' + H + ')' + (txt ? ' « ' + txt + ' »' : ''), 'warn'); }
+      }
+      if ((cs.overflow === 'hidden' || cs.overflowY === 'hidden' || cs.overflowX === 'hidden') && (el.scrollHeight > el.clientHeight + 3 || el.scrollWidth > el.clientWidth + 3) && el.clientHeight > 10) {
+        n++; issue('clip:' + label + name, '✂️ ' + label + ' : contenu coupé dans ' + name + ' (' + el.scrollWidth + '×' + el.scrollHeight + ' pour ' + el.clientWidth + '×' + el.clientHeight + ')' + (txt ? ' « ' + txt + ' »' : ''), 'warn');
+      }
+      if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 3) {
+        n++; issue('scroll:' + label + name, '↕️ ' + label + ' : ' + name + ' nécessite un défilement (invisible sur TV, pas de souris) — ' + el.scrollHeight + ' px pour ' + el.clientHeight, 'warn');
+      }
+      if (hasText && parseFloat(cs.fontSize) < H * 0.018) {
+        n++; issue('small:' + label + name, '🔎 ' + label + ' : texte trop petit pour une TV à 3 m (' + cs.fontSize + ' < 1,8 % de la hauteur) dans ' + name + (txt ? ' « ' + txt + ' »' : ''), 'warn');
+      }
+    }
+    if (!quiet) log('Contrôle affichage ' + label + ' : ' + (n ? n + ' point(s) relevé(s)' : 'RAS'), n ? 'warn' : 'ok');
+    return n;
+  }
+  $('bCheck').addEventListener('click', () => { checkLayout(projDoc(), 'Écran'); try { checkLayout(R().document, 'Barre TV'); } catch (e) {} });
+
+  // ---- images / seconde de l'écran TV (fluidité) ----
+  let frames = 0, fpsT = performance.now();
+  (function raf() { frames++; requestAnimationFrame(raf); })();
+
+  // ---- surveillance (1 s) ----
+  let mediaChecked = new WeakSet(), autoCheckedPhase = '';
+  setInterval(() => {
+    const now = performance.now(); $('kFps').textContent = Math.round(frames * 1000 / (now - fpsT)); frames = 0; fpsT = now;
+    if (performance.memory) $('kMem').textContent = Math.round(performance.memory.usedJSHeapSize / 1048576) + ' Mo (page labo + iframes)';
+    const w = R(); if (!w || !w.document || !w.document.body) return;
+    let g; try { g = w.eval('({ v: VERSION_APP, ph: currentPhase, auto: window.AUTO ? AUTO.label : "", on: window.AUTO ? AUTO.on : false, players: players.map(p => ({ n: p.name, r: p.role, a: p.alive !== false, c: p.connected !== false })), dist: distributed, started: gameStarted, over: gameOver, win: typeof currentWinner === "function" && gameOver ? currentWinner() : null, mm: typeof musicMode !== "undefined" ? musicMode : null, ma: (typeof musicAudio !== "undefined" && musicAudio) ? decodeURIComponent(musicAudio.src.split("/").pop()) + (musicAudio.paused ? " (pause)" : "") + " · vol " + musicAudio.volume.toFixed(2) : "" })'); } catch (e) { return; }
+    $('kVer').textContent = g.v;
+    $('kPhase').textContent = (g.ph === 'night' ? '🌙 nuit' : '☀️ jour') + (g.started ? '' : g.dist ? ' (distribution)' : ' (salon)');
+    $('kAuto').textContent = (g.on ? '' : '⛔ éteint · ') + (g.auto || '–');
+    const alive = g.players.filter((p) => p.a).length, off = g.players.filter((p) => !p.c).length;
+    $('kPlayers').textContent = g.players.length + ' inscrits · ' + alive + ' en vie' + (off ? ' · ' + off + ' hors ligne' : '');
+    $('kMusic').textContent = g.ma ? g.mm + ' · ' + g.ma : '–';
+    if (T0) { const s = Math.round((Date.now() - T0) / 1000); $('kTime').textContent = Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s'; }
+    // préchargement
+    const lt = w.document.getElementById('tvl-txt'), lp = w.document.getElementById('tvl-pct');
+    if (lt) $('kLoad').textContent = (lp ? lp.textContent + ' · ' : '') + lt.textContent;
+    // bouton lancer
+    const go = w.document.getElementById('tv-go');
+    if (!started) {
+      $('bGo').disabled = !go || go.disabled;
+      $('state').textContent = go && !go.disabled ? '✅ Prêt : cliquez ② pour lancer' : 'Préparation… (' + g.players.length + ' joueurs connectés)';
+    } else $('state').textContent = g.over ? '🏁 Partie terminée' : '▶ Partie en cours';
+    // téléphones
+    try { const pl = P() ? P().LG_SIM.list() : []; $('phonesInfo').textContent = 'Téléphones : ' + pl.length + ' · robots ' + $('speed').value; pl.forEach((p) => { try { hook(p.frame.contentWindow, 'Tél. ' + p.name); } catch (e) {} }); } catch (e) {}
+    // rôles
+    if (g.dist && g.players.some((p) => p.r)) {
+      $('roles').innerHTML = '';
+      g.players.slice().sort((a, b) => String(a.r).localeCompare(String(b.r))).forEach((p) => { const s = document.createElement('span'); s.textContent = p.n + ' · ' + p.r; if (!p.a) s.className = 'dead'; $('roles').appendChild(s); });
+    }
+    // médias de l'écran
+    const d = projDoc();
+    if (d) {
+      const sv = d.getElementById('player');
+      if (sv) $('kScene').textContent = sv.src ? decodeURIComponent(sv.src.split('/').pop()) + (sv.paused ? ' (pause)' : ' ▶') + (sv.loop ? ' · boucle' : '') : '–';
+      const bg = d.getElementById('bg-video') || w.document.getElementById('bg-video');
+      if (bg) $('kBg').textContent = bg.src ? decodeURIComponent(bg.src.split('/').pop()) + (bg.paused ? ' (pause)' : ' ▶') : '–';
+      d.querySelectorAll('video, audio').forEach((m) => { if (m.error && !mediaChecked.has(m)) { mediaChecked.add(m); issue('media:' + m.src, '🎞️ Média en erreur (code ' + m.error.code + ') : ' + decodeURIComponent((m.src || '').split('/').pop())); } });
+    }
+    // évènements : phases, étiquettes du pilote
+    if (g.started && g.ph !== lastPhase) {
+      if (g.ph === 'night') nights++; else days++;
+      lastPhase = g.ph; $('kCycles').textContent = nights + ' / ' + days;
+      log(g.ph === 'night' ? '🌙 Nuit ' + nights : '☀️ Jour ' + days, 'info');
+    }
+    const sig = g.ph + '|' + g.auto + '|' + alive;
+    if (sig !== lastSig) {
+      if (started && g.auto && g.auto !== (lastSig.split('|')[1] || '')) log('🤖 ' + g.auto);
+      lastSig = sig; lastSigAt = Date.now();
+    } else if (started && !g.over && Date.now() - lastSigAt > 240000) {
+      issue('stuck:' + sig, '⏸️ Aucune évolution depuis 4 min (' + (g.auto || g.ph) + ') : blocage possible', 'bad');
+    }
+    // contrôle d'affichage automatique à chaque changement de phase / d'étape
+    if (started && autoCheckedPhase !== sig) { autoCheckedPhase = sig; setTimeout(() => checkLayout(projDoc(), 'Écran', true), 1500); }
+    if (g.over && $('kWin').textContent === '–') {
+      $('kWin').textContent = '🏁 ' + (g.win || 'fin') + ' · ' + $('kTime').textContent;
+      log('🏁 Victoire : ' + (g.win || '?') + ' après ' + nights + ' nuit(s)', 'ok');
+      $('bChaos').disabled = true;
+      setTimeout(() => { checkLayout(projDoc(), 'Écran (victoire)'); }, 3000);
+    }
+  }, 1000);
+
+  // mode « tout automatique » : préparation au chargement, lancement dès que la TV est prête (comme un appui sur OK)
+  const params = new URLSearchParams(location.search);
+  if (params.get('n')) $('n').value = params.get('n');
+  if (params.get('robots')) $('speed').value = params.get('robots');
+  if (params.get('manuel')) $('autoRun').checked = false;
+  let goTimer = null;
+  setInterval(() => {
+    if (!$('autoRun').checked || started || goTimer || $('bGo').disabled) return;
+    log('Tout est prêt : lancement automatique dans 3 s', 'info');
+    goTimer = setTimeout(() => { goTimer = null; if (!started && $('autoRun').checked) $('bGo').click(); }, 3000);
+  }, 1000);
+  window.addEventListener('load', () => { if ($('autoRun').checked) setTimeout(() => { if (!$('bStart').disabled) $('bStart').click(); }, 500); });
+
+  // contrôle du salon (QR + 20 noms) dès que les joueurs sont là
+  let lobbyChecked = false;
+  setInterval(() => {
+    if (lobbyChecked || started) return;
+    try { if (R().players.length >= Math.min(20, parseInt($('n').value, 10))) { lobbyChecked = true; setTimeout(() => checkLayout(projDoc(), 'Salon'), 2500); } } catch (e) {}
+  }, 1000);
+})();
+</script>
+</body>
+</html>

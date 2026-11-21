@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=113&tv=1';
+  frame.src = 'projecteur.html?v=114&tv=1';
   var projLoaded = false;
   frame.addEventListener('load', function () { setTimeout(function () { projLoaded = true; refresh(); }, 1500); });
   document.body.appendChild(frame);

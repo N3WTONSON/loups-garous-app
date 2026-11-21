@@ -99,7 +99,12 @@
   }
 
   // ----- fenêtre des téléphones (une seule ouverture, jamais rouverte pendant son chargement) -----
+  const LAB = /[?&]lab=/.test(location.search);
   function openPhonesWindow() {
+    if (LAB) {   // labo : les téléphones sont dans l'iframe voisine (déjà ouverte par test-auto.html)
+      try { const w = window.parent.LG_LAB_PHONES && window.parent.LG_LAB_PHONES(); if (w) { phonesWin = w; phonesLoaded = !!w.LG_SIM; return true; } } catch (e) {}
+      return false;
+    }
     if (phonesOpen()) {
       try { phonesWin.focus(); } catch (e) { /* ignoré */ }
       return true;
@@ -173,6 +178,13 @@
     }
   };
 
+  // labo : n joueurs d'un coup (sans limite de 16)
+  window.testAddRandom = function (n) {
+    let k = 0;
+    for (let i = 0; i < n; i++) { if (!addSimPlayer(randomName())) break; k++; }
+    return k;
+  };
+
   window.testToggleAuto = function () {
     if (!phonesReady()) { showToast("Ouvrez d'abord la fenêtre des téléphones.", 'info'); return; }
     phonesWin.LG_SIM.setAllAuto(!autoOn);
@@ -201,6 +213,12 @@
     if (inited) return;
     inited = true;
     roomCode = 'TEST';
+    if (LAB) {
+      // labo : aucun serveur PeerJS ; le salon « TEST » est ouvert tout de suite
+      window.initHost = function () {};
+      hostOpened = true;
+      setTimeout(() => { try { syncLobbyToProjector(); } catch (e) {} }, 1500);
+    }
     document.getElementById('host-ui').style.display = 'block';
     document.getElementById('room-code-display').innerText = 'TEST';
     document.getElementById('join-url').textContent = '🧪 Salon simulé : aucun réseau nécessaire pour les téléphones de test.';

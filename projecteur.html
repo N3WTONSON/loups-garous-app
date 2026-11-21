@@ -466,12 +466,12 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=113"></script>
+  <script src="bg.js?v=114"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
     <!-- logo : uniquement dans le salon d'attente (masqué avec lui dès que la partie commence) -->
-    <img id="logo-jeu" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+    <img id="logo-jeu" src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
     <div class="projector-title">🌐 Rejoindre la Partie</div>
     <div class="lobby-container">
       
@@ -500,7 +500,7 @@
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -528,7 +528,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -543,8 +543,8 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <script src="assets.js?v=113"></script>
-  <script src="boot.js?v=113"></script>
+  <script src="assets.js?v=114"></script>
+  <script src="boot.js?v=114"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 
@@ -961,7 +961,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=113';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=114';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();
@@ -1092,6 +1092,30 @@
       if (data.namesAt === 'start' && !noNames) showNames();
     }
 
+    // --- Liste des joueurs du salon : tous les noms visibles sans défilement (pas de souris sur une TV) ---
+    // colonnes et taille de police calculées selon le nombre de joueurs et la place disponible
+    function fitPlayerList() {
+      const ul = document.getElementById('player-list-target');
+      const n = ul.children.length;
+      if (!n) return;
+      const cols = n <= 6 ? 2 : n <= 12 ? 3 : n <= 20 ? 4 : 5;
+      const rows = Math.ceil(n / cols);
+      ul.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+      ul.style.maxHeight = 'none';
+      ul.style.overflow = 'hidden';
+      const box = ul.parentElement;
+      const head = box.querySelector('h3');
+      const csBox = getComputedStyle(box);
+      const measured = box.clientHeight - (head ? head.offsetHeight + parseFloat(getComputedStyle(head).marginBottom || 0) : 0) - parseFloat(csBox.paddingTop) - parseFloat(csBox.paddingBottom);
+      const avail = document.body.classList.contains('tv-embedded') ? measured : window.innerHeight * 0.56;   // écran seul : même hauteur qu'avant
+      const gap = window.innerHeight * 0.012;
+      ul.style.gap = gap + 'px ' + (window.innerWidth * 0.008) + 'px';
+      const rowH = Math.max(18, (avail - gap * (rows - 1)) / rows);
+      const font = Math.max(window.innerHeight * 0.022, Math.min(window.innerHeight * 0.05, rowH * 0.5));
+      [].forEach.call(ul.children, (li) => { li.style.fontSize = font + 'px'; li.style.padding = (rowH - font * 1.25) / 2 > 2 ? Math.round((rowH - font * 1.25) / 2) + 'px 0.8vw' : '2px 0.6vw'; li.style.whiteSpace = 'nowrap'; li.style.overflow = 'hidden'; li.style.textOverflow = 'ellipsis'; li.style.minWidth = '0'; });
+    }
+    window.addEventListener('resize', () => setTimeout(fitPlayerList, 260));
+
     // --- QR CODE PERMANENT (en bas à droite) ---
     let miniQrUrl = null;
     function renderMiniQr(url) {
@@ -1143,6 +1167,7 @@
               li.textContent = (pl.connected === false ? '📴 ' : '🟢 ') + pl.name;
               pList.appendChild(li);
             });
+            fitPlayerList();
           } else {
             pList.innerHTML = '<li style="color: #94a3b8; font-family: sans-serif; font-size: 3.4vh;">En attente de joueurs...</li>';
           }

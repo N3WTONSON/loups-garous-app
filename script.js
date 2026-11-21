@@ -1,4 +1,4 @@
-const VERSION_APP = "113";
+const VERSION_APP = "114";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=113', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=114', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -1104,7 +1104,7 @@ function launchMusic(name, loop, onEnd, startAt) {
       if (err && err.name === 'NotAllowedError') {
         bindMusicRetry();
         showToast('🎵 Le navigateur a bloqué la musique : cliquez n\'importe où sur la page pour la lancer.', 'info');
-      } else console.warn('Lecture de la musique impossible :', err);
+      } else if (!err || err.name !== 'AbortError') console.warn('Lecture de la musique impossible :', err);   // AbortError : musique arrêtée volontairement juste après son lancement
     });
   }
 }
