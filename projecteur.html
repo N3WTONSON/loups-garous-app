@@ -622,6 +622,7 @@
       if (waitingScreen) {
         waitingScreen.style.display = 'none';
       }
+      if (miniQrUrl) document.getElementById('mini-qr').style.display = 'flex';   // le petit QR prend le relais du grand
     }
 
     // mode : 'center' (appel de personnage, 50 %, 1728x918), 'full' (plein écran sans recadrage), sinon petite incrustation
@@ -1015,7 +1016,8 @@
       try { eventVideo.muted = false; if (eventActive) eventVideo.volume = MAX_VOLUME * videoMix; } catch (e) {}
       try { overlayVideo.muted = false; } catch (e) {}
     }
-    try { if (!(navigator.userActivation && navigator.userActivation.hasBeenActive)) showSoundUnlock(); } catch (e) {}
+    // mode TV intégré : le son est débloqué par l'appui sur OK (« Lancer la partie ») ; le bandeau n'apparaît que si une lecture est réellement refusée
+    try { if (!document.body.classList.contains('tv-embedded') && !(navigator.userActivation && navigator.userActivation.hasBeenActive)) showSoundUnlock(); } catch (e) {}
     window.addEventListener('pointerdown', unlockSound, true);
     window.addEventListener('keydown', unlockSound, true);
 
@@ -1110,7 +1112,9 @@
       const avail = document.body.classList.contains('tv-embedded') ? measured : window.innerHeight * 0.56;   // écran seul : même hauteur qu'avant
       const gap = window.innerHeight * 0.012;
       ul.style.gap = gap + 'px ' + (window.innerWidth * 0.008) + 'px';
-      const rowH = Math.max(18, (avail - gap * (rows - 1)) / rows);
+      const slots = Math.max(rows, 5);   // jamais plus haut qu'une liste de 5 rangées (peu de joueurs = cases normales, en haut)
+      ul.style.alignContent = 'start';
+      const rowH = Math.max(18, (avail - gap * (slots - 1)) / slots);
       const font = Math.max(window.innerHeight * 0.022, Math.min(window.innerHeight * 0.05, rowH * 0.5));
       [].forEach.call(ul.children, (li) => { li.style.fontSize = font + 'px'; li.style.padding = (rowH - font * 1.25) / 2 > 2 ? Math.round((rowH - font * 1.25) / 2) + 'px 0.8vw' : '2px 0.6vw'; li.style.whiteSpace = 'nowrap'; li.style.overflow = 'hidden'; li.style.textOverflow = 'ellipsis'; li.style.minWidth = '0'; });
     }
@@ -1127,7 +1131,8 @@
       target.innerHTML = '';
       const level = (QRCode.CorrectLevel && QRCode.CorrectLevel.L !== undefined) ? QRCode.CorrectLevel.L : undefined;
       new QRCode(target, { text: url, width: size, height: size, correctLevel: level });
-      box.style.display = 'flex';
+      // pendant le salon, le grand QR est déjà affiché : le petit n'apparaît qu'une fois la partie commencée
+      box.style.display = (waitingScreen && waitingScreen.style.display !== 'none') ? 'none' : 'flex';
       miniQrUrl = url;
     }
     window.addEventListener('resize', () => { if (miniQrUrl) renderMiniQr(miniQrUrl); });
