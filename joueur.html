@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Les Loups-Garous : Le Carnage - Espace Joueur</title>
-  <link rel="stylesheet" href="style.css?v=114">
+  <link rel="stylesheet" href="style.css?v=115">
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="dns-prefetch" href="https://0.peerjs.com">
-  <script src="assets.js?v=114"></script>
-  <script src="boot.js?v=114"></script>
+  <script src="assets.js?v=115"></script>
+  <script src="boot.js?v=115"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
 </head>
 <body>
-  <script src="bg.js?v=114"></script>
+  <script src="bg.js?v=115"></script>
 
   <header>
-    <img src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
+    <img src="logo-carnage.png?v=115" alt="Les Loups-Garous : Le Carnage" class="site-title-img">
   </header>
 
   <main class="container">
@@ -40,6 +40,13 @@
       <p id="lover-line" class="lover-line" style="display: none;"></p>
       <div id="gameover-banner" class="gameover-banner" style="display: none;"></div>
       <div id="dead-banner" class="dead-banner" style="display: none;">💀 Tu as été éliminé(e). Tu ne peux plus voter ni agir, mais tu peux suivre la partie.</div>
+      <!-- Éliminé : mode spectateur (rôles de tous les joueurs, aucune action) -->
+      <div id="spectator-panel" class="spectator-panel" style="display: none;">
+        <h3>👻 Spectateur</h3>
+        <p class="spec-sub">Tu suis la partie sans pouvoir agir. Garde le secret : ne révèle rien aux vivants !</p>
+        <ul id="spectator-list"></ul>
+      </div>
+      <button type="button" id="vibrate-toggle" class="vibrate-toggle" onclick="toggleVibrate()" style="display: none;">📳 Vibration : OUI</button>
 
       <!-- Tour du Voleur : choisir l'un des 2 rôles proposés -->
       <div id="thief-panel" class="thief-panel" style="display: none;">
@@ -180,7 +187,7 @@
       <div id="card-area" style="display: none;">
         <!-- Dos de carte cliquable avec image Verso.png -->
         <div id="secret-card" class="card-back" role="button" tabindex="0" onclick="toggleRoleReveal()">
-          <img id="verso-image" src="assets/images/Verso.webp?v=114" alt="Verso de carte" class="verso-img">
+          <img id="verso-image" src="assets/images/Verso.webp?v=115" alt="Verso de carte" class="verso-img">
           <span>👁️ Toucher pour révéler</span>
         </div>
 
@@ -193,7 +200,14 @@
     </section>
   </main>
 
-  <script src="sim-peer.js?v=114"></script>
-  <script src="player.js?v=114"></script>
+  <!-- Nuit : écran noir identique sur tous les téléphones (les rôles appelés reçoivent leur action dans le même habillage sombre) -->
+  <div id="night-veil" aria-hidden="true">
+    <div class="nv-moon">🌙</div>
+    <div class="nv-title">Fermez les yeux</div>
+    <div class="nv-sub">La nuit est tombée sur le village…</div>
+  </div>
+
+  <script src="sim-peer.js?v=115"></script>
+  <script src="player.js?v=115"></script>
 </body>
 </html>

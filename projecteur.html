@@ -272,6 +272,8 @@
       box-shadow: 0 0.5vmin 1.5vmin rgba(0, 0, 0, 0.8);
     }
     #mini-qr .mini-qr-code { line-height: 0; }
+    #mini-qr { flex-direction: column; align-items: center; }
+    #mini-qr .mini-qr-label { margin-top: 0.5vmin; font: 700 1.9vmin 'Segoe UI', Roboto, Arial, sans-serif; color: #7f1d1d; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
 
     /* Vidéos d'annonce (loups, poison, vote) : plein écran, sans recadrage */
     #event-video {
@@ -359,6 +361,36 @@
     #hunter-wait-overlay .hw-role { font-family: 'Wolf Brothers', sans-serif; font-size: 7vh; color: #fde68a; text-shadow: 0 0.4vh 1vh #000; letter-spacing: 0.3vh; }
     #hunter-wait-overlay .hw-name { font-family: 'Angel Wish', 'Wolf Brothers', 'Segoe UI', sans-serif; font-size: 12vh; line-height: 1; color: #f4dcdc; text-shadow: 0 0 3vh rgba(220, 38, 38, 0.75), 0 0.6vh 1.4vh #000; }
     #hunter-wait-overlay .hw-sub { font-size: 4vh; color: #fcd34d; text-shadow: 0 0.3vh 0.8vh #000; }
+
+    /* TABLEAU DU VILLAGE (le jour) : vivants, morts barrés + rôle révélé, Maire */
+    #village-board {
+      position: fixed; top: 3vh; right: 1.6vw; bottom: calc(14vmin + 6vh); width: 25vw; z-index: 31; display: none;   /* au-dessus du petit QR « Reconnexion » */
+      flex-direction: column; padding: 2.2vh 1.2vw 1.6vh;
+      background: linear-gradient(180deg, rgba(42, 9, 12, 0.88), rgba(12, 8, 14, 0.92));
+      border: 1px solid rgba(127, 29, 29, 0.75); border-top: 0.4vh solid #7f1d1d; border-radius: 1vh;
+      box-shadow: 0 1vh 4vh rgba(0, 0, 0, 0.75);
+      font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #f4dcdc;
+      opacity: 0; transform: translateX(3vw); transition: opacity .6s ease, transform .6s ease;
+    }
+    #village-board.show { opacity: 1; transform: none; }
+    #village-board .vb-title { font-family: 'Wolf Brothers', sans-serif; font-size: 4.6vh; color: #fcd34d; letter-spacing: 0.2vh; text-align: center; text-shadow: 0 0.4vh 1vh #000; }
+    #village-board .vb-count { font-size: 2.2vh; color: #cbd5e1; text-align: center; margin: 0.4vh 0 1.4vh; padding-bottom: 1.2vh; border-bottom: 1px solid rgba(185, 28, 28, 0.6); }
+    #vb-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 0.5vh 0.8vw; align-content: start; flex: 1; min-height: 0; overflow: hidden; }
+    #vb-list li { display: flex; align-items: center; gap: 0.5vw; min-width: 0; padding: 0.35em 0.6em; border-radius: 0.6vh; background: rgba(255, 255, 255, 0.05); font-weight: 700; line-height: 1.15; }
+    #vb-list li .vb-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #vb-list li.mayor { background: rgba(120, 80, 4, 0.55); border: 1px solid rgba(252, 211, 77, 0.7); color: #fff7d6; }
+    #vb-list li.dead { background: rgba(0, 0, 0, 0.35); color: #8b8b96; font-weight: 600; }
+    #vb-list li.dead .vb-name { text-decoration: line-through; text-decoration-color: rgba(239, 68, 68, 0.85); text-decoration-thickness: 0.25vh; }
+    #vb-list li .vb-role { flex: 0 1 auto; font-size: 0.78em; font-weight: 600; color: #fca5a5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #vb-list li.mayor, #vb-list li.dead { grid-column: 1 / -1; }   /* Maire et éliminés sur toute la largeur : nom + rôle lisibles */
+    #vb-list.many-dead li.dead { grid-column: auto; flex-direction: column; align-items: flex-start; gap: 0; }   /* beaucoup d'éliminés : 2 par ligne, rôle sous le nom */
+    #vb-list.many-dead li.dead .vb-name { width: 100%; }
+    #vb-list li.sep { background: none; padding: 0.6vh 0 0; color: #94a3b8; font-size: 0.7em; font-weight: 600; letter-spacing: 0.2vh; text-transform: uppercase; grid-column: 1 / -1; }
+    #dayvote-overlay.with-board { padding-right: 27vw; }
+
+    /* fondu au noir entre la nuit et le jour (0,8 s : 0,4 s vers le noir, 0,4 s retour) */
+    #phase-fade { position: fixed; inset: 0; z-index: 95; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+    #phase-fade.on { opacity: 1; }
 
     /* ÉLECTION DU MAIRE : candidats et discours */
     #dayvote-overlay {
@@ -466,12 +498,12 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=114"></script>
+  <script src="bg.js?v=115"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
     <!-- logo : uniquement dans le salon d'attente (masqué avec lui dès que la partie commence) -->
-    <img id="logo-jeu" src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+    <img id="logo-jeu" src="logo-carnage.png?v=115" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
     <div class="projector-title">🌐 Rejoindre la Partie</div>
     <div class="lobby-container">
       
@@ -500,7 +532,7 @@
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=115" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -510,6 +542,7 @@
   <!-- QR code permanent (reconnexion en cours de partie) -->
   <div id="mini-qr">
     <div id="mini-qr-code" class="mini-qr-code"></div>
+    <div class="mini-qr-label">Reconnexion</div>
   </div>
 
   <!-- Vidéos d'annonce + noms des joueurs -->
@@ -528,10 +561,16 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=114" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=115" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
+  <aside id="village-board" aria-label="Tableau du village">
+    <div class="vb-title">🏘️ Le village</div>
+    <div class="vb-count" id="vb-count"></div>
+    <ul id="vb-list"></ul>
+  </aside>
+  <div id="phase-fade"></div>
   <div id="candidates-overlay">
     <div id="cand-title" class="cand-title">👑 Candidats à la mairie</div>
     <div id="cand-list" class="cand-list"></div>
@@ -543,8 +582,8 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <script src="assets.js?v=114"></script>
-  <script src="boot.js?v=114"></script>
+  <script src="assets.js?v=115"></script>
+  <script src="boot.js?v=115"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 
@@ -955,18 +994,82 @@
       document.getElementById('cand-sub').textContent = sub || (speaker ? 'Discours de ' + speaker : '');
       ov.style.display = 'flex';
     }
-    function hideDayVote() { document.getElementById('dayvote-overlay').style.display = 'none'; }
+    function hideDayVote() { document.getElementById('dayvote-overlay').style.display = 'none'; showVillageBoard(false); }
+
+    // ---- Tableau du village : affiché uniquement pendant les scènes de jour du village (débat, vote, repos) ----
+    let villagePlayers = [];
+    function showVillageBoard(on) {
+      const b = document.getElementById('village-board');
+      const dv = document.getElementById('dayvote-overlay');
+      const ok = on && villagePlayers.length > 0;
+      dv.classList.toggle('with-board', ok);
+      if (ok) { b.style.display = 'flex'; requestAnimationFrame(() => { b.classList.add('show'); fitVillageBoard(); }); }
+      else { b.classList.remove('show'); setTimeout(() => { if (!b.classList.contains('show')) b.style.display = 'none'; }, 600); }
+    }
+    function renderVillageBoard(list) {
+      villagePlayers = list || [];
+      const ul = document.getElementById('vb-list');
+      const alive = villagePlayers.filter((p) => p.alive).sort((a, b) => (b.mayor - a.mayor) || a.name.localeCompare(b.name, 'fr'));
+      const dead = villagePlayers.filter((p) => !p.alive);
+      document.getElementById('vb-count').textContent = alive.length + ' en vie · ' + dead.length + ' mort' + (dead.length > 1 ? 's' : '');
+      ul.innerHTML = '';
+      const add = (p) => {
+        const li = document.createElement('li');
+        li.className = p.alive ? (p.mayor ? 'mayor' : '') : 'dead';
+        const n = document.createElement('span'); n.className = 'vb-name'; n.textContent = (p.mayor && p.alive ? '👑 ' : (p.alive ? '' : '💀 ')) + p.name;
+        li.appendChild(n);
+        if (!p.alive && p.role) { const r = document.createElement('span'); r.className = 'vb-role'; r.textContent = p.role; li.appendChild(r); }
+        ul.appendChild(li);
+      };
+      alive.forEach(add);
+      if (dead.length) { const s = document.createElement('li'); s.className = 'sep'; s.textContent = 'Éliminés'; ul.appendChild(s); dead.forEach(add); }
+      fitVillageBoard();
+    }
+    // 1 ou 2 colonnes et taille du texte selon le nombre de joueurs : tout tient sans défilement
+    function fitVillageBoard() {
+      const ul = document.getElementById('vb-list');
+      const b = document.getElementById('village-board');
+      if (b.style.display === 'none') return;
+      const items = [...ul.children];
+      const nDead = items.filter((li) => li.classList.contains('dead')).length;
+      const plain = items.filter((li) => !li.classList.contains('mayor') && !li.classList.contains('dead') && !li.classList.contains('sep')).length;
+      const cols = items.length > 13 ? 2 : 1;
+      const manyDead = cols === 2 && nDead > 5;
+      ul.classList.toggle('many-dead', manyDead);
+      ul.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+      const fullRows = items.length - plain - nDead;            // Maire + séparateur
+      const deadRows = manyDead ? Math.ceil(nDead / 2) * 1.7 : nDead;   // 2 par ligne, sur 2 lignes de texte
+      const rows = (Math.ceil(plain / cols) + fullRows + deadRows) || 1;
+      const avail = ul.clientHeight || window.innerHeight * 0.75;
+      const gap = window.innerHeight * 0.005;
+      const font = Math.max(window.innerHeight * 0.019, Math.min(window.innerHeight * 0.034, ((avail - gap * (rows - 1)) / rows) / 1.9));
+      ul.style.fontSize = font + 'px';
+    }
+    window.addEventListener('resize', () => setTimeout(fitVillageBoard, 200));
+
+    // ---- fondu au noir de 0,8 s au passage nuit ↔ jour ----
+    let lastBgPhase = null, fadeToken = 0;
+    function phaseTransition(phase, apply) {
+      const fade = document.getElementById('phase-fade');
+      const inLobby = waitingScreen && waitingScreen.style.display !== 'none';
+      if (!lastBgPhase || lastBgPhase === phase || inLobby) { lastBgPhase = phase; apply(); return; }
+      lastBgPhase = phase;
+      const t = ++fadeToken;
+      fade.classList.add('on');
+      setTimeout(() => { if (t !== fadeToken) return; apply(); fade.classList.remove('on'); }, 400);
+    }
     function showDayVote(mode) {
       if (window.setBgPhase) setBgPhase('day');
       const night = mode === 'night', roles = mode === 'roles';
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=114';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=115';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();
       document.getElementById('dayvote-overlay').style.display = 'flex';
+      showVillageBoard(true);
     }
     function hideCandidates() { document.getElementById('candidates-overlay').style.display = 'none'; }
 
@@ -1127,7 +1230,7 @@
       const box = document.getElementById('mini-qr');
       const target = document.getElementById('mini-qr-code');
       // petit QR code (8 % de la plus petite dimension de l'écran) ; correction d'erreur « L » = modules plus gros, donc lisible malgré la petite taille
-      const size = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.08);
+      const size = Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.14);
       target.innerHTML = '';
       const level = (QRCode.CorrectLevel && QRCode.CorrectLevel.L !== undefined) ? QRCode.CorrectLevel.L : undefined;
       new QRCode(target, { text: url, width: size, height: size, correctLevel: level });
@@ -1187,12 +1290,18 @@
           break;
 
         case 'bgPhase':
-          if (window.setBgPhase) setBgPhase(data.phase);
-          if (data.phase === 'day') {              // scène de jour : la vidéo de fond « jour » est visible (rien d'autre derrière)
-            if (ytReady) ytPlayer.stopVideo();
-            document.getElementById('player').style.visibility = 'hidden';
-            hideWaitingScreen();
-          }
+          phaseTransition(data.phase, () => {
+            if (window.setBgPhase) setBgPhase(data.phase);
+            if (data.phase === 'day') {              // scène de jour : la vidéo de fond « jour » est visible (rien d'autre derrière)
+              if (ytReady) ytPlayer.stopVideo();
+              document.getElementById('player').style.visibility = 'hidden';
+              hideWaitingScreen();
+            }
+          });
+          break;
+
+        case 'villageBoard':
+          renderVillageBoard(data.players);
           break;
 
         case 'dayVote':

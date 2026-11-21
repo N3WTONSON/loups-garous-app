@@ -1,4 +1,4 @@
-const VERSION_APP = "114";
+const VERSION_APP = "115";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=114', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=115', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -670,7 +670,11 @@ function setPhase(phase) {
   if (window.setBgPhase) window.setBgPhase(currentPhase);
   players.forEach((p) => sendTo(p, { type: 'phase', phase: currentPhase }));
   sendToProjector({ action: 'bgPhase', phase: currentPhase });
+  try { syncVillage(true); } catch (e) {}
 }
+
+// à chaque appel de nuit, TOUS les téléphones vibrent brièvement : personne ne se distingue
+function nightCallPulse() { players.forEach((p) => sendTo(p, { type: 'nightCall' })); }
 
 function startRoleReview() {
   if (reviewMode) return;
@@ -1628,6 +1632,7 @@ function playRole(role) {
       // 10 secondes de silence pour que tout le monde ait fermé les yeux
       thiefCallTimer = setTimeout(() => {
         thiefCallTimer = null;
+        nightCallPulse();
         playAudioFile(item.audio);
         playRoleVideo(item.video, item.mode || 'center');
         startThiefTurn();
@@ -1638,6 +1643,7 @@ function playRole(role) {
     return;
   }
 
+  nightCallPulse();
   playAudioFile(role === 'sorciere' ? witchCallAudio() : item.audio);
   if (item.video) playRoleVideo(item.video, item.mode || 'center');
 
@@ -1935,9 +1941,28 @@ function killPlayers(names) {
 }
 
 // Renvoie à un joueur qui (re)vient l'état courant de la partie
+// ---- Tableau du village (écran public, le jour) + écran spectateur (téléphones des éliminés) ----
+// Écran : vivants, morts barrés avec leur rôle révélé, 👑 Maire (jamais les amoureux).
+// Éliminés : rôles de tous les joueurs (ils ne peuvent plus agir).
+let villageSig = '';
+function villageFull() { return players.map((p) => ({ name: p.name, role: p.role || null, alive: p.alive !== false, mayor: typeof mayor !== 'undefined' && mayor === p.name })); }
+function sendSpectator(p, full) { if (p && p.alive === false) sendTo(p, { type: 'spectator', players: full || villageFull() }); }
+function syncVillage(force) {
+  if (!distributed || !players.length) return;
+  const full = villageFull();
+  const board = full.map((x) => ({ name: x.name, alive: x.alive, mayor: x.mayor, role: x.alive ? null : x.role }));
+  const sig = JSON.stringify(full);
+  if (!force && sig === villageSig) return;
+  villageSig = sig;
+  sendToProjector({ action: 'villageBoard', players: board });
+  players.forEach((p) => sendSpectator(p, full));
+}
+setInterval(() => { try { syncVillage(false); } catch (e) {} }, 1500);
+
 function resyncPlayer(p) {
   if (!distributed) return;
   sendTo(p, { type: 'status', alive: p.alive });
+  sendSpectator(p);
   if (p.inLove) {
     const partner = players.find((x) => x !== p && x.inLove);
     sendTo(p, { type: 'lover', partner: partner ? partner.name : null });

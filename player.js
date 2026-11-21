@@ -204,6 +204,8 @@ function connect(room, name, token, isAuto) {
       } else if (data.type === 'assignRole') {
         myRole = data.role;
         setupRoleCard(data.role);
+        renderVibrateToggle();
+        setNightMode(lastPhaseMsg === 'night');   // reconnexion en pleine nuit
       } else if (data.type === 'thiefTurn') {
         showThiefPanel(data.options || []);
       } else if (data.type === 'thiefDone') {
@@ -265,6 +267,12 @@ function connect(room, name, token, isAuto) {
         hidePanel('candidacy-panel');
       } else if (data.type === 'phase') {
         if (window.setBgPhase) window.setBgPhase(data.phase);
+        lastPhaseMsg = data.phase;
+        setNightMode(data.phase === 'night');
+      } else if (data.type === 'nightCall') {
+        nightPulse();
+      } else if (data.type === 'spectator') {
+        renderSpectator(data.players || []);
       } else if (data.type === 'roleReview') {
         setRoleReview(data.on !== false);
       } else if (data.type === 'gameStarted') {
@@ -274,6 +282,7 @@ function connect(room, name, token, isAuto) {
       } else if (data.type === 'hunterDone') {
         showHunterDone();
       } else if (data.type === 'gameOver') {
+        setNightMode(false);   // fin de partie : on rallume l'écran
         showGameOver(data.winner);
       } else if (data.type === 'foxTurn') {
         showFoxPanel(data);
@@ -473,6 +482,7 @@ function hideThiefPanel() {
 function hidePanel(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = 'none';
+  if (typeof updateActing === 'function') updateActing();
 }
 
 function showPanel(id) {
@@ -480,6 +490,62 @@ function showPanel(id) {
   if (!el) return;
   el.style.display = 'block';
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  updateActing();
+}
+
+// =====================================================================
+//  NUIT : écran noir identique pour tous, vibration discrète à chaque appel
+// =====================================================================
+let nightOn = false;
+let lastPhaseMsg = null;
+function updateActing() {
+  const acting = [...document.querySelectorAll('#game-card .action-panel, #game-card .thief-panel')].some((el) => el.style.display !== 'none');
+  document.body.classList.toggle('night-acting', acting);
+}
+function setNightMode(on) {
+  nightOn = !!on && !!myRole;   // pas avant la distribution des rôles
+  document.body.classList.toggle('night-mode', nightOn);
+  updateActing();
+}
+// vibration : réglable par le joueur (mémorisé sur le téléphone) ; non disponible sur iPhone
+const canVibrate = typeof navigator.vibrate === 'function';
+let vibrateOn = (() => { try { return localStorage.getItem('lg_vibrate') !== '0'; } catch (e) { return true; } })();
+function renderVibrateToggle() {
+  const b = document.getElementById('vibrate-toggle');
+  if (!b) return;
+  b.style.display = canVibrate && myRole ? '' : 'none';
+  b.textContent = '📳 Vibration : ' + (vibrateOn ? 'OUI' : 'NON');
+  b.classList.toggle('off', !vibrateOn);
+}
+function toggleVibrate() {
+  vibrateOn = !vibrateOn;
+  try { localStorage.setItem('lg_vibrate', vibrateOn ? '1' : '0'); } catch (e) {}
+  renderVibrateToggle();
+  if (vibrateOn && canVibrate) { try { navigator.vibrate(30); } catch (e) {} }
+}
+function nightPulse() {
+  if (!vibrateOn || !canVibrate) return;
+  try { navigator.vibrate(35); } catch (e) {}   // très courte et douce
+}
+
+// =====================================================================
+//  ÉLIMINÉ : mode spectateur (rôles de tous les joueurs visibles, aucune action)
+// =====================================================================
+let spectatorPlayers = [];
+function renderSpectator(list) {
+  spectatorPlayers = list;
+  const ul = document.getElementById('spectator-list');
+  if (!ul) return;
+  ul.innerHTML = '';
+  const sorted = list.slice().sort((a, b) => (b.alive - a.alive) || String(a.name).localeCompare(String(b.name), 'fr'));
+  sorted.forEach((p) => {
+    const li = document.createElement('li');
+    li.className = (p.alive ? '' : 'dead') + (p.role === 'Loup-Garou' ? ' wolf' : '');
+    const n = document.createElement('span'); n.className = 'sp-name'; n.textContent = (p.mayor && p.alive ? '👑 ' : '') + (p.alive ? '' : '💀 ') + p.name;
+    const r = document.createElement('span'); r.className = 'sp-role'; r.textContent = p.role || '?';
+    li.appendChild(n); li.appendChild(r);
+    ul.appendChild(li);
+  });
 }
 
 // bouton-nom réutilisable
@@ -504,7 +570,10 @@ function pickButton(label, { selected = false, disabled = false, extra = '', onC
 // --- joueur éliminé / amoureux ---
 function setAliveUI(alive) {
   const banner = document.getElementById('dead-banner');
-  if (banner) banner.style.display = alive ? 'none' : 'block';
+  if (banner) banner.style.display = 'none';   // remplacé par le mode spectateur
+  const spec = document.getElementById('spectator-panel');
+  if (spec) spec.style.display = alive ? 'none' : 'block';
+  if (!alive && !spectatorPlayers.length) renderSpectator([]);
   if (!alive) {
     ['cupid-panel', 'wolf-panel', 'witch-panel', 'vote-panel', 'thief-panel', 'seer-panel', 'mayor-panel', 'candidacy-panel', 'rps-panel', 'fox-panel'].forEach(hidePanel);
   }

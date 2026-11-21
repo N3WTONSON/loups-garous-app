@@ -945,3 +945,39 @@ html.tv-mode body > *:not(.tv-keep), body.tv-mode > *:not(.tv-keep) { display: n
 #tv-ui .tv-help { font-size: 1.8vh; color: #94a3b8; }
 #tv-ui button:focus, #tv-again:focus { outline: none; border-color: #fcd34d; box-shadow: 0 0 3vh rgba(252, 211, 77, 0.7); }
 #tv-again { position: fixed; right: 3vw; bottom: 3vh; z-index: 300; }
+
+
+/* ===================== V115 : téléphone la nuit, spectateur, vibration ===================== */
+#night-veil { display: none; position: fixed; inset: 0; z-index: 5; background: #000; flex-direction: column; align-items: center; justify-content: center; gap: 2vh; text-align: center; pointer-events: none; padding: 0 8vw; }
+.nv-moon { font-size: min(22vw, 14vh); line-height: 1; filter: grayscale(1) brightness(0.3); }
+.nv-title { font-size: min(8vw, 5vh); font-weight: 700; color: #4b4b55; letter-spacing: 0.04em; }
+.nv-sub { font-size: min(4.2vw, 2.6vh); color: #34343c; }
+body.night-mode { background: #000 !important; }
+body.night-mode #night-veil { display: flex; }
+body.night-mode.night-acting #night-veil > * { display: none; }   /* rôle appelé : son action à la place, même fond noir */
+body.night-mode #bg-video, body.night-mode #bg-shade, body.night-mode header { display: none !important; }
+body.night-mode .container { position: relative; z-index: 6; }
+body.night-mode #game-card { background: transparent !important; border-color: transparent !important; box-shadow: none !important; backdrop-filter: none !important; }
+body.night-mode #game-card::before, body.night-mode #game-card::after { display: none !important; }
+body.night-mode #game-card > *:not(.action-panel):not(.thief-panel):not(#spectator-panel):not(#vibrate-toggle) { display: none !important; }
+body.night-mode .action-panel, body.night-mode .thief-panel, body.night-mode .spectator-panel { background: #070708 !important; border: 1px solid #1c1c21 !important; box-shadow: none !important; color: #8e8e99 !important; }
+body.night-mode .action-panel h3, body.night-mode .action-panel p, body.night-mode .thief-panel h3, body.night-mode .thief-panel p, body.night-mode .action-panel span, body.night-mode .action-panel small { color: #8e8e99 !important; text-shadow: none !important; }
+body.night-mode .btn { background: #141417 !important; color: #b4b4bd !important; border: 1px solid #26262c !important; box-shadow: none !important; text-shadow: none !important; }
+body.night-mode .btn.selected, body.night-mode .pick-btn.selected { background: #2a1214 !important; border-color: #5b1a1d !important; color: #e5b8b8 !important; }
+body.night-mode .btn:disabled { opacity: 0.45; }
+body.night-mode img { filter: brightness(0.45) saturate(0.6); }
+body.night-mode .nom-joueur { font-family: 'Segoe UI', Roboto, Arial, sans-serif !important; }
+
+.vibrate-toggle { position: static; display: inline-block; margin: 14px auto 0; z-index: 7; font: 600 12px 'Segoe UI', Roboto, sans-serif; padding: 5px 11px; border-radius: 14px; background: rgba(0, 0, 0, 0.6); color: #a1a1aa; border: 1px solid #3f3f46; cursor: pointer; }
+.vibrate-toggle.off { color: #6b6b75; }
+body.night-mode .vibrate-toggle { position: fixed; right: 3vw; bottom: 1.6vh; margin: 0; background: #09090b; color: #4b4b55; border-color: #1c1c21; }
+
+.spectator-panel { margin: 14px auto 0; padding: 12px; max-width: 520px; border-radius: 12px; background: rgba(10, 10, 16, 0.88); border: 1px solid #3f3f46; text-align: left; }
+.spectator-panel h3 { margin: 0 0 4px; text-align: center; color: #c4b5fd; font-size: 1.25rem; }
+.spec-sub { font-size: 0.85rem; color: #94a3b8; text-align: center; margin: 0 0 10px; }
+#spectator-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 4px; }
+#spectator-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); font: 600 0.95rem 'Segoe UI', Roboto, sans-serif; color: #e2e8f0; }
+#spectator-list li.dead { opacity: 0.5; }
+#spectator-list li.dead .sp-name { text-decoration: line-through; }
+#spectator-list .sp-role { color: #fcd34d; white-space: nowrap; font-size: 0.85rem; }
+#spectator-list li.wolf .sp-role { color: #f87171; }
