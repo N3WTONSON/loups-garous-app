@@ -1,4 +1,4 @@
-const VERSION_APP = "115";
+const VERSION_APP = "117";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=115', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=117', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -338,6 +338,13 @@ if (!TEST_MODE) {
 
 // sans caractères ambigus à lire sur l'écran ou à taper (0/O, 1/I/L)
 const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+// Nombre de Loups-Garous selon le nombre de joueurs (règle unique : TV, régie, page test)
+//   4-5 : 1 · 6-7 : 2 · 8-11 : 2 · 12-15 : 3 · 16-19 : 4 · 20 et plus : 1 loup pour 5 joueurs
+function wolvesCount(n) {
+  let w = n >= 20 ? Math.floor(n / 5) : n >= 16 ? 4 : n >= 12 ? 3 : n >= 8 ? 2 : Math.round(n / 4);
+  return Math.max(1, Math.min(w, Math.ceil(n / 2) - 1));   // toujours moins de loups que de villageois
+}
+
 function generateRoomCode() {
   let c = '';
   for (let i = 0; i < 4; i++) c += ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)];
@@ -562,7 +569,7 @@ function addRole(roleName) {
 function autoFillRoles(thenDistribute) {
   const n = players.length;
   if (n < 3) { showToast('Il faut au moins 3 joueurs connectés.', 'info'); return; }
-  const wolves = Math.max(1, Math.min(Math.round(n / 4), Math.ceil(n / 2) - 1));
+  const wolves = wolvesCount(n);
   const specials = ['Voyante', 'Sorcière', 'Cupidon', 'Chasseur', 'Voleur', 'Renard', 'Petite Fille'].filter((r) => !(r === 'Renard' && window.AUTO && AUTO.blind)).slice(0, Math.max(0, n - wolves));
   roles.length = 0;
   for (let i = 0; i < wolves; i++) roles.push('Loup-Garou');

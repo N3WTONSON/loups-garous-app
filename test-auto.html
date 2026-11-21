@@ -314,8 +314,10 @@
     // contrôle d'affichage automatique à chaque changement de phase / d'étape
     if (started && autoCheckedPhase !== sig) { autoCheckedPhase = sig; setTimeout(() => checkLayout(projDoc(), 'Écran', true), 1500); }
     if (g.over && $('kWin').textContent === '–') {
-      $('kWin').textContent = '🏁 ' + (g.win || 'fin') + ' · ' + $('kTime').textContent;
-      log('🏁 Victoire : ' + (g.win || '?') + ' après ' + nights + ' nuit(s)', 'ok');
+      const WIN = { wolves: 'Loups-Garous', village: 'Village', lovers: 'Amoureux' };
+      const wn = WIN[g.win] || g.win || 'fin';
+      $('kWin').textContent = '🏁 ' + wn + ' · ' + $('kTime').textContent;
+      log('🏁 Victoire : ' + wn + ' après ' + nights + ' nuit(s)', 'ok');
       $('bChaos').disabled = true;
       setTimeout(() => { checkLayout(projDoc(), 'Écran (victoire)'); }, 3000);
     }

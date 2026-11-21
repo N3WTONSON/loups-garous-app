@@ -554,6 +554,7 @@ function pickButton(label, { selected = false, disabled = false, extra = '', onC
   b.type = 'button';
   b.className = 'btn pick-btn nom-joueur' + (selected ? ' selected' : '');
   b.disabled = disabled;
+  b.dataset.initial = String(label || '?').trim().charAt(0).toUpperCase();   // médaillon de nuit
   const name = document.createElement('span');
   name.textContent = label;
   b.appendChild(name);
@@ -639,7 +640,7 @@ function renderWolfList() {
     list.appendChild(pickButton(name, {
       selected: wolfState.my === name,
       disabled: wolfState.final,
-      extra: n ? `${n} vote${n > 1 ? 's' : ''}` : '',
+      extra: n ? '🐾'.repeat(Math.min(n, 3)) + (n > 3 ? ' ' + n : '') : '',
       onClick: () => {
         if (!conn || !conn.open || wolfState.final) return;
         wolfState.my = name;
@@ -649,9 +650,10 @@ function renderWolfList() {
     }));
   });
   document.getElementById('wolf-confirm').disabled = wolfState.final || !wolfState.my;
+  document.getElementById('wolf-confirm').textContent = wolfState.my && !wolfState.final ? 'Valider : ' + wolfState.my : 'Valider mon vote';
   document.getElementById('wolf-info').textContent = wolfState.final
     ? "Vote validé. En attente des autres loups…"
-    : "Touche un nom pour voter. Le nombre de votes s'affiche à côté.";
+    : "Touche un médaillon pour voter. 🐾 = votes de la meute.";
 }
 
 function wolfConfirm() {

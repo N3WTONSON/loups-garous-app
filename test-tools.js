@@ -195,7 +195,7 @@
     const n = players.length;
     if (!n) { showToast("Ajoutez d'abord des joueurs (ils doivent être connectés).", 'info'); return; }
     // tous les non-loups comptent comme villageois : loups < n/2, rôles spéciaux d'abord, villageois pour compléter
-    const wolves = Math.max(1, Math.min(Math.round(n / 4), Math.ceil(n / 2) - 1));
+    const wolves = wolvesCount(n);
     const specials = ['Voyante', 'Sorcière', 'Cupidon', 'Chasseur', 'Voleur', 'Renard', 'Petite Fille'].slice(0, Math.max(0, n - wolves));
     const villagers = Math.max(0, n - wolves - specials.length);
     roles.length = 0;

@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=115&tv=1';
+  frame.src = 'projecteur.html?v=117&tv=1';
   var projLoaded = false;
   frame.addEventListener('load', function () { setTimeout(function () { projLoaded = true; refresh(); }, 1500); });
   document.body.appendChild(frame);
@@ -39,7 +39,7 @@
     s.el = b; tg.appendChild(b);
   });
 
-  function wolvesFor(n) { return Math.max(1, Math.min(Math.round(n / 4), Math.ceil(n / 2) - 1)); }
+  function wolvesFor(n) { return wolvesCount(n); }
 
   function compose(n) {
     var w = wolvesFor(n), out = [];
@@ -170,6 +170,8 @@
   });
 
   setInterval(function () {
+    // sécurité : dès que les rôles sont distribués, la barre de réglage disparaît (aucun réglage pendant la partie)
+    if (typeof distributed !== 'undefined' && distributed && ui.style.display !== 'none') { started = true; ui.style.display = 'none'; }
     if (!started) refresh();
     else if (typeof gameOver !== 'undefined' && gameOver && !$('tv-again')) {
       setTimeout(function () {
