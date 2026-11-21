@@ -3,7 +3,7 @@
    - scripts / styles / polices / bibliothèques : copie en mémoire d'abord ;
    - médias locaux (sons, vidéos, images) : copie en mémoire d'abord (préchargés par boot.js), lecture partielle (Range) comprise. */
 const SHELL = 'lg-shell-v1';
-const MEDIA = 'lg-media-v1';
+const MEDIA = 'lg-media-v2';   // v2 : médias réencodés en V113 (720p, musique 80 kbit/s)
 const LIBS = 'lg-libs-v1';
 const CDN_HOSTS = ['unpkg.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
 const MAX_CACHED_BYTES = 120 * 1024 * 1024;
@@ -51,9 +51,23 @@ async function staleWhileRevalidate(req, cacheName) {
   return hit || (await net) || fetch(req);
 }
 
-async function serveRange(resp, range) {
+// Extraits (Range) : on garde la « poignée » des derniers fichiers lus. Le fichier reste sur le disque
+// (Cache Storage) : seule la tranche demandée est lue, sans relire ni recopier le fichier entier à chaque requête.
+const blobLRU = new Map();
+const BLOB_LRU_MAX = 6;
+async function blobFor(url, resp) {
+  let b = blobLRU.get(url);
+  if (b) { blobLRU.delete(url); blobLRU.set(url, b); return b; }
+  if (!resp) return null;
+  b = await resp.blob();
+  blobLRU.set(url, b);
+  while (blobLRU.size > BLOB_LRU_MAX) blobLRU.delete(blobLRU.keys().next().value);
+  return b;
+}
+
+async function serveRange(url, resp, range) {
   const m = /bytes=(\d*)-(\d*)/.exec(range || '');
-  const blob = await resp.clone().blob();
+  const blob = await blobFor(url, resp);
   const size = blob.size;
   let s = 0, e = size - 1;
   if (m) {
@@ -66,7 +80,7 @@ async function serveRange(resp, range) {
     status: 206,
     statusText: 'Partial Content',
     headers: {
-      'Content-Type': resp.headers.get('Content-Type') || 'application/octet-stream',
+      'Content-Type': blob.type || (resp && resp.headers.get('Content-Type')) || 'application/octet-stream',
       'Content-Range': 'bytes ' + s + '-' + e + '/' + size,
       'Content-Length': String(e - s + 1),
       'Accept-Ranges': 'bytes'
@@ -75,10 +89,11 @@ async function serveRange(resp, range) {
 }
 
 async function media(req) {
+  const range = req.headers.get('range');
+  if (range && blobLRU.has(req.url)) return serveRange(req.url, null, range);   // déjà ouvert : réponse immédiate
   const cache = await caches.open(MEDIA);
   const hit = await cache.match(req.url);
-  const range = req.headers.get('range');
-  if (hit) return range ? serveRange(hit, range) : hit;
+  if (hit) return range ? serveRange(req.url, hit, range) : hit;
   if (range) return fetch(req);                       // pas encore en mémoire : lecture normale (le préchargement s'en occupe)
   try {
     const res = await fetch(req.url, { mode: 'cors' });   // réponse « cors » : on peut la garder en mémoire proprement

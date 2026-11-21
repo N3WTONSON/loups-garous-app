@@ -118,10 +118,50 @@ function joinRoom() {
     showError("Veuillez entrer votre pseudo et le code du salon.");
     return;
   }
+  srvTries = 0;
+  keepAwake();   // dans le geste de l'utilisateur : autorisé par le navigateur
   const token = session && session.room === room && session.name === name ? session.token : randomToken();
   session = { room, name, token };
   connect(room, name, token, false);
 }
+
+// serveur de mise en relation (paramètre s du QR code) ; sans réponse, on essaie les serveurs de secours
+let peerSrv = parseInt(new URLSearchParams(location.search).get('s') || '0', 10) || 0;
+let srvTries = 0;
+function nextPeerServer() {
+  const n = (window.LG && LG.peerServers) ? LG.peerServers.length : 1;
+  if (n < 2 || srvTries >= n - 1) return false;
+  srvTries++;
+  peerSrv = (peerSrv + 1) % n;
+  return true;
+}
+
+// --- Écran toujours allumé pendant la partie (un téléphone en veille perd la connexion) ---
+let wakeLock = null, noSleepVideo = null;
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator) {
+      if (wakeLock && !wakeLock.released) return;
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+      return;
+    }
+  } catch (e) { /* refusé (économie d'énergie…) : solution de repli ci-dessous */ }
+  try {
+    // repli (anciens navigateurs) : une minuscule vidéo muette en boucle empêche la mise en veille
+    if (!noSleepVideo) {
+      noSleepVideo = document.createElement('video');
+      noSleepVideo.setAttribute('playsinline', ''); noSleepVideo.setAttribute('muted', '');
+      noSleepVideo.muted = true; noSleepVideo.loop = true;
+      noSleepVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;bottom:0;left:0;';
+      noSleepVideo.src = (window.mediaUrl ? mediaUrl('video', 'nosleep.mp4') : 'assets/video/nosleep.mp4');
+      document.body.appendChild(noSleepVideo);
+    }
+    if (noSleepVideo.paused) await noSleepVideo.play();
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && joined) keepAwake(); });
+document.addEventListener('pointerdown', () => { if (joined) keepAwake(); }, { passive: true });
 
 function connect(room, name, token, isAuto) {
   clearTimeout(retryTimer);
@@ -130,13 +170,14 @@ function connect(room, name, token, isAuto) {
   if (peer && !peer.destroyed) peer.destroy();
   lastHostMsg = Date.now();
 
-  peer = new Peer(undefined, (window.LG && LG.peerOptions) || {});
+  peer = new Peer(undefined, (window.LG && LG.peerOpts) ? LG.peerOpts(peerSrv) : ((window.LG && LG.peerOptions) || {}));
 
   peer.on('open', () => {
     conn = peer.connect("LG-" + room, { reliable: true });
 
     const timeout = setTimeout(() => {
       if (conn.open) return;
+      if (!isAuto && nextPeerServer()) { connect(room, name, token, isAuto); return; }
       if (isAuto) retryAuto(); else failJoin("Salon introuvable. Vérifiez le code ou réessayez.", false);
     }, 20000);
 
@@ -152,6 +193,7 @@ function connect(room, name, token, isAuto) {
       if (data.type === 'joined') {
         joined = true;
         autoTries = 0;
+        keepAwake();
         prefetchRoleImages();
         saveSession(session);
         setBusy(false);
@@ -258,6 +300,8 @@ function connect(room, name, token, isAuto) {
       scheduleReconnect();
     } else if (isAuto) {
       retryAuto();   // la régie est peut-être en train de reprendre la partie : on garde la session et on réessaie
+    } else if (['peer-unavailable', 'network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type) && nextPeerServer()) {
+      connect(room, name, token, isAuto);   // salon peut-être ouvert sur le serveur de secours
     } else if (err.type === 'peer-unavailable') {
       failJoin("Salon introuvable. Vérifiez le code fourni par le MJ.", isAuto);
     } else {

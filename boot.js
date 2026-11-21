@@ -85,4 +85,15 @@
       iceCandidatePoolSize: 4
     }
   };
+
+  // Serveurs de mise en relation : [0] = serveur public PeerJS (0.peerjs.com) ; les suivants servent de secours.
+  // Pour ajouter un serveur de secours, déclarer AVANT boot.js :
+  //   window.LG_PEER_SERVERS = [{ host: 'mon-serveur.onrender.com', port: 443, path: '/', secure: true }];
+  LG.peerServers = [null].concat(window.LG_PEER_SERVERS || []);
+  LG.peerOpts = function (i) {
+    var o = {}, k, srv = LG.peerServers[i] || null;
+    for (k in LG.peerOptions) o[k] = LG.peerOptions[k];
+    if (srv) for (k in srv) o[k] = srv[k];
+    return o;
+  };
 })();

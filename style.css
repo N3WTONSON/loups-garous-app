@@ -927,6 +927,20 @@ html.tv-mode body > *:not(.tv-keep), body.tv-mode > *:not(.tv-keep) { display: n
 #tv-ui .tv-load.ok .tv-load-bar i { background: #16a34a; }
 #tv-ui .tv-load.warn .tv-load-bar i { background: #d97706; }
 #tv-ui .tv-load-txt { font-size: 2vh; color: #cbd5e1; text-align: center; margin-top: .6vh; }
+/* --- écran de chargement (mode TV) : animations limitées à opacity/transform (fluide sur Android TV 2 Go) --- */
+#tv-loading { position: fixed; inset: 0; z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.2vh; background: radial-gradient(ellipse at 50% 38%, #2a0a0e 0%, #0b0b12 55%, #000 100%); color: #f4dcdc; font-family: 'Segoe UI', sans-serif; text-align: center; transition: opacity .8s ease; overflow: hidden; }
+#tv-loading.done { opacity: 0; pointer-events: none; }
+#tv-loading .tvl-glow { position: absolute; left: 50%; top: 34%; width: 70vh; height: 70vh; margin: -35vh 0 0 -35vh; border-radius: 50%; background: radial-gradient(circle, rgba(220, 38, 38, 0.45) 0%, rgba(127, 29, 29, 0.18) 40%, transparent 70%); animation: tvlGlow 3.2s ease-in-out infinite; will-change: opacity, transform; }
+#tv-loading .tvl-logo { position: relative; max-height: 38vh; max-width: 70vw; object-fit: contain; animation: tvlBreath 3.2s ease-in-out infinite; will-change: transform; }
+#tv-loading .tvl-bar { position: relative; width: min(60vw, 820px); height: 1.1vh; min-height: 6px; border-radius: 1vh; background: rgba(255, 255, 255, 0.1); overflow: hidden; box-shadow: inset 0 0 0.6vh rgba(0, 0, 0, 0.8); }
+#tv-loading .tvl-bar i { display: block; height: 100%; width: 0; border-radius: 1vh; background: linear-gradient(90deg, #7f1d1d, #dc2626 70%, #fca5a5); transition: width .5s ease; }
+#tv-loading .tvl-pct { position: relative; font-family: 'Wolf Brothers', 'Segoe UI', sans-serif; font-size: 6vh; color: #fca5a5; letter-spacing: 2px; text-shadow: 0 0 2vh rgba(220, 38, 38, 0.7); }
+#tv-loading .tvl-txt { position: relative; font-size: 2.3vh; color: #cbd5e1; }
+#tv-loading .tvl-tip { position: relative; max-width: 70vw; min-height: 7vh; margin-top: 2vh; font-size: 2.8vh; line-height: 1.35; color: #fde68a; opacity: 0; transform: translateY(1vh); transition: opacity .45s ease, transform .45s ease; }
+#tv-loading .tvl-tip.show { opacity: 1; transform: none; }
+@keyframes tvlGlow { 0%, 100% { opacity: .55; transform: scale(.92); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes tvlBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+@media (prefers-reduced-motion: reduce) { #tv-loading .tvl-glow, #tv-loading .tvl-logo { animation: none; } }
 .tv-go:disabled { background: #4b2a2a; color: #9ca3af; cursor: not-allowed; }
 #tv-ui .tv-help { font-size: 1.8vh; color: #94a3b8; }
 #tv-ui button:focus, #tv-again:focus { outline: none; border-color: #fcd34d; box-shadow: 0 0 3vh rgba(252, 211, 77, 0.7); }

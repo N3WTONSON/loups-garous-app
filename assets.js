@@ -35,6 +35,7 @@
     ],
     music: ['Feast Circle 1.mp3', 'Dusk in the Tavern 1.mp3', 'Dusk in the Tavern 2.mp3', 'Tavern at Dusk 1.mp3', 'Tavern at Dusk 2.mp3', 'Loups-Garous Nuit immersive.mp3'],
     video: [
+      'nosleep.mp4',
       ['Mort Loup.mp4', 'Mort-Loups.mp4'], 'Elimination 2.mp4', 'Empoisoner.mp4', 'Mort tire.mp4', 'Chasseur.mp4', 'Cupidon.mp4',
       ['La voyante.mp4', 'Voyante.mp4'], 'Loup-Garou.mp4', 'Maire.mp4', 'Renard.mp4', 'Voleur.mp4', 'Sorciere.mp4',
       ['scene-nuit.mp4', 'fond-village-nuit.mp4'], ['scene-jour.mp4', 'fond-village-jour.mp4'], ['scene-presentation.mp4', 'fond-village-nuit.mp4'],   // présentation : provisoire

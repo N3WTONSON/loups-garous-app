@@ -165,10 +165,25 @@
 
     .room-code-badge {
       font-family: 'Wolf Brothers', sans-serif;
-      font-size: 7vh;
+      font-size: 4.2vh;
       color: #ef4444;
       letter-spacing: 3px;
+      line-height: 1.1;
     }
+    /* code du salon : police sans empattement (0 et O, 1 et I bien distincts), très gros, lumineux */
+    #room-code-text {
+      display: block;
+      font-family: 'Segoe UI', 'Roboto', 'Arial Black', sans-serif;
+      font-weight: 900;
+      font-size: 11vh;
+      letter-spacing: 0.18em;
+      margin-left: 0.18em;
+      color: #fde68a;
+      text-shadow: 0 0 2vh rgba(239, 68, 68, 0.85), 0 0.4vh 0.8vh rgba(0, 0, 0, 0.9);
+    }
+    body.tv-embedded #room-code-text { font-size: 9vh; }
+    body.tv-embedded .qr-box p { font-size: 2.6vh; margin: 0; }
+    body.tv-embedded .qr-code-img { margin-bottom: 1.2vh; }
 
     .players-box {
       flex: 1;
@@ -451,7 +466,7 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=111"></script>
+  <script src="bg.js?v=113"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
@@ -480,11 +495,11 @@
   <video id="overlay-video" playsinline></video>
 
   <!-- Logo (haut à gauche) -->
-  <img id="logo-jeu" src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+  <img id="logo-jeu" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -512,7 +527,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=111" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -527,8 +542,8 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <script src="assets.js?v=111"></script>
-  <script src="boot.js?v=111"></script>
+  <script src="assets.js?v=113"></script>
+  <script src="boot.js?v=113"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 
@@ -588,7 +603,7 @@
     const overlayVideo = document.getElementById('overlay-video');
     const waitingScreen = document.getElementById('waiting-screen');
     if (new URLSearchParams(location.search).get('tv')) document.body.classList.add('tv-embedded');
-    function lobbyQrSize() { return document.body.classList.contains('tv-embedded') ? Math.round(Math.max(120, Math.min(window.innerHeight * 0.30, window.innerWidth * 0.22))) : Math.round(Math.max(160, Math.min(window.innerHeight * 0.46, window.innerWidth * 0.28))); }
+    function lobbyQrSize() { return document.body.classList.contains('tv-embedded') ? Math.round(Math.max(140, Math.min(window.innerHeight * 0.40, window.innerWidth * 0.28))) : Math.round(Math.max(160, Math.min(window.innerHeight * 0.46, window.innerWidth * 0.28))); }
     function renderLobbyQr(url) {
       const qrTarget = document.getElementById('qr-code-target');
       qrTarget.innerHTML = '';
@@ -738,6 +753,7 @@
 
     function playScene(videoId, loop = true) {
       loopScene = loop;
+      try { document.getElementById('player').loop = !!loop; } catch (e) {}   // boucle native : aucune coupure
       document.getElementById('player').style.visibility = 'visible';
       hideWaitingScreen();
       hideOverlay();
@@ -944,7 +960,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=111';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=113';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();

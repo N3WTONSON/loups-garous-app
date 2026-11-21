@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=112&tv=1';
+  frame.src = 'projecteur.html?v=113&tv=1';
   var projLoaded = false;
   frame.addEventListener('load', function () { setTimeout(function () { projLoaded = true; refresh(); }, 1500); });
   document.body.appendChild(frame);
@@ -26,7 +26,7 @@
   ui.innerHTML =
     
     '<div class="tv-toggles" id="tv-toggles"></div>' +
-    '<div class="tv-load" id="tv-load"><div class="tv-load-bar"><i id="tv-load-fill"></i></div><div id="tv-load-txt" class="tv-load-txt">⏳ Préparation du chargement…</div></div>' +
+
     '<div class="tv-row"><div id="tv-status" class="tv-status"></div><button type="button" id="tv-go" class="tv-go">▶ Lancer la partie</button></div>' +
     '<div class="tv-help">Flèches : se déplacer · OK : choisir · Les joueurs scannent le QR code avec leur téléphone</div>';
   document.body.appendChild(ui);
@@ -52,25 +52,63 @@
 
   function nPlayers() { return players.filter(function (p) { return p.connected !== false; }).length; }
 
-  // --- chargement complet des médias avant la partie (sons, musiques, vidéos, images) ---
+  // --- écran de chargement : tous les médias (sons, musiques, vidéos, images) sont chargés avant d'ouvrir le salon ---
+  var TIPS = [
+    '🐺 Les Loups-Garous se reconnaissent la première nuit : chaque nuit, ils choisissent ensemble une victime.',
+    '🔮 La Voyante découvre chaque nuit le vrai rôle d\'un joueur. Discrétion : les loups la cherchent.',
+    '🧪 La Sorcière possède deux potions pour toute la partie : une pour sauver, une pour tuer.',
+    '🏹 Le Chasseur, en mourant, emporte immédiatement un joueur de son choix avec lui.',
+    '💘 Cupidon unit deux amoureux : si l\'un meurt, l\'autre meurt de chagrin.',
+    '👑 La voix du Maire compte double lors du vote du village.',
+    '🦊 Le Renard flaire si un Loup-Garou se cache parmi trois joueurs voisins.',
+    '👧 La Petite Fille peut espionner les loups… à ses risques et périls.',
+    '🕵️ Le Voleur peut échanger sa carte contre l\'une des deux cartes restantes.',
+    '📱 Gardez votre téléphone allumé et la page ouverte : votre rôle s\'y affiche en secret.',
+    '🤫 La nuit, tout le monde ferme les yeux : seuls les rôles appelés se réveillent.'
+  ];
+  var ld = document.createElement('div');
+  ld.id = 'tv-loading'; ld.className = 'tv-keep';
+  ld.innerHTML =
+    '<div class="tvl-glow"></div>' +
+    '<img class="tvl-logo" src="logo-carnage.png" alt="Les Loups-Garous : Le Carnage">' +
+    '<div class="tvl-bar"><i id="tvl-fill"></i></div>' +
+    '<div class="tvl-pct" id="tvl-pct">0 %</div>' +
+    '<div class="tvl-txt" id="tvl-txt">Préparation de la partie…</div>' +
+    '<div class="tvl-tip" id="tvl-tip"></div>';
+  document.body.appendChild(ld);
+  var tipI = Math.floor(Math.random() * TIPS.length);
+  function nextTip() { var t = $('tvl-tip'); t.classList.remove('show'); setTimeout(function () { t.textContent = TIPS[tipI++ % TIPS.length]; t.classList.add('show'); }, 450); }
+  nextTip();
+  var tipTimer = setInterval(nextTip, 6000);
+
   var load = { ready: false, pct: 0, failed: [] };
+  function hideLoading() {
+    clearInterval(tipTimer);
+    ld.classList.add('done');
+    setTimeout(function () { ld.style.display = 'none'; var g = $('tv-go'); if (g) g.focus(); }, 900);
+  }
   function showLoad(st) {
     load.pct = st.total ? Math.round(st.done * 100 / st.total) : 100;
     load.failed = st.failed;
-    var mb = (st.bytes / 1048576).toFixed(0);
-    $('tv-load-fill').style.width = load.pct + '%';
-    if (!st.ready) { $('tv-load-txt').textContent = '⏳ Chargement des médias : ' + st.done + ' / ' + st.total + ' (' + load.pct + ' %' + (st.bytes ? ' · ' + mb + ' Mo' : '') + ')'; return; }
+    $('tvl-fill').style.width = load.pct + '%';
+    $('tvl-pct').textContent = load.pct + ' %';
+    if (!st.ready) { $('tvl-txt').textContent = 'Chargement des sons et des vidéos · ' + st.done + ' / ' + st.total + (st.bytes ? ' · ' + (st.bytes / 1048576).toFixed(0) + ' Mo' : ''); return; }
+    if (load.ready) return;
     load.ready = true;
-    $('tv-load-txt').textContent = st.failed.length
-      ? '⚠️ ' + st.failed.length + ' média(s) non chargé(s) : ' + st.failed.slice(0, 3).join(', ') + (st.failed.length > 3 ? '…' : '') + ' — la partie peut démarrer'
-      : '✅ Tous les médias sont chargés (' + st.total + ' fichiers) : la partie se déroulera sans attente';
-    $('tv-load').classList.add(st.failed.length ? 'warn' : 'ok');
+    if (st.failed.length) {
+      $('tvl-txt').textContent = '⚠️ ' + st.failed.length + ' média(s) non chargé(s) : la partie peut quand même démarrer';
+      msgText = st.failed.length + ' média(s) non chargé(s) : ' + st.failed.slice(0, 3).join(', '); msgUntil = Date.now() + 12000;
+      setTimeout(hideLoading, 2500);
+    } else {
+      $('tvl-txt').textContent = '✅ Tout est prêt';
+      setTimeout(hideLoading, 700);
+    }
     refresh();
   }
   setTimeout(function () {
-    if (!LG.preloadAll) { load.ready = true; $('tv-load').style.display = 'none'; refresh(); return; }
-    LG.preloadAll(showLoad).catch(function (e) { console.warn(e); load.ready = true; refresh(); });
-  }, 600);
+    if (!window.LG || !LG.preloadAll) { showLoad({ done: 1, total: 1, failed: [], bytes: 0, ready: true }); return; }
+    LG.preloadAll(showLoad).catch(function (e) { console.warn(e); showLoad({ done: 1, total: 1, failed: [], bytes: 0, ready: true }); });
+  }, 400);
 
   // messages (à la place des fenêtres d'alerte) : affichés dans la barre
   var msgText = '', msgUntil = 0;
@@ -117,6 +155,9 @@
     var n = nPlayers();
     if (n < 4 || !load.ready || !projLoaded) return;
     started = true;
+    // le son est débloqué dans le même appui sur OK : régie (voix, musiques) ET écran public intégré
+    try { var pw = frame.contentWindow; pw.dispatchEvent(new KeyboardEvent('keydown', { key: 'Unidentified' })); } catch (e) {}
+    try { var s0 = new Audio(); s0.muted = true; var pr = s0.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
     try {
       roles.length = 0;
       compose(players.length).forEach(function (r) { roles.push(r); });

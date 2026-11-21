@@ -1,4 +1,4 @@
-const VERSION_APP = "112";
+const VERSION_APP = "113";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -140,8 +140,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 function syncLobbyToProjector() {
   if (!projectorOpen() || !roomCode) return;
-  const basePath = window.location.pathname.replace(/[^/]*$/, '');
-  const joinUrl = `${window.location.origin}${basePath}joueur.html?room=${roomCode}`;
+  const joinUrl = joinUrlFor(roomCode);
   
   sendToProjector({
     action: 'updateLobby',
@@ -153,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=112', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=113', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -337,26 +336,39 @@ if (!TEST_MODE) {
   window.addEventListener('DOMContentLoaded', showResumeBanner);
 }
 
+// sans caractères ambigus à lire sur l'écran ou à taper (0/O, 1/I/L)
+const ROOM_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 function generateRoomCode() {
-  return Math.random().toString(36).substring(2, 6).toUpperCase();
+  let c = '';
+  for (let i = 0; i < 4; i++) c += ROOM_ALPHABET[Math.floor(Math.random() * ROOM_ALPHABET.length)];
+  return c;
+}
+
+// serveur de mise en relation utilisé par le salon (0 = public ; >0 = secours, transmis aux téléphones par le QR code)
+let peerSrv = parseInt(new URLSearchParams(location.search).get('s') || '0', 10) || 0;
+let peerSrvFails = 0;
+function joinUrlFor(code) {
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  return `${window.location.origin}${basePath}joueur.html?room=${code}` + (peerSrv > 0 ? `&s=${peerSrv}` : '');
 }
 
 function initHost(attempt = 0, forcedCode = null) {
   if (!restoring) startLobbyMusic();                // lancée dans le clic « Créer un Salon » : le navigateur autorise la lecture
   if (peer && !peer.destroyed) peer.destroy();
   roomCode = forcedCode || generateRoomCode();
-  peer = new Peer("LG-" + roomCode, (window.LG && LG.peerOptions) || {});
+  if (!(window.LG && LG.peerServers && LG.peerServers[peerSrv] !== undefined)) peerSrv = 0;
+  peer = new Peer("LG-" + roomCode, (window.LG && LG.peerOpts) ? LG.peerOpts(peerSrv) : ((window.LG && LG.peerOptions) || {}));
 
   peer.on('open', () => {
     hostOpened = true;
+    peerSrvFails = 0;
     prefetchHostMedia();
     if (!restoring) startLobbyMusic();                // musique du lobby, en boucle jusqu'au début de la partie
     document.getElementById('host-ui').style.display = 'block';
     document.getElementById('room-code-display').innerText = roomCode;
     document.getElementById('mj-setup-card').style.display = 'block';
 
-    const basePath = window.location.pathname.replace(/[^/]*$/, '');
-    const joinUrl = `${window.location.origin}${basePath}joueur.html?room=${roomCode}`;
+    const joinUrl = joinUrlFor(roomCode);
     document.getElementById('qrcode').innerHTML = "";
     new QRCode(document.getElementById("qrcode"), { text: joinUrl, width: 140, height: 140 });
 
@@ -396,6 +408,12 @@ function initHost(attempt = 0, forcedCode = null) {
       initHost(attempt + 1);
     } else if (err.type === 'unavailable-id') {
       alert("Impossible de réserver un code de salon. Réessayez.");
+    } else if (!hostOpened && ['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type) && window.LG && LG.peerServers && LG.peerServers.length > 1 && ++peerSrvFails >= 2) {
+      // le serveur de mise en relation ne répond pas : on bascule sur le suivant
+      peerSrvFails = 0;
+      peerSrv = (peerSrv + 1) % LG.peerServers.length;
+      showToast('🔁 Serveur de connexion indisponible : bascule sur le serveur ' + (peerSrv + 1) + '…', 'info');
+      setTimeout(() => initHost(0), 1000);
     } else if (!hostOpened) {
       alert("Impossible de créer le salon (" + err.type + "). Vérifiez votre connexion.");
     } else {
