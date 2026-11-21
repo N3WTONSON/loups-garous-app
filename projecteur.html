@@ -230,13 +230,13 @@
     /* Le lecteur YouTube reste invisible tant qu'aucune scène n'est lancée (création de la partie) */
     #player { visibility: hidden; }
 
-    /* Logo : toujours affiché en haut à gauche, en petit (au-dessus des vidéos, sous les annonces de mort) */
+    /* Logo : en haut à gauche, en petit, seulement dans le salon d'attente (pas pendant la partie) */
     #logo-jeu {
       position: fixed;
       top: 2vmin; left: 2vmin;
       z-index: 35;
-      height: 12vmin;
-      max-width: 26vw;
+      height: 7vmin;
+      max-width: 16vw;
       object-fit: contain;
       pointer-events: none;
       filter: drop-shadow(0 0.4vmin 0.9vmin rgba(0, 0, 0, 0.85));
@@ -470,6 +470,8 @@
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
+    <!-- logo : uniquement dans le salon d'attente (masqué avec lui dès que la partie commence) -->
+    <img id="logo-jeu" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
     <div class="projector-title">🌐 Rejoindre la Partie</div>
     <div class="lobby-container">
       
@@ -495,7 +497,6 @@
   <video id="overlay-video" playsinline></video>
 
   <!-- Logo (haut à gauche) -->
-  <img id="logo-jeu" src="logo-carnage.png?v=113" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
