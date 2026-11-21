@@ -10,7 +10,9 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=111&tv=1';
+  frame.src = 'projecteur.html?v=112&tv=1';
+  var projLoaded = false;
+  frame.addEventListener('load', function () { setTimeout(function () { projLoaded = true; refresh(); }, 1500); });
   document.body.appendChild(frame);
   projectorWindow = frame.contentWindow;
 
@@ -24,6 +26,7 @@
   ui.innerHTML =
     
     '<div class="tv-toggles" id="tv-toggles"></div>' +
+    '<div class="tv-load" id="tv-load"><div class="tv-load-bar"><i id="tv-load-fill"></i></div><div id="tv-load-txt" class="tv-load-txt">⏳ Préparation du chargement…</div></div>' +
     '<div class="tv-row"><div id="tv-status" class="tv-status"></div><button type="button" id="tv-go" class="tv-go">▶ Lancer la partie</button></div>' +
     '<div class="tv-help">Flèches : se déplacer · OK : choisir · Les joueurs scannent le QR code avec leur téléphone</div>';
   document.body.appendChild(ui);
@@ -48,6 +51,26 @@
   }
 
   function nPlayers() { return players.filter(function (p) { return p.connected !== false; }).length; }
+
+  // --- chargement complet des médias avant la partie (sons, musiques, vidéos, images) ---
+  var load = { ready: false, pct: 0, failed: [] };
+  function showLoad(st) {
+    load.pct = st.total ? Math.round(st.done * 100 / st.total) : 100;
+    load.failed = st.failed;
+    var mb = (st.bytes / 1048576).toFixed(0);
+    $('tv-load-fill').style.width = load.pct + '%';
+    if (!st.ready) { $('tv-load-txt').textContent = '⏳ Chargement des médias : ' + st.done + ' / ' + st.total + ' (' + load.pct + ' %' + (st.bytes ? ' · ' + mb + ' Mo' : '') + ')'; return; }
+    load.ready = true;
+    $('tv-load-txt').textContent = st.failed.length
+      ? '⚠️ ' + st.failed.length + ' média(s) non chargé(s) : ' + st.failed.slice(0, 3).join(', ') + (st.failed.length > 3 ? '…' : '') + ' — la partie peut démarrer'
+      : '✅ Tous les médias sont chargés (' + st.total + ' fichiers) : la partie se déroulera sans attente';
+    $('tv-load').classList.add(st.failed.length ? 'warn' : 'ok');
+    refresh();
+  }
+  setTimeout(function () {
+    if (!LG.preloadAll) { load.ready = true; $('tv-load').style.display = 'none'; refresh(); return; }
+    LG.preloadAll(showLoad).catch(function (e) { console.warn(e); load.ready = true; refresh(); });
+  }, 600);
 
   // messages (à la place des fenêtres d'alerte) : affichés dans la barre
   var msgText = '', msgUntil = 0;
@@ -81,15 +104,18 @@
     var comp = compose(Math.max(n, 4)), inGame = comp.filter(function (r) { return r !== 'Loup-Garou' && r !== 'Villageois'; }).length;
     var skipped = SPECIALS.filter(function (s) { return s.on; }).length - inGame;
     st.textContent = 'Salon ' + roomCode + ' · ' + n + ' joueur' + (n > 1 ? 's' : '') + ' connecté' + (n > 1 ? 's' : '') + (enough ? ' · ' + wolvesFor(n) + ' Loup' + (wolvesFor(n) > 1 ? 's' : '') + '-Garou' + (wolvesFor(n) > 1 ? 's' : '') : ' · minimum 4 pour commencer') + (enough && skipped > 0 ? ' · ' + skipped + ' rôle(s) ignoré(s) (pas assez de joueurs)' : '');
+    if (enough && !load.ready) st.textContent += ' · ⏳ chargement ' + load.pct + ' %';
+    else if (enough && !projLoaded) st.textContent += ' · ⏳ écran en préparation';
     if (msgText && Date.now() < msgUntil) st.textContent = '⚠️ ' + msgText;
-    go.disabled = !enough;
+    go.disabled = !enough || !load.ready || !projLoaded;
+    go.textContent = load.ready ? '▶ Lancer la partie' : '⏳ Chargement ' + load.pct + ' %';
   }
 
   var started = false;
   $('tv-go').addEventListener('click', function () {
     if (started) return;
     var n = nPlayers();
-    if (n < 4) return;
+    if (n < 4 || !load.ready || !projLoaded) return;
     started = true;
     try {
       roles.length = 0;

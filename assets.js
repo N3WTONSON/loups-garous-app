@@ -33,7 +33,7 @@
       'Ouvrez les yeux.mp3', 'Fermer les yeux.mp3', 'Voter.mp3', 'Le hurlement du loup 1.mp3', 'Le hurlement du loup 2.mp3', 'Le hurlement du loup 3.mp3',
       'Applaudissements.mp3', 'Effet sorciere.mp3', 'Maire.mp3', 'Sorciere.mp3', 'Sorciere 2 potions.mp3', 'Sorciere potion de vie.mp3', 'Sorciere potion de mort.mp3'
     ],
-    music: ['Feast Circle 1.mp3', 'Dusk in the Tavern 1.mp3', 'Dusk in the Tavern 2.mp3', 'Tavern at Dusk 1.mp3', 'Tavern at Dusk 2.mp3'],
+    music: ['Feast Circle 1.mp3', 'Dusk in the Tavern 1.mp3', 'Dusk in the Tavern 2.mp3', 'Tavern at Dusk 1.mp3', 'Tavern at Dusk 2.mp3', 'Loups-Garous Nuit immersive.mp3'],
     video: [
       ['Mort Loup.mp4', 'Mort-Loups.mp4'], 'Elimination 2.mp4', 'Empoisoner.mp4', 'Mort tire.mp4', 'Chasseur.mp4', 'Cupidon.mp4',
       ['La voyante.mp4', 'Voyante.mp4'], 'Loup-Garou.mp4', 'Maire.mp4', 'Renard.mp4', 'Voleur.mp4', 'Sorciere.mp4',

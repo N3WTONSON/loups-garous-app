@@ -921,6 +921,12 @@ html.tv-mode body > *:not(.tv-keep), body.tv-mode > *:not(.tv-keep) { display: n
 #tv-ui .tv-row { display: flex; align-items: center; justify-content: center; gap: 2vw; flex-wrap: wrap; }
 #tv-ui .tv-status { font-size: 2.4vh; color: #e2e8f0; }
 .tv-go { font-size: 3vh; padding: 1vh 2.4vw; border-radius: 1.6vh; border: 0.5vh solid transparent; background: #b91c1c; color: #fff; cursor: pointer; }
+#tv-ui .tv-load { width: min(70vw, 900px); margin: 0 auto 1.2vh; }
+#tv-ui .tv-load-bar { height: 1.2vh; min-height: 6px; border-radius: 1vh; background: rgba(255,255,255,0.12); overflow: hidden; }
+#tv-ui .tv-load-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #7f1d1d, #ef4444); transition: width .4s ease; }
+#tv-ui .tv-load.ok .tv-load-bar i { background: #16a34a; }
+#tv-ui .tv-load.warn .tv-load-bar i { background: #d97706; }
+#tv-ui .tv-load-txt { font-size: 2vh; color: #cbd5e1; text-align: center; margin-top: .6vh; }
 .tv-go:disabled { background: #4b2a2a; color: #9ca3af; cursor: not-allowed; }
 #tv-ui .tv-help { font-size: 1.8vh; color: #94a3b8; }
 #tv-ui button:focus, #tv-again:focus { outline: none; border-color: #fcd34d; box-shadow: 0 0 3vh rgba(252, 211, 77, 0.7); }

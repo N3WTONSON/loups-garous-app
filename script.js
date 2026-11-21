@@ -1,4 +1,4 @@
-const VERSION_APP = "111";
+const VERSION_APP = "112";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -153,7 +153,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=111', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=112', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -1012,14 +1012,17 @@ function playScene(videoId, loop = true) {
 // - Temps d'attente (élection du Maire) : les autres morceaux, au hasard, sans jamais rejouer le même deux fois de suite, à 50 %.
 const MUSIC_LOBBY = "Feast Circle 1.mp3";
 const MUSIC_WAIT_TRACKS = ["Dusk in the Tavern 1.mp3", "Dusk in the Tavern 2.mp3", "Tavern at Dusk 1.mp3", "Tavern at Dusk 2.mp3"];
+const MUSIC_NIGHT = "Loups-Garous Nuit immersive.mp3";   // ambiance des scènes de nuit (en boucle, reprend là où elle s'était arrêtée)
 const MUSIC_WAIT_VOLUME = 0.5;
-const MUSIC_DAY_VOLUME = 0.3;   // débat du village (jour) : « Feast Circle 1 » à 30 %
+const MUSIC_DAY_VOLUME = 0.3;
+const MUSIC_NIGHT_VOLUME = 0.45;   // ambiance de nuit (baissée automatiquement pendant les voix)   // débat du village (jour) : « Feast Circle 1 » à 30 %
 const MUSIC_DUCK_VOLUME = 0.12;
 const MUSIC_SPEECH_VOLUME = 0.06;  // niveau pendant les discours des candidats (musique très discrète)
 let musicQuiet = false;   // niveau pendant que le MJ parle (voix enregistrées)
 
 let musicAudio = null;
-let musicMode = null;        // 'lobby' | 'wait' | null
+let musicMode = null;        // 'lobby' | 'wait' | 'day' | 'night' | null
+let nightMusicPos = 0;       // position de l'ambiance de nuit (reprise à la nuit suivante)
 let musicDuck = false;
 let musicPaused = false;
 let musicLastTrack = null;
@@ -1029,7 +1032,7 @@ let mayorMusicTimer = null;
 let waitMusicWanted = false;   // la musique d'attente est autorisée entre l'appel du Maire et le début de la nuit
 
 function musicLevel() {
-  const base = musicMode === 'lobby' ? MAX_VOLUME : (musicMode === 'day' ? MUSIC_DAY_VOLUME : MUSIC_WAIT_VOLUME);
+  const base = musicMode === 'lobby' ? MAX_VOLUME : (musicMode === 'day' ? MUSIC_DAY_VOLUME : (musicMode === 'night' ? MUSIC_NIGHT_VOLUME : MUSIC_WAIT_VOLUME));
   let v = base;
   if (musicQuiet && musicMode === 'wait') v = Math.min(v, MUSIC_SPEECH_VOLUME);
   if (musicDuck) v = Math.min(v, MUSIC_DUCK_VOLUME);
@@ -1064,17 +1067,18 @@ function bindMusicRetry() {
   }, { once: true });
 }
 
-function launchMusic(name, loop, onEnd) {
+function launchMusic(name, loop, onEnd, startAt) {
   const token = musicToken;
   const audio = new Audio(mediaUrl('music', name));
   audio.loop = loop;
   audio.volume = 0;
+  if (startAt > 0) { try { audio.currentTime = startAt; } catch (e) {} audio.addEventListener('loadedmetadata', () => { try { if (audio.currentTime < 1 && startAt < audio.duration - 5) audio.currentTime = startAt; } catch (e) {} }, { once: true }); }
   musicAudio = audio;
   if (onEnd) audio.addEventListener('ended', () => { if (token === musicToken && musicAudio === audio) onEnd(); });
   audio.addEventListener('error', () => {
     if (token !== musicToken || musicAudio !== audio) return;
     console.warn('Musique introuvable :', audio.src);
-    if (!onEnd) showToast('🎵 Musique introuvable sur Supabase : ' + name + ' (vérifiez assets/mj/musique et test-assets.html).', 'info');
+    if (!onEnd) showToast('🎵 Musique introuvable : ' + name + ' (dossier assets/music).', 'info');
     if (onEnd) onEnd(true);
   });
   if (!musicPaused) {
@@ -1088,6 +1092,7 @@ function launchMusic(name, loop, onEnd) {
 }
 
 function stopMusic(ms = 800) {
+  if (musicMode === 'night' && musicAudio) { try { nightMusicPos = musicAudio.currentTime || 0; } catch (e) {} }
   musicToken++;
   musicQuiet = false;
   musicMode = null;
@@ -1121,6 +1126,17 @@ function startDayMusic() {
 }
 
 function stopDayMusic() { if (musicMode === 'day') stopMusic(); }
+
+// Ambiance des scènes de nuit : de « Nuit tombante » jusqu'au lever du jour
+function startNightMusic() {
+  if (musicMode === 'night') return;
+  stopMusic(500);
+  waitMusicWanted = false;
+  musicMode = 'night';
+  launchMusic(MUSIC_NIGHT, true, null, nightMusicPos);
+}
+
+function stopNightMusic(ms) { if (musicMode === 'night') stopMusic(ms || 1500); }
 
 function stopLobbyMusic() { if (musicMode === 'lobby') stopMusic(); }
 
@@ -1182,6 +1198,7 @@ function playNightPhase() {
   nightDeaths = 0;
   currentTurnRole = null;
   closeVillageVote(true);
+  startNightMusic();
   playScene(YT_ID_NUIT);
   playAudioFile("Appel nuit V2.mp3");
 }
@@ -1237,6 +1254,7 @@ function playDayPhase() {
   setNextCall(null);
   stopRoleVideo();   // la vidéo du dernier personnage appelé (ex. Sorcière) s'arrête quand le jour se lève
   stopLobbyMusic();
+  stopNightMusic();   // fin de la nuit : l'ambiance s'efface
   currentTurnRole = null;
   if (dayQueue) { startDayScene(); return; }              // 2e clic : on n'attend plus les annonces
   if (projectorOpen()) {
@@ -1539,6 +1557,7 @@ function stopAllMedia() {
 
 function togglePauseAllMedia() {
   sendToProjector({ action: 'togglePause' });
+  if (musicMode === 'night' && musicAudio) { if (musicAudio.paused) musicAudio.play().catch(() => {}); else musicAudio.pause(); }
   if (currentAudio && !currentAudio.ended) {
     if (currentAudio.paused) currentAudio.play().catch((err) => console.log(err));
     else currentAudio.pause();
@@ -1575,7 +1594,7 @@ function playRole(role) {
   const item = roleFiles[role];
   if (!item) return;
   if (calledOnce.has(role)) return;
-  if (role === 'voleur') setPhase('night');   // le Voleur est appelé de nuit : tout le monde ferme les yeux d'abord
+  if (role === 'voleur') { setPhase('night'); startNightMusic(); }   // le Voleur est appelé de nuit : tout le monde ferme les yeux d'abord
   if (role === 'renard' && foxPowerLost) return;   // le Renard n'a plus de pouvoir
   if (role === 'sorciere' && witchState.lifeUsed && witchState.deathUsed) return;   // plus de potion : on passe son tour
   currentTurnRole = TURN_ROLE_BY_CALL[role] || null;
