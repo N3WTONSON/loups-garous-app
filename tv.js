@@ -10,7 +10,7 @@
   var frame = document.createElement('iframe');
   frame.id = 'tv-proj'; frame.className = 'tv-keep';
   frame.setAttribute('allow', 'autoplay; fullscreen; encrypted-media');
-  frame.src = 'projecteur.html?v=120&tv=1';
+  frame.src = 'projecteur.html?v=123&tv=1';
   var projLoaded = false;
   frame.addEventListener('load', function () { setTimeout(function () { projLoaded = true; refresh(); }, 1500); });
   document.body.appendChild(frame);
@@ -178,7 +178,18 @@
         if ($('tv-again')) return;
         var b = document.createElement('button');
         b.id = 'tv-again'; b.type = 'button'; b.className = 'tv-keep tv-go'; b.textContent = '🔄 Nouvelle partie';
-        b.addEventListener('click', function () { location.reload(); });
+        b.addEventListener('click', function () {
+          // même salon, mêmes joueurs : retour à l'écran du QR code, puis « Lancer la partie »
+          b.remove();
+          try { newGameSameRoom(); } catch (e) { location.reload(); return; }
+          started = false;
+          projLoaded = false;
+          try { frame.contentWindow.location.reload(); } catch (e) {}
+          setTimeout(function () { try { syncLobbyToProjector(); } catch (e) {} }, 1800);
+          ui.style.display = '';
+          refresh();
+          setTimeout(function () { var g = $('tv-go'); if (g) g.focus(); }, 300);
+        });
         document.body.appendChild(b); b.focus();
       }, 14000);
     }

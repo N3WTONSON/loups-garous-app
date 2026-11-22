@@ -271,6 +271,9 @@ function connect(room, name, token, isAuto) {
         setNightMode(data.phase === 'night');
       } else if (data.type === 'nightCall') {
         nightPulse();
+      } else if (data.type === 'newGame') {
+        // nouvelle partie dans le même salon : la page se recharge et rejoint le salon toute seule
+        setTimeout(() => location.reload(), 300);
       } else if (data.type === 'roster') {
         applyRoster(data);
       } else if (data.type === 'spectator') {
@@ -538,6 +541,7 @@ function nightPulse() {
 //  Moi en bas, les autres dans l'ordre d'arrivée dans le salon ; éliminés = braises éteintes ; feu au centre.
 // =====================================================================
 let roster = [], circleMode = false;
+let wolfPack = [];
 function applyRoster(d) {
   roster = d.players || [];
   circleMode = !!d.circle;
@@ -589,8 +593,9 @@ function layoutCircle(list) {
     if (!el) {
       const info = roster.find((p) => p.name === n);
       el = document.createElement('div');
-      el.className = 'pc-token' + (n === me ? ' me' : '') + (info && info.alive === false ? ' dead' : '');
-      el.dataset.initial = info && info.alive === false ? '' : n.charAt(0).toUpperCase();
+      const mate = list.id === 'wolf-list' && wolfPack.includes(n) && !(info && info.alive === false);
+      el.className = 'pc-token' + (n === me ? ' me' : '') + (info && info.alive === false ? ' dead' : '') + (mate ? ' mate' : '');
+      el.dataset.initial = info && info.alive === false ? '' : (mate ? '🐺' : n.charAt(0).toUpperCase());
       const s = document.createElement('span');
       s.textContent = n === me ? 'Moi' : n;
       el.appendChild(s);
@@ -702,6 +707,21 @@ function cupidConfirm() {
 let wolfState = { targets: [], votes: {}, my: null, final: false };
 
 function showWolfPanel(data) {
+  // la meute : les loups prennent connaissance des autres Loups-Garous à chaque vote
+  wolfPack = Array.isArray(data.pack) ? data.pack : wolfPack;
+  const packBox = document.getElementById('wolf-pack');
+  if (packBox) {
+    packBox.style.display = 'block';
+    packBox.innerHTML = '';
+    const t = document.createElement('div'); t.className = 'wp-title';
+    t.textContent = wolfPack.length ? '🐺 Prends connaissance de ta meute :' : '🐺 Tu es le seul Loup-Garou encore en vie.';
+    packBox.appendChild(t);
+    if (wolfPack.length) {
+      const l = document.createElement('div'); l.className = 'wp-names';
+      wolfPack.forEach((n) => { const s = document.createElement('span'); s.textContent = n; l.appendChild(s); });
+      packBox.appendChild(l);
+    }
+  }
   wolfState = { targets: data.targets || [], votes: data.votes || {}, my: data.myVote || null, final: !!data.final };
   renderWolfList();
   showPanel('wolf-panel');

@@ -389,6 +389,10 @@
     #dayvote-overlay.with-board { padding-right: 27vw; }
 
     /* fondu au noir entre la nuit et le jour (0,8 s : 0,4 s vers le noir, 0,4 s retour) */
+    #seen-banner { position: fixed; left: 50%; bottom: 4vh; transform: translateX(-50%); z-index: 60; max-width: 80vw; padding: 1.6vh 3vw; border-radius: 1.4vh; background: rgba(12, 8, 14, 0.9); border: 0.3vh solid #fcd34d; box-shadow: 0 1vh 4vh rgba(0, 0, 0, 0.8); text-align: center; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+    #seen-banner .sb-title { font-size: 3.6vh; font-weight: 800; color: #fcd34d; }
+    #seen-banner .sb-names { margin-top: 0.8vh; font-size: 3vh; font-weight: 600; color: #f4dcdc; }
+    body.tv-embedded #seen-banner { bottom: 3vh; }
     #phase-fade { position: fixed; inset: 0; z-index: 95; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
     #phase-fade.on { opacity: 1; }
 
@@ -498,12 +502,12 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=120"></script>
+  <script src="bg.js?v=123"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
     <!-- logo : uniquement dans le salon d'attente (masqué avec lui dès que la partie commence) -->
-    <img id="logo-jeu" src="logo-carnage.png?v=120" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+    <img id="logo-jeu" src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
     <div class="projector-title">🌐 Rejoindre la Partie</div>
     <div class="lobby-container">
       
@@ -532,7 +536,7 @@
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=120" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -561,7 +565,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=120" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -571,6 +575,7 @@
     <ul id="vb-list"></ul>
   </aside>
   <div id="phase-fade"></div>
+  <div id="seen-banner" style="display: none;"></div>
   <div id="candidates-overlay">
     <div id="cand-title" class="cand-title">👑 Candidats à la mairie</div>
     <div id="cand-list" class="cand-list"></div>
@@ -582,8 +587,8 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <script src="assets.js?v=120"></script>
-  <script src="boot.js?v=120"></script>
+  <script src="assets.js?v=123"></script>
+  <script src="boot.js?v=123"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 
@@ -644,8 +649,10 @@
     const waitingScreen = document.getElementById('waiting-screen');
     if (new URLSearchParams(location.search).get('tv')) document.body.classList.add('tv-embedded');
     function lobbyQrSize() { return document.body.classList.contains('tv-embedded') ? Math.round(Math.max(140, Math.min(window.innerHeight * 0.40, window.innerWidth * 0.28))) : Math.round(Math.max(160, Math.min(window.innerHeight * 0.46, window.innerWidth * 0.28))); }
-    function renderLobbyQr(url) {
+    function renderLobbyQr(url, tries = 0) {
       const qrTarget = document.getElementById('qr-code-target');
+      // bibliothèque QR pas encore chargée (CDN lent) : on réessaie au lieu de planter
+      if (typeof QRCode === 'undefined') { if (tries < 40) setTimeout(() => renderLobbyQr(url, tries + 1), 500); return; }
       qrTarget.innerHTML = '';
       const size = lobbyQrSize();
       new QRCode(qrTarget, { text: url, width: size, height: size });
@@ -1064,7 +1071,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=120';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=123';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();
@@ -1307,6 +1314,19 @@
         case 'dayVote':
           if (data.show) showDayVote(data.mode); else hideDayVote();
           break;
+
+        case 'seenProgress': {
+          // avant la partie : qui n'a pas encore retourné sa carte
+          const sb = document.getElementById('seen-banner');
+          const m = data.missing || [];
+          if (!m.length) { sb.style.display = 'none'; break; }
+          sb.innerHTML = '';
+          const t = document.createElement('div'); t.className = 'sb-title'; t.textContent = '👀 Touchez votre carte pour découvrir votre rôle';
+          const n = document.createElement('div'); n.className = 'sb-names'; n.textContent = 'En attente de : ' + (m.length > 8 ? m.slice(0, 8).join(', ') + '…' : m.join(', '));
+          sb.appendChild(t); sb.appendChild(n);
+          sb.style.display = 'block';
+          break;
+        }
 
         case 'voteProgress': {
           // vote obligatoire : la TV montre l'avancement et qui doit encore voter

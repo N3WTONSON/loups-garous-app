@@ -1038,3 +1038,12 @@ body .pick-list.circle > .pc-token.dead > span { text-decoration: line-through; 
 @keyframes pcFlicker { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(2deg); } }
 @keyframes pcEmber { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -64px); } }
 @media (prefers-reduced-motion: reduce) { .pc-glow, .pc-flame, .pc-ember { animation: none; } }
+
+/* ===================== V121 : la meute (vote des loups) ===================== */
+.wolf-pack { margin: 6px auto 10px; padding: 10px 12px; border-radius: 10px; background: rgba(127, 29, 29, 0.35); border: 1px solid rgba(248, 113, 113, 0.55); text-align: center; }
+.wolf-pack .wp-title { font: 700 0.95rem 'Segoe UI', Roboto, sans-serif; color: #fecaca; }
+.wolf-pack .wp-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 8px; }
+.wolf-pack .wp-names span { padding: 4px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(248, 113, 113, 0.7); color: #fff; font: 700 1rem 'Segoe UI', Roboto, sans-serif; }
+body.night-mode .wolf-pack { background: rgba(80, 14, 18, 0.7) !important; }
+body .pick-list.circle > .pc-token.mate { color: #fecaca !important; }
+body .pick-list.circle > .pc-token.mate::before { border-color: #ef4444; background: radial-gradient(circle at 35% 30%, #5b1a1d, #1a0607 72%); font-size: calc(var(--pc-size, 56px) * 0.5); }

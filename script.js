@@ -1,4 +1,4 @@
-const VERSION_APP = "120";
+const VERSION_APP = "123";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=120', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=123', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -657,14 +657,18 @@ function showAllSeenModal(kind) {
 function startBlocked() {
   if (!distributed) { showToast("Distribuez d'abord les rôles : la partie ne peut pas commencer.", 'info'); return true; }
   if (allSeenShown) return false;
-  const waiting = players.filter((p) => !p.seenRole).map((p) => p.name);
+  const waiting = seenWaitingList();
   showToast(`⏳ La partie ne peut pas commencer : ${waiting.join(', ')} n'${waiting.length > 1 ? 'ont' : 'a'} pas encore pris connaissance de ${waiting.length > 1 ? 'leur rôle' : 'son rôle'}.`, 'info');
   return true;
 }
 
+// joueurs attendus pour « tout le monde a vu son rôle » : seulement ceux qui sont connectés
+// (un téléphone parti ou un joueur inscrit en double ne bloque plus le démarrage)
+function seenWaitingList() { return players.filter((p) => p.connected !== false && !p.seenRole).map((p) => p.name); }
 function checkAllSeen() {
   if (!distributed || (gameStarted && !reviewMode) || allSeenShown || !players.length) return;
-  if (!players.every((p) => p.seenRole)) return;
+  if (!players.some((p) => p.connected !== false)) return;
+  if (seenWaitingList().length) return;
   allSeenShown = true;
   if (reviewMode) { showAllSeenModal('review'); return; }
   showAllSeenModal();
@@ -979,7 +983,7 @@ function initMixerUI() {
   });
 }
 document.addEventListener('DOMContentLoaded', initMixerUI);
-const LOUD_AUDIO = { "Fermer les yeux.mp3": 1.0, "Appel Cupidon V2.mp3": 1.0 };   // sons un peu plus forts que le plafond habituel          // durée du fondu d'entrée
+const LOUD_AUDIO = { "Fermer les yeux.mp3": 1.0, "Appel Cupidon V2.mp3": 1.0, "Sorciere 2 potions.mp3": 1.0, "Sorciere potion de vie.mp3": 1.0, "Sorciere potion de mort.mp3": 1.0, "Sorciere.mp3": 1.0 };   // sons un peu plus forts que le plafond habituel          // durée du fondu d'entrée
 
 function fadeInAudio(audio, ms = FADE_IN_MS, max = MAX_VOLUME) {
   max = Math.min(1, max * mixer.voix);
@@ -1981,6 +1985,44 @@ function syncVillage(force) {
 }
 setInterval(() => { try { syncVillage(false); } catch (e) {} }, 1500);
 
+// ---- NOUVELLE PARTIE DANS LE MÊME SALON : même code, mêmes joueurs, retour au salon (QR code) ----
+function newGameSameRoom() {
+  try { stopAllMedia(); } catch (e) {}
+  try { stopMusic(300); } catch (e) {}
+  // joueurs partis entre-temps : retirés ; les autres restent inscrits
+  for (let i = players.length - 1; i >= 0; i--) if (players[i].connected === false) players.splice(i, 1);
+  players.forEach((p) => { p.role = null; p.alive = true; p.inLove = false; p.diedOfLove = false; p.seenRole = false; });
+  roles.length = 0;
+  distributed = false;
+  allSeenShown = false;
+  closeAllSeenModal();
+  nightDeaths = 0;
+  villageSig = ''; villageCircle = null; voteProgressSig = ''; seenSig = '';
+  dawnPending = false;
+  activeCallRoles = new Set(); calledOnce = new Set(); thiefOffers = new Map();
+  resetGameAutomation();
+  if (window.AUTO && AUTO.reset) AUTO.reset();
+  players.forEach((p) => sendTo(p, { type: 'newGame' }));   // les téléphones reviennent à « En attente de la distribution »
+  try { updateMJRoleList(); } catch (e) {}
+  try { refreshPlayerViews(); } catch (e) {}
+  try { updateCallButtons(); renderMJDashboard(); } catch (e) {}
+  try { startLobbyMusic(); } catch (e) {}
+}
+
+// écran public : qui doit encore prendre connaissance de son rôle (avant le début de la partie)
+let seenSig = '';
+setInterval(() => {
+  try {
+    const active = distributed && !allSeenShown && (!gameStarted || reviewMode);
+    if (active) checkAllSeen();
+    const missing = active && !allSeenShown ? seenWaitingList() : [];
+    const sig = missing.join('|');
+    if (sig === seenSig) return;
+    seenSig = sig;
+    sendToProjector({ action: 'seenProgress', missing });
+  } catch (e) {}
+}, 1500);
+
 function resyncPlayer(p) {
   if (!distributed) return;
   sendTo(p, { type: 'status', alive: p.alive });
@@ -2046,6 +2088,7 @@ function sendWolfTurn(w) {
   sendTo(w, {
     type: 'wolfTurn',
     targets: alivePlayers().filter((p) => p.role !== 'Loup-Garou').map((p) => p.name),   // les loups n'apparaissent pas
+    pack: alivePlayers().filter((p) => p.role === 'Loup-Garou' && p !== w).map((p) => p.name),   // la meute : les autres loups en vie
     votes: aliveTally(night.wolfVotes),
     myVote: night.wolfVotes.get(w.name) || null,
     final: night.wolfFinal.has(w.name)
@@ -2547,7 +2590,8 @@ function handleMayorCandidacy(conn, data) {
   if (!v || !v.alive || !mayorVote.open || mayorVote.phase !== 'candidacy') return;
   mayorVote.answers.set(v.name, !!data.run);
   sendTo(v, { type: 'candidacyAck', answer: !!data.run });
-  if (alivePlayers().every((p) => mayorVote.answers.has(p.name))) { closeCandidacy(); return; }
+  const answering = alivePlayers().filter((p) => p.connected !== false);   // un joueur déconnecté ne bloque pas
+  if (answering.length && answering.every((p) => mayorVote.answers.has(p.name))) { closeCandidacy(); return; }
   renderMJDashboard();
 }
 
@@ -2564,6 +2608,9 @@ function closeCandidacy() {
   if (!mayorVote.open || mayorVote.phase !== 'candidacy') return;
   const names = mayorCandidatesNow();
   if (!names.length) {
+    // tout le monde a répondu « non » : un Maire est désigné au hasard, la partie continue
+    const answering = alivePlayers().filter((p) => p.connected !== false);
+    if (answering.length && answering.every((p) => mayorVote.answers.has(p.name))) { designateRandomMayor(); return; }
     showToast("👑 Personne ne se présente pour l'instant : attendez des candidats ou clôturez l'élection.", 'info');
     renderMJDashboard();
     return;
@@ -2578,6 +2625,18 @@ function closeCandidacy() {
   alivePlayers().forEach(sendMayorTurn);
   showToast(`👑 ${names.length} candidat(s) : ${names.join(', ')}. Donnez la parole à chacun, puis passez au vote.${shown ? '' : ' (écran secondaire fermé)'}`, 'info');
   renderMJDashboard();
+}
+
+// aucun candidat : le Maire est tiré au sort parmi les joueurs en vie
+function designateRandomMayor() {
+  const al = alivePlayers().filter((p) => p.connected !== false);
+  const pool = al.length ? al : alivePlayers();
+  if (!pool.length) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)].name;
+  if (mayorVote.open) closeMayorVote(true);
+  selection.mayor = new Set([pick]);
+  showToast(`👑 Personne ne s'est présenté : ${pick} est désigné(e) Maire au hasard.`, 'info');
+  announceMayor();
 }
 
 function setMayorSpeaker(name) {

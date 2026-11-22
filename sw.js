@@ -3,7 +3,7 @@
    - scripts / styles / polices / bibliothèques : copie en mémoire d'abord ;
    - médias locaux (sons, vidéos, images) : copie en mémoire d'abord (préchargés par boot.js), lecture partielle (Range) comprise. */
 const SHELL = 'lg-shell-v1';
-const MEDIA = 'lg-media-v2';   // v2 : médias réencodés en V113 (720p, musique 80 kbit/s)
+const MEDIA = 'lg-media-v3';   // v2 : médias réencodés en V113 (720p, musique 80 kbit/s)
 const LIBS = 'lg-libs-v1';
 const CDN_HOSTS = ['unpkg.com', 'cdnjs.cloudflare.com', 'cdn.jsdelivr.net'];
 const MAX_CACHED_BYTES = 120 * 1024 * 1024;

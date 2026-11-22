@@ -75,6 +75,8 @@
   };
 
   A.busy = function () { return busyReason(); };
+  // nouvelle partie dans le même salon : on oublie tous les compteurs de la partie précédente
+  A.reset = function () { A.since = {}; A.idleSince = 0; A.label = ''; A.paused = false; A.mayorT = { phase: null, since: 0, speakerSince: 0 }; A.speechDone = null; A.render(); };
   A.togglePause = function () { A.paused = !A.paused; A.idleSince = 0; A.render(); };
   A.skip = function () { A.idleSince = Date.now() - 100000; A.step(true); };
 
@@ -121,7 +123,7 @@
     if (mayorVote.phase === 'candidacy') {
       if (el > CANDIDACY_MS) {
         if (mayorCandidatesNow().length) closeCandidacy();
-        else if (el > CANDIDACY_MS + 30000) randomMayor();
+        else designateRandomMayor();   // aucun candidat au bout d'1 min : Maire tiré au sort tout de suite
       }
     } else if (mayorVote.phase === 'speech') {
       var next = mayorVote.candidates.filter(function (n) { return !mayorVote.spoke.has(n); })[0];

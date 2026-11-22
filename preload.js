@@ -5,7 +5,7 @@
    st = { done, total, failed, bytes, ready } */
 (function () {
   window.LG = window.LG || {};
-  var CACHE = 'lg-media-v2';            // même nom que dans sw.js
+  var CACHE = 'lg-media-v3';            // même nom que dans sw.js
   var CONCURRENCY = 3, RETRIES = 3, STALL_MS = 20000;
 
   function allUrls() {
