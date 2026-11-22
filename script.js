@@ -1,4 +1,4 @@
-const VERSION_APP = "117";
+const VERSION_APP = "120";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=117', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=120', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -1285,7 +1285,17 @@ function playDayPhase() {
   stopLobbyMusic();
   stopNightMusic();   // fin de la nuit : l'ambiance s'efface
   currentTurnRole = null;
+  if (dawnPending) return;                                // « Ouvrez les yeux » en cours : la suite arrive
   if (dayQueue) { startDayScene(); return; }              // 2e clic : on n'attend plus les annonces
+  // le narrateur dit d'abord « Ouvrez les yeux », PUIS viennent les annonces des morts et le jour
+  dawnPending = true;
+  const go = () => { if (!dawnPending) return; dawnPending = false; continueDawn(); };
+  playAudioFile('Ouvrez les yeux.mp3', { done: go });
+  setTimeout(go, 8000);                                   // secours si le son ne peut pas être lu
+}
+
+let dawnPending = false;
+function continueDawn() {
   if (projectorOpen()) {
     const kinds = ['wolves', 'poison'].filter((k) => pendingNames(k).length);
     if (kinds.length || hunterWaiting()) {
@@ -1567,6 +1577,7 @@ function fallbackSpeech(filename) {
 function stopAllMedia() {
   if (thiefCallTimer) { clearTimeout(thiefCallTimer); thiefCallTimer = null; }
   dayQueue = null;
+  dawnPending = false;
   afterAudio = null;
   hunterState = null;
   hunterThenDay = false;
@@ -1952,17 +1963,21 @@ function killPlayers(names) {
 // Écran : vivants, morts barrés avec leur rôle révélé, 👑 Maire (jamais les amoureux).
 // Éliminés : rôles de tous les joueurs (ils ne peuvent plus agir).
 let villageSig = '';
+let villageCircle = null;   // vote en cercle « feu de camp » : décidé au lancement (8 joueurs ou moins), fixe pour toute la partie
+function rosterMsg() { return { type: 'roster', circle: !!villageCircle, players: players.map((p) => ({ name: p.name, alive: p.alive !== false })) }; }
 function villageFull() { return players.map((p) => ({ name: p.name, role: p.role || null, alive: p.alive !== false, mayor: typeof mayor !== 'undefined' && mayor === p.name })); }
 function sendSpectator(p, full) { if (p && p.alive === false) sendTo(p, { type: 'spectator', players: full || villageFull() }); }
 function syncVillage(force) {
-  if (!distributed || !players.length) return;
+  if (!distributed || !players.length) { villageCircle = null; return; }
+  if (villageCircle === null) villageCircle = players.length <= 8;
   const full = villageFull();
   const board = full.map((x) => ({ name: x.name, alive: x.alive, mayor: x.mayor, role: x.alive ? null : x.role }));
   const sig = JSON.stringify(full);
   if (!force && sig === villageSig) return;
   villageSig = sig;
   sendToProjector({ action: 'villageBoard', players: board });
-  players.forEach((p) => sendSpectator(p, full));
+  const roster = rosterMsg();
+  players.forEach((p) => { sendTo(p, roster); sendSpectator(p, full); });
 }
 setInterval(() => { try { syncVillage(false); } catch (e) {} }, 1500);
 
@@ -1970,6 +1985,7 @@ function resyncPlayer(p) {
   if (!distributed) return;
   sendTo(p, { type: 'status', alive: p.alive });
   sendSpectator(p);
+  if (distributed && villageCircle !== null) sendTo(p, rosterMsg());
   if (p.inLove) {
     const partner = players.find((x) => x !== p && x.inLove);
     sendTo(p, { type: 'lover', partner: partner ? partner.name : null });
@@ -2878,7 +2894,23 @@ function openVillageVote() {
   villageVote = { open: true, votes: new Map() };
   selection.vote = new Set();
   alivePlayers().forEach(sendVoteTurn);
+  pushVoteProgress();
   renderMJDashboard();
+}
+
+// Vote du village OBLIGATOIRE : il se clôt seulement quand chaque joueur vivant et connecté a voté.
+// (un joueur déconnecté ne bloque pas la partie ; aucun vote n'est fait à la place d'un joueur)
+function voteVoters() { return alivePlayers().filter((p) => p.connected !== false); }
+function villageVoteComplete() { const v = voteVoters(); return v.length > 0 && v.every((p) => villageVote.votes.has(p.name)); }
+let voteProgressSig = '';
+function pushVoteProgress() {
+  if (!villageVote.open) return;
+  const voters = voteVoters();
+  const missing = voters.filter((p) => !villageVote.votes.has(p.name)).map((p) => p.name);
+  const sig = missing.join('|') + '/' + voters.length;
+  if (sig === voteProgressSig) return;
+  voteProgressSig = sig;
+  sendToProjector({ action: 'voteProgress', voted: voters.length - missing.length, total: voters.length, missing });
 }
 
 function handleVillageVote(conn, data) {
@@ -2889,8 +2921,9 @@ function handleVillageVote(conn, data) {
   villageVote.votes.set(v.name, t.name);
   sendTo(v, { type: 'voteAck', target: t.name });
 
-  // tous les joueurs en vie ont voté : le vote se clôt et le plus voté est éliminé automatiquement
-  if (autoVoteResolve && alivePlayers().every((p) => villageVote.votes.has(p.name))) {
+  pushVoteProgress();
+  // tous les joueurs en vie (et connectés) ont voté : le vote se clôt et le plus voté est éliminé
+  if (autoVoteResolve && villageVoteComplete()) {
     resolveVillageVote();
     return;
   }

@@ -145,15 +145,13 @@
   }
 
   // ---------------------------------------------------------------- vote du village
+  // Vote OBLIGATOIRE : aucune clôture au bout d'un délai, aucun vote tiré au sort à la place des joueurs.
+  // Le vote se résout dès que tous les joueurs vivants et connectés ont voté (un joueur qui se déconnecte ne bloque pas).
+  // Égalité : départage par le Maire (ou pierre-feuille-ciseaux), comme avant.
   function villageAuto() {
-    var el = since('village', villageVote.open);
-    if (!villageVote.open || el < VOTE_MS) return;
-    var names = topOf(villageTally(villageVote.votes)).names;
-    resolveVillageVote();
-    if (!rps && selection.vote.size !== 1 && names.length > 1) {
-      selection.vote = new Set([rnd(names)]);
-      announceKillEvent('vote', { auto: true });
-    }
+    if (!villageVote.open) return;
+    pushVoteProgress();
+    if (villageVoteComplete()) resolveVillageVote();
   }
 
   // ---------------------------------------------------------------- tours de nuit bloqués : l'application décide à la place du joueur

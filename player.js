@@ -271,6 +271,8 @@ function connect(room, name, token, isAuto) {
         setNightMode(data.phase === 'night');
       } else if (data.type === 'nightCall') {
         nightPulse();
+      } else if (data.type === 'roster') {
+        applyRoster(data);
       } else if (data.type === 'spectator') {
         renderSpectator(data.players || []);
       } else if (data.type === 'roleReview') {
@@ -489,6 +491,7 @@ function showPanel(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'block';
+  if (typeof layoutCircle === 'function') el.querySelectorAll('.pick-list.circle').forEach(layoutCircle);   // rayon recalculé une fois visible
   el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   updateActing();
 }
@@ -503,7 +506,9 @@ function updateActing() {
   document.body.classList.toggle('night-acting', acting);
 }
 function setNightMode(on) {
-  nightOn = !!on && !!myRole;   // pas avant la distribution des rôles
+  // seulement une fois la partie commencée : avant, chacun doit pouvoir toucher sa carte pour découvrir son rôle
+  // (le pilote automatique attend que tous l'aient vue avant de lancer la partie)
+  nightOn = !!on && !!myRole && gameStartedUI;
   document.body.classList.toggle('night-mode', nightOn);
   updateActing();
 }
@@ -527,6 +532,76 @@ function nightPulse() {
   if (!vibrateOn || !canVibrate) return;
   try { navigator.vibrate(35); } catch (e) {}   // très courte et douce
 }
+
+// =====================================================================
+//  VOTE EN CERCLE « FEU DE CAMP » (parties de 8 joueurs ou moins) : tous les votes et choix de joueurs
+//  Moi en bas, les autres dans l'ordre d'arrivée dans le salon ; éliminés = braises éteintes ; feu au centre.
+// =====================================================================
+let roster = [], circleMode = false;
+function applyRoster(d) {
+  roster = d.players || [];
+  circleMode = !!d.circle;
+  document.querySelectorAll('.pick-list').forEach(layoutCircle);
+}
+const pickObserver = (typeof MutationObserver === 'function') ? new MutationObserver((muts) => {
+  const lists = new Set();
+  muts.forEach((m) => { const l = m.target && m.target.closest ? m.target.closest('.pick-list') : null; if (l) lists.add(l); });
+  lists.forEach(layoutCircle);
+}) : null;
+function watchPickLists() { if (pickObserver) document.querySelectorAll('.pick-list').forEach((l) => pickObserver.observe(l, { childList: true })); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchPickLists); else watchPickLists();
+
+function layoutCircle(list) {
+  if (!list) return;
+  const btns = [...list.children].filter((c) => c.classList.contains('pick-btn'));
+  [...list.children].filter((c) => c.classList.contains('pc-token') || c.classList.contains('pc-fire')).forEach((e) => e.remove());
+  if (!circleMode || !btns.length) {
+    list.classList.remove('circle');
+    btns.forEach((b) => { b.style.left = ''; b.style.top = ''; });
+    if (pickObserver) pickObserver.takeRecords();
+    return;
+  }
+  list.classList.add('circle');
+  const me = session && session.name;
+  const nameOf = (b) => { const s = b.querySelector('span'); return s ? s.textContent : ''; };
+  const byName = new Map(btns.map((b) => [nameOf(b), b]));
+  let names = roster.map((p) => p.name);
+  btns.forEach((b) => { const n = nameOf(b); if (!names.includes(n)) names.push(n); });
+  if (me && !names.includes(me)) names.push(me);
+  const k = names.indexOf(me);
+  if (k > 0) names = names.slice(k).concat(names.slice(0, k));   // moi en premier = en bas du cercle
+
+  const fire = document.createElement('div');
+  fire.className = 'pc-fire';
+  fire.innerHTML = '<i class="pc-glow"></i><span class="pc-flame">🔥</span><i class="pc-ember e1"></i><i class="pc-ember e2"></i><i class="pc-ember e3"></i>';
+  list.appendChild(fire);
+
+  const W = list.clientWidth || 300;
+  const N = names.length;
+  // taille des médaillons : la plus grande (56 px max) qui laisse un espace entre voisins et reste dans le panneau
+  let t = 56, r = 0;
+  for (; t >= 34; t -= 2) { r = W / 2 - (t + 22) / 2; if (2 * Math.PI * r / N >= t + 22) break; }
+  list.style.setProperty('--pc-size', t + 'px');
+  const R = (r / W) * 100;
+  names.forEach((n, i) => {
+    const a = Math.PI / 2 + i * 2 * Math.PI / N;   // départ en bas, puis sens des aiguilles d'une montre
+    let el = byName.get(n);
+    if (!el) {
+      const info = roster.find((p) => p.name === n);
+      el = document.createElement('div');
+      el.className = 'pc-token' + (n === me ? ' me' : '') + (info && info.alive === false ? ' dead' : '');
+      el.dataset.initial = info && info.alive === false ? '' : n.charAt(0).toUpperCase();
+      const s = document.createElement('span');
+      s.textContent = n === me ? 'Moi' : n;
+      el.appendChild(s);
+      list.appendChild(el);
+    } else if (n === me) el.classList.add('me');
+    el.style.left = (50 + R * Math.cos(a)).toFixed(2) + '%';
+    el.style.top = (50 + R * Math.sin(a)).toFixed(2) + '%';
+  });
+  if (pickObserver) pickObserver.takeRecords();
+}
+window.addEventListener('resize', () => document.querySelectorAll('.pick-list.circle').forEach(layoutCircle));
 
 // =====================================================================
 //  ÉLIMINÉ : mode spectateur (rôles de tous les joueurs visibles, aucune action)
@@ -1101,6 +1176,7 @@ function applyGameStarted(started) {
   const card = document.getElementById('game-card');
   if (big) big.style.display = gameStartedUI ? 'none' : '';
   if (card) card.classList.toggle('has-mini', gameStartedUI && !!myRole);
+  if (typeof setNightMode === 'function') setNightMode(lastPhaseMsg === 'night');
   updateMiniCard();
 }
 

@@ -1010,3 +1010,31 @@ body.night-mode .pick-list .pick-btn:disabled { opacity: 0.55; }
 body.night-mode .action-panel > .btn:not(.pick-btn), body.night-mode .action-panel > div > .btn:not(.pick-btn) { position: sticky; bottom: 12px; z-index: 3; width: 100%; padding: 14px 10px; font-size: 1.1rem; font-weight: 700; }
 body.night-mode .action-panel > .btn:not(.pick-btn):not(:disabled), body.night-mode .action-panel > div > .btn:not(.pick-btn):not(:disabled) { background: linear-gradient(180deg, #991b1b, #7f1d1d) !important; border-color: #f87171 !important; color: #fff !important; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6) !important; }
 body.night-mode.night-acting .vibrate-toggle { display: none; }
+
+/* ===================== V118 : vote en cercle « feu de camp » (8 joueurs ou moins) ===================== */
+body .pick-list.circle { display: block !important; position: relative; width: 100%; max-width: 370px; aspect-ratio: 1 / 1; height: auto; margin: 12px auto 18px; }
+body .pick-list.circle > .pick-btn, body .pick-list.circle > .pc-token { position: absolute; transform: translate(-50%, -50%); z-index: 2; width: calc(var(--pc-size, 56px) + 22px) !important; min-height: 0; display: flex !important; flex-direction: column; align-items: center; gap: 4px; padding: 0 !important; margin: 0; background: transparent !important; background-image: none !important; border: 0 !important; box-shadow: none !important; clip-path: none !important; -webkit-mask: none !important; mask: none !important; border-radius: 0 !important; font: 600 0.8rem 'Segoe UI', Roboto, Arial, sans-serif !important; color: #fbe9d0 !important; text-shadow: 0 2px 6px #000; }
+body .pick-list.circle > .pick-btn > span, body .pick-list.circle > .pc-token > span { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body .pick-list.circle > .pick-btn::before, body .pick-list.circle > .pc-token::before { content: attr(data-initial); display: flex; align-items: center; justify-content: center; width: var(--pc-size, 56px); height: var(--pc-size, 56px); border-radius: 50%; font: 700 calc(var(--pc-size, 56px) * 0.44) 'Wolf Brothers', 'Segoe UI', sans-serif; color: #fde68a; background: radial-gradient(circle at 35% 30%, #5b3616, #1c0f08 72%); border: 2px solid rgba(251, 191, 36, 0.6); box-shadow: 0 0 14px rgba(251, 146, 60, 0.35), inset 0 0 10px rgba(0, 0, 0, 0.6); transition: transform 0.15s ease, box-shadow 0.15s ease; transform: none; }
+body .pick-list.circle > .pick-btn:active::before { transform: scale(0.93); }
+body .pick-list.circle > .pick-btn.selected::before { color: #fff7ed; border-color: #f97316; background: radial-gradient(circle at 35% 30%, #c2410c, #431407 72%); box-shadow: 0 0 22px rgba(249, 115, 22, 0.9), 0 0 6px rgba(253, 186, 116, 0.9), inset 0 0 10px rgba(0, 0, 0, 0.5); transform: scale(1.08); }
+body .pick-list.circle > .pick-btn.selected::after { top: -2px; width: calc(var(--pc-size, 56px) + 4px); height: calc(var(--pc-size, 56px) + 4px); margin-left: calc((var(--pc-size, 56px) + 4px) / -2); }
+body .pick-list.circle > .pick-btn:disabled { opacity: 0.55; }
+body .pick-list.circle > .pick-btn .pick-extra { position: absolute; top: -8px; left: 50%; margin-left: 12px; padding: 1px 6px; border-radius: 999px; background: rgba(28, 15, 8, 0.92); border: 1px solid rgba(249, 115, 22, 0.7); color: #fed7aa; font-size: 0.7rem; white-space: nowrap; }
+body .pick-list.circle > .pc-token { cursor: default; color: #a8a29e !important; }
+body .pick-list.circle > .pc-token::before { color: #a8a29e; background: radial-gradient(circle at 35% 30%, #3a332c, #161310 72%); border-color: rgba(168, 162, 158, 0.4); box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6); }
+body .pick-list.circle > .pc-token.me { color: #fde68a !important; }
+body .pick-list.circle > .pc-token.me::before { border: 3px solid #fbbf24; color: #fde68a; box-shadow: 0 0 12px rgba(251, 191, 36, 0.5); }
+body .pick-list.circle > .pc-token.dead { opacity: 0.45; }
+body .pick-list.circle > .pc-token.dead::before { content: "💀"; font-size: 1.3rem; filter: grayscale(1); background: #141210; border-style: dashed; }
+body .pick-list.circle > .pc-token.dead > span { text-decoration: line-through; }
+/* feu de camp au centre : lueur, flamme qui vacille, braises qui s'envolent (transform/opacity uniquement) */
+.pc-fire { position: absolute; left: 50%; top: 50%; width: 44%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 1; }
+.pc-glow { position: absolute; inset: -12%; border-radius: 50%; background: radial-gradient(circle, rgba(251, 146, 60, 0.55), rgba(234, 88, 12, 0.18) 45%, transparent 70%); animation: pcGlow 2.2s ease-in-out infinite; will-change: transform, opacity; }
+.pc-flame { position: relative; font-size: calc(var(--pc-size, 56px) * 0.95); line-height: 1; animation: pcFlicker 1.3s ease-in-out infinite; filter: drop-shadow(0 0 14px rgba(251, 146, 60, 0.9)); will-change: transform; }
+.pc-ember { position: absolute; bottom: 52%; left: 50%; width: 4px; height: 4px; border-radius: 50%; background: #fdba74; box-shadow: 0 0 6px #fb923c; opacity: 0; animation: pcEmber 2.6s ease-out infinite; will-change: transform, opacity; }
+.pc-ember.e2 { left: 42%; animation-delay: 0.9s; } .pc-ember.e3 { left: 58%; animation-delay: 1.7s; }
+@keyframes pcGlow { 0%, 100% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+@keyframes pcFlicker { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(2deg); } }
+@keyframes pcEmber { 0% { opacity: 0; transform: translate(0, 0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -64px); } }
+@media (prefers-reduced-motion: reduce) { .pc-glow, .pc-flame, .pc-ember { animation: none; } }
