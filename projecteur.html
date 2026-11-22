@@ -502,12 +502,12 @@
   </style>
 </head>
 <body>
-  <script src="bg.js?v=123"></script>
+  <script src="bg.js?v=124"></script>
 
   <!-- ÉCRAN DE SALON D'ATTENTE -->
   <div id="waiting-screen">
     <!-- logo : uniquement dans le salon d'attente (masqué avec lui dès que la partie commence) -->
-    <img id="logo-jeu" src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
+    <img id="logo-jeu" src="logo-carnage.png?v=124" alt="Les Loups-Garous : Le Carnage" onerror="this.style.display='none'">
     <div class="projector-title">🌐 Rejoindre la Partie</div>
     <div class="lobby-container">
       
@@ -536,7 +536,7 @@
 
   <!-- Saisie du code du salon (si l'écran est ouvert seul, sans régie : ex. application Android du vidéoprojecteur) -->
   <div id="room-entry">
-    <img src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage">
+    <img src="logo-carnage.png?v=124" alt="Les Loups-Garous : Le Carnage">
     <h2>Connexion à la régie</h2>
     <p>Saisissez le code du salon affiché sur la régie du Maître du Jeu.</p>
     <input id="room-entry-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="CODE">
@@ -565,7 +565,7 @@
     <div id="hw-sub" class="hw-sub">🏹 Il choisit sa cible pour son dernier tir…</div>
   </div>
   <div id="dayvote-overlay">
-    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=123" alt="Les Loups-Garous : Le Carnage">
+    <img id="dv-title-img" class="dv-title-img" src="logo-carnage.png?v=124" alt="Les Loups-Garous : Le Carnage">
     <div class="dv-title">Le village débat</div>
     <div class="dv-sub">🗳️ En attente du vote du village…</div>
   </div>
@@ -587,8 +587,8 @@
     <div class="mayor-sub">Maire du village</div>
   </div>
 
-  <script src="assets.js?v=123"></script>
-  <script src="boot.js?v=123"></script>
+  <script src="assets.js?v=124"></script>
+  <script src="boot.js?v=124"></script>
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js&quot;><\/script>')"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" onerror="document.write('<script src=&quot;https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js&quot;><\/script>')"></script>
 
@@ -1071,7 +1071,7 @@
       document.querySelector('#dayvote-overlay .dv-title').textContent = night ? 'Le village se repose' : (roles ? 'Le village se réveille' : 'Le village débat');
       document.querySelector('#dayvote-overlay .dv-sub').textContent = night ? '🌙 En attente de la prochaine nuit…' : (roles ? '👀 Joueurs, reprenez connaissance de votre rôle…' : '🗳️ En attente du vote du village…');
       const ti = document.getElementById('dv-title-img');
-      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=123';
+      if (!ti.getAttribute('src')) ti.src = 'logo-carnage.png?v=124';
       if (ytReady) ytPlayer.stopVideo();
       document.getElementById('player').style.visibility = 'hidden';
       hideWaitingScreen();

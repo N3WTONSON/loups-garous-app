@@ -1,4 +1,4 @@
-const VERSION_APP = "123";
+const VERSION_APP = "124";
 console.info("Les Loups-Garous : Le Carnage - régie - version " + VERSION_APP);
 let foxPowerLost = false;      // le MJ a répondu « non » : le Renard perd définitivement son pouvoir
 let mayorCalled = false;       // le bouton « Le Maire » a déjà servi (bloqué ensuite)
@@ -152,7 +152,7 @@ function syncLobbyToProjector() {
 
 function openProjectorWindow() {
   if (!projectorOpen()) {
-    projectorWindow = window.open('projecteur.html?v=123', 'ProjecteurLoupGarou', 'width=1280,height=720');
+    projectorWindow = window.open('projecteur.html?v=124', 'ProjecteurLoupGarou', 'width=1280,height=720');
   } else {
     projectorWindow.focus();
   }
@@ -2168,7 +2168,7 @@ function sendWitchTurn(w, error) {
     canSave,
     canPoison: !witchState.deathUsed,
     // la victime des loups n'apparaît pas dans la liste du poison (elle ne peut être que sauvée)
-    targets: alivePlayers().filter((p) => p.name !== night.wolfVictim).map((p) => p.name),
+    targets: alivePlayers().filter((p) => p.name !== night.wolfVictim && p !== w).map((p) => p.name),   // jamais elle-même
     error: error || null
   });
 }
@@ -2204,6 +2204,11 @@ function handleWitchAction(conn, data) {
     done.push(`a sauvé ${night.wolfVictim}`);
   }
   const target = data.poison ? findPlayer(String(data.poison)) : null;
+  if (target === w) {   // la Sorcière ne peut pas s'empoisonner elle-même
+    witchWaiting.add(w.name);
+    sendWitchTurn(w, "Tu ne peux pas t'empoisonner toi-même : choisis un autre joueur ou ne fais rien.");
+    return;
+  }
   if (target && target.alive && !witchState.deathUsed) {
     night.poisoned = target.name;
     witchState.deathUsed = true;
